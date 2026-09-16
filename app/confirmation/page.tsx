@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 
 export default function Confirmation() {
-  const [bookingData, setBookingData] = useState(null)
+  const [bookingData, setBookingData] = useState<any>(null)
 
   useEffect(() => {
     const data = localStorage.getItem('bookingData')
@@ -28,12 +28,30 @@ export default function Confirmation() {
             </div>
           )}
 
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6">
+            <h3 className="font-bold mb-3">📋 What's Next?</h3>
+            <ul className="space-y-2 text-sm text-gray-700">
+              <li>✅ Show your QR code to the bus conductor</li>
+              <li>✅ Arrive 30 minutes before departure</li>
+              <li>✅ Keep your booking ID handy</li>
+              <li>✅ Check your WhatsApp for reminders</li>
+            </ul>
+          </div>
+
           <p className="text-gray-600 mb-4">Your QR ticket will be sent via WhatsApp shortly</p>
           <p className="text-sm text-gray-500">Booking ID: BH{Math.random().toString(36).substr(2, 9).toUpperCase()}</p>
           
-          <a href="/" className="mt-6 inline-block bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg transition">
-            Book Another Ticket
-          </a>
+          <div className="flex flex-col gap-3 mt-6">
+            <button
+              onClick={() => window.print()}
+              className="w-full bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-6 rounded-lg transition"
+            >
+              🖨️ Print Ticket
+            </button>
+            <a href="/" className="w-full inline-block bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg transition text-center">
+              🏠 Book Another Ticket
+            </a>
+          </div>
         </div>
       </div>
     </div>
