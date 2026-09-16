@@ -19,6 +19,7 @@ export default function Confirmation() {
           
           {bookingData && (
             <div className="bg-gray-100 p-6 rounded-lg mb-6 text-left">
+              <p className="mb-2"><strong>Bus:</strong> {bookingData.bus}</p>
               <p className="mb-2"><strong>From:</strong> {bookingData.from}</p>
               <p className="mb-2"><strong>To:</strong> {bookingData.to}</p>
               <p className="mb-2"><strong>Date:</strong> {bookingData.date}</p>
