@@ -1,10 +1,11 @@
 'use client';
 
+import { Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { useState } from 'react'
 import toast from 'react-hot-toast'
 
-export default function BookingPage() {
+function BookingContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
   
@@ -144,5 +145,13 @@ export default function BookingPage() {
         </div>
       )}
     </div>
+  )
+}
+
+export default function BookingPage() {
+  return (
+    <Suspense fallback={<div className="flex justify-center items-center h-screen"><span>Loading...</span></div>}>
+      <BookingContent />
+    </Suspense>
   )
 }
