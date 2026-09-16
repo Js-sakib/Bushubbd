@@ -1,8 +1,9 @@
 'use client';
 
+import { Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 
-export default function ConfirmationPage() {
+function SearchContent() {
   const searchParams = useSearchParams()
   const bookingId = searchParams.get('bookingId')
 
@@ -82,5 +83,13 @@ export default function ConfirmationPage() {
         </button>
       </div>
     </div>
+  )
+}
+
+export default function SearchPage() {
+  return (
+    <Suspense fallback={<div className="flex justify-center items-center h-screen"><span>Loading...</span></div>}>
+      <SearchContent />
+    </Suspense>
   )
 }
