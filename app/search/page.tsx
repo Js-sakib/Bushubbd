@@ -1,95 +1,116 @@
-'use client';
+'use client'
 
-import { Suspense } from 'react'
-import { useSearchParams } from 'next/navigation'
+import { useEffect, useState, Suspense } from 'react'
+import { useSearchParams, useRouter } from 'next/navigation'
 
-function SearchContent() {
+interface Bus {
+  _id: string
+  companyName: string
+  busName: string
+  busType: string
+  from: string
+  to: string
+  date: string
+  departureTime: string
+  arrivalTime: string
+  price: number
+  totalSeats: number
+  bookedSeats: string[]
+}
+
+function SearchResults() {
   const searchParams = useSearchParams()
-  const bookingId = searchParams.get('bookingId')
+  const router = useRouter()
+  const from = searchParams.get('from') || ''
+  const to = searchParams.get('to') || ''
+  const date = searchParams.get('date') || ''
+
+  const [buses, setBuses] = useState<Bus[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    if (!from || !to || !date) return
+    setLoading(true)
+    fetch(`/api/buses?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}&date=${date}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.error) {
+          setError(data.error)
+        } else {
+          setBuses(data.buses || [])
+        }
+      })
+      .catch(() => setError('Failed to load buses'))
+      .finally(() => setLoading(false))
+  }, [from, to, date])
 
   return (
-    <div className="max-w-2xl mx-auto">
-      <div className="bg-green-50 border-l-4 border-green-600 p-6 mb-8">
-        <div className="flex">
-          <div className="text-3xl mr-4">✅</div>
-          <div>
-            <h2 className="text-2xl font-bold text-green-900">Booking Confirmed!</h2>
-            <p className="text-green-700">Your ticket has been sent to your WhatsApp</p>
-          </div>
-        </div>
-      </div>
-
-      <div className="bg-white rounded-lg shadow p-6 mb-6">
-        <div className="flex justify-center mb-6">
-          <div className="bg-white p-4 border-2 border-gray-200 rounded-lg">
-            <p className="text-4xl">📱 QR Code Here</p>
-          </div>
-        </div>
-
-        <div className="space-y-4">
-          <div>
-            <p className="text-gray-600">Booking ID</p>
-            <p className="text-2xl font-mono font-bold">{bookingId}</p>
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-4">
-            <div>
-              <p className="text-gray-600">Bus Operator</p>
-              <p className="font-bold">Green Line Paribahan</p>
-            </div>
-            <div>
-              <p className="text-gray-600">Bus Type</p>
-              <p className="font-bold">AC</p>
-            </div>
-            <div>
-              <p className="text-gray-600">Departure</p>
-              <p className="font-bold">10:00 PM</p>
-            </div>
-            <div>
-              <p className="text-gray-600">Seats</p>
-              <p className="font-bold">12A, 12B</p>
-            </div>
-          </div>
-
-          <div className="border-t pt-4">
-            <p className="text-gray-600 mb-2">Total Amount Paid</p>
-            <p className="text-3xl font-bold text-blue-600">৳1,600</p>
-          </div>
-        </div>
-      </div>
-
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6">
-        <h3 className="font-bold mb-3">📋 What's Next?</h3>
-        <ul className="space-y-2 text-sm">
-          <li>✅ Show your QR code to the bus conductor</li>
-          <li>✅ Arrive 30 minutes before departure</li>
-          <li>✅ Keep your booking ID handy</li>
-          <li>✅ Check your WhatsApp for reminders</li>
-        </ul>
-      </div>
-
-      <div className="flex flex-col md:flex-row gap-4">
+    <div className="min-h-[70vh]">
+      <div className="bg-white rounded-lg shadow p-6 mb-8">
+        <h1 className="text-2xl font-bold text-gray-900 mb-2">
+          {from} → {to}
+        </h1>
+        <p className="text-gray-600">{date}</p>
         <button
-          onClick={() => window.print()}
-          className="flex-1 px-6 py-3 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-semibold"
+          onClick={() => router.push('/')}
+          className="mt-3 text-sm text-blue-600 hover:underline"
         >
-          🖨️ Print Ticket
+          ← Modify Search
         </button>
-        <button
-          onClick={() => window.location.href = '/'}
-          className="flex-1 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold"
-        >
-          🏠 Book Another Ticket
-        </button>
+      </div>
+
+      {loading && (
+        <div className="text-center py-16 text-gray-500">Searching buses...</div>
+      )}
+
+      {!loading && error && (
+        <div className="text-center py-16 text-red-500">{error}</div>
+      )}
+
+      {!loading && !error && buses.length === 0 && (
+        <div className="text-center bg-white rounded-lg shadow p-12">
+          <div className="text-5xl mb-4">🚌</div>
+          <h2 className="text-xl font-bold text-gray-900 mb-2">No buses found</h2>
+          <p className="text-gray-600">Try a different date or route.</p>
+        </div>
+      )}
+
+      <div className="space-y-4">
+        {buses.map((bus) => {
+          const seatsLeft = bus.totalSeats - (bus.bookedSeats?.length || 0)
+          return (
+            <div key={bus._id} className="bg-white rounded-lg shadow p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+              <div>
+                <h3 className="text-lg font-bold text-gray-900">{bus.busName}</h3>
+                <p className="text-sm text-gray-500">{bus.companyName} · {bus.busType}</p>
+                <p className="text-sm text-gray-700 mt-1">
+                  🕐 {bus.departureTime} {bus.arrivalTime ? `→ ${bus.arrivalTime}` : ''}
+                </p>
+                <p className="text-sm text-gray-500">{seatsLeft} seats left</p>
+              </div>
+              <div className="flex items-center justify-between md:flex-col md:items-end gap-2">
+                <div className="text-2xl font-bold text-blue-600">৳{bus.price}</div>
+                <button
+                  disabled={seatsLeft <= 0}
+                  onClick={() => router.push(`/booking?busId=${bus._id}`)}
+                  className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 text-white font-bold py-2 px-6 rounded-lg transition"
+                >
+                  {seatsLeft <= 0 ? 'Sold Out' : 'Select Seats'}
+                </button>
+              </div>
+            </div>
+          )
+        })}
       </div>
     </div>
   )
 }
 
-export default function SearchPage() {
+export default function Search() {
   return (
-    <Suspense fallback={<div className="flex justify-center items-center h-screen"><span>Loading...</span></div>}>
-      <SearchContent />
+    <Suspense fallback={<div className="text-center py-16 text-gray-500">Loading...</div>}>
+      <SearchResults />
     </Suspense>
   )
 }
