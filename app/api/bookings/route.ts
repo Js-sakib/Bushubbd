@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { ObjectId } from 'mongodb'
 import { connectToDatabase } from '@/lib/db'
-import { generateBookingCode, calculateExpiry, generateTicketQRCode } from '@/lib/tickets'
-import { sendWhatsAppMessage } from '@/lib/whatsapp'
+import { generateBookingCode, calculateExpiry, generateTicketQRCode, getVerifyUrl } from '@/lib/tickets'
 import { getCompanyFromCookies, getAdminFromCookies } from '@/lib/auth'
 import { Booking } from '@/lib/models'
 
@@ -32,7 +31,8 @@ export async function POST(req: NextRequest) {
 
     const bookingCode = generateBookingCode()
     const validUntil = calculateExpiry(24)
-    const qrCode = await generateTicketQRCode(bookingCode)
+    const verifyUrl = getVerifyUrl(bookingCode)
+    const qrCode = await generateTicketQRCode(verifyUrl)
     const totalPrice = seats.length * bus.price
 
     const booking: Booking = {
@@ -55,6 +55,7 @@ export async function POST(req: NextRequest) {
       source: source === 'whatsapp' ? 'whatsapp' : 'web',
       createdAt: new Date().toISOString(),
       validUntil,
+      checkedIn: false,
     }
 
     const result = await db.collection('bookings').insertOne(booking as any)
@@ -62,11 +63,6 @@ export async function POST(req: NextRequest) {
       { _id: new ObjectId(busId) },
       { $push: { bookedSeats: { $each: seats } } } as any
     )
-
-    sendWhatsAppMessage(
-      passengerPhone,
-      `Your BusHub ticket is confirmed!\nBooking: ${bookingCode}\n${bus.from} to ${bus.to}\nDate: ${bus.date} ${bus.departureTime}\nSeats: ${seats.join(', ')}\nTotal: ৳${totalPrice}\nValid for 24 hours.`
-    ).catch(() => {})
 
     return NextResponse.json({ booking: { ...booking, _id: result.insertedId } }, { status: 201 })
   } catch (err) {

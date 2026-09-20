@@ -38,6 +38,8 @@ export interface Booking {
   source: 'web' | 'whatsapp'
   createdAt: string
   validUntil: string
+  checkedIn: boolean
+  checkedInAt?: string
 }
 
 export interface Company {

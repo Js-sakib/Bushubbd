@@ -16,6 +16,14 @@ export function isExpired(validUntil: string): boolean {
   return new Date(validUntil).getTime() < Date.now()
 }
 
-export async function generateTicketQRCode(bookingCode: string): Promise<string> {
-  return QRCode.toDataURL(bookingCode, { width: 240, margin: 1 })
+export async function generateTicketQRCode(verifyUrl: string): Promise<string> {
+  return QRCode.toDataURL(verifyUrl, { width: 240, margin: 1 })
+}
+
+export function getBaseUrl(): string {
+  return process.env.NEXT_PUBLIC_BASE_URL || 'https://bushubbd.vercel.app'
+}
+
+export function getVerifyUrl(bookingCode: string): string {
+  return `${getBaseUrl()}/verify/${bookingCode}`
 }
