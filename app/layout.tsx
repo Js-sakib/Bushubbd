@@ -13,7 +13,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="bg-gray-50">
         <nav className="bg-white shadow-sm border-b">
           <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-            <a href="/" className="text-2xl font-bold text-blue-600">🚌 BusHub</a>
+            <a href="/" className="flex items-center gap-2 text-2xl font-bold text-blue-600">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/logo.png" alt="BusHub" className="h-9 w-9" />
+              BusHub
+            </a>
             <div className="flex items-center gap-4 text-sm">
               <span className="text-gray-500">24/7 Support</span>
             </div>
