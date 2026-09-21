@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import toast from 'react-hot-toast'
 import { adminPath } from '@/lib/panelNav'
+import { generateSeatLabels } from '@/lib/seats'
 
 interface Bus {
   _id: string
@@ -57,6 +58,7 @@ export default function AdminDashboard() {
   const [buses, setBuses] = useState<Bus[]>([])
   const [bookings, setBookings] = useState<Booking[]>([])
   const [companies, setCompanies] = useState<CompanyRow[]>([])
+  const [manageSeatsBusId, setManageSeatsBusId] = useState<string | null>(null)
 
   const [form, setForm] = useState({
     busName: '', busType: 'AC', companyName: 'BusHub', from: '', to: '',
@@ -107,6 +109,20 @@ export default function AdminDashboard() {
     toast.success('Bus added')
     setForm({ ...form, from: '', to: '', date: '', departureTime: '', arrivalTime: '', price: '' })
     loadAll()
+  }
+
+  const handleToggleSeat = async (bus: Bus, seatLabel: string) => {
+    const isBooked = bus.bookedSeats?.includes(seatLabel)
+    const res = await fetch(`/api/buses/${bus._id}/seats`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ seats: [seatLabel], action: isBooked ? 'release' : 'book' }),
+    })
+    if (res.ok) {
+      loadAll()
+    } else {
+      toast.error('Failed to update seat')
+    }
   }
 
   const handleCompanyStatus = async (id: string, status: string) => {
@@ -181,7 +197,7 @@ export default function AdminDashboard() {
               <thead className="bg-gray-50 text-left">
                 <tr>
                   <th className="p-3">Bus</th><th className="p-3">Route</th><th className="p-3">Date/Time</th>
-                  <th className="p-3">Price</th><th className="p-3">Seats</th><th className="p-3">Status</th>
+                  <th className="p-3">Price</th><th className="p-3">Seats</th><th className="p-3">Status</th><th className="p-3">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -193,14 +209,55 @@ export default function AdminDashboard() {
                     <td className="p-3">৳{b.price}</td>
                     <td className="p-3">{b.totalSeats - (b.bookedSeats?.length || 0)}/{b.totalSeats}</td>
                     <td className="p-3">{b.status}</td>
+                    <td className="p-3">
+                      <button
+                        onClick={() => setManageSeatsBusId(manageSeatsBusId === b._id ? null : b._id)}
+                        className="text-blue-600 hover:underline"
+                      >
+                        {manageSeatsBusId === b._id ? 'Close' : 'Manage Seats'}
+                      </button>
+                    </td>
                   </tr>
                 ))}
                 {buses.length === 0 && (
-                  <tr><td className="p-4 text-gray-500" colSpan={6}>No buses yet.</td></tr>
+                  <tr><td className="p-4 text-gray-500" colSpan={7}>No buses yet.</td></tr>
                 )}
               </tbody>
             </table>
           </div>
+
+          {manageSeatsBusId && (() => {
+            const bus = buses.find((b) => b._id === manageSeatsBusId)
+            if (!bus) return null
+            return (
+              <div className="bg-white rounded-lg shadow p-6">
+                <h3 className="font-bold mb-1">{bus.busName} · {bus.from} → {bus.to} ({bus.date})</h3>
+                <p className="text-sm text-gray-500 mb-4">
+                  Tap a seat to mark it sold (e.g. counter or phone sale) or release it back to available. This updates the customer website instantly.
+                </p>
+                <div className="grid grid-cols-8 md:grid-cols-12 gap-2 max-w-2xl mb-4">
+                  {generateSeatLabels(bus.totalSeats).map((seatLabel) => {
+                    const isBooked = bus.bookedSeats?.includes(seatLabel)
+                    return (
+                      <button
+                        key={seatLabel}
+                        onClick={() => handleToggleSeat(bus, seatLabel)}
+                        className={`p-2 rounded text-xs font-bold transition ${
+                          isBooked ? 'bg-red-500 text-white hover:bg-red-600' : 'bg-green-100 hover:bg-green-200'
+                        }`}
+                      >
+                        {seatLabel}
+                      </button>
+                    )
+                  })}
+                </div>
+                <div className="flex gap-4 text-sm">
+                  <div className="flex items-center gap-2"><div className="w-4 h-4 bg-green-100"></div><span>Available</span></div>
+                  <div className="flex items-center gap-2"><div className="w-4 h-4 bg-red-500"></div><span>Sold / Booked</span></div>
+                </div>
+              </div>
+            )
+          })()}
         </div>
       )}
 
