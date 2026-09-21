@@ -1,10 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { connectToDatabase } from '@/lib/db'
 import { sendWhatsAppMessage } from '@/lib/whatsapp'
+import { isExpired, getVerifyUrl } from '@/lib/tickets'
 
 export const dynamic = 'force-dynamic'
+export const revalidate = 0
+export const fetchCache = 'force-no-store'
 
 const CITIES = ['Dhaka', 'Chittagong', 'Sylhet', 'Rajshahi', 'Khulna', "Cox's Bazar", 'Barishal', 'Rangpur']
+
+const GREETINGS = ['hi', 'hello', 'hey', 'start', 'menu', 'help', 'salam', 'assalamu alaikum', 'হাই', 'হ্যালো', 'সালাম', 'আসসালামু আলাইকুম']
+
+const BOOKING_CODE = /\bBH-\d{8}-[A-Z0-9]{5}\b/i
 
 function getBaseUrl() {
   return process.env.NEXT_PUBLIC_BASE_URL || 'https://bushubbd.vercel.app'
@@ -17,13 +24,13 @@ function findCityInText(text: string): string | undefined {
 
 function parseRoute(text: string): { from?: string; to?: string } {
   const lower = text.toLowerCase()
-  const separators = [' to ', '-', '>', ' theke ', ' theke']
+  const separators = [' to ', ' theke ', '->', '>', '-']
   for (const sep of separators) {
     if (lower.includes(sep)) {
       const [rawFrom, rawTo] = lower.split(sep)
       const from = findCityInText(rawFrom)
       const to = findCityInText(rawTo)
-      if (from && to) return { from, to }
+      if (from && to && from !== to) return { from, to }
     }
   }
   const found = CITIES.filter((city) => lower.includes(city.toLowerCase()))
@@ -31,8 +38,17 @@ function parseRoute(text: string): { from?: string; to?: string } {
   return {}
 }
 
-function today() {
-  return new Date().toISOString().split('T')[0]
+function addDays(days: number): string {
+  return new Date(Date.now() + days * 86400000).toISOString().split('T')[0]
+}
+
+// Word boundaries matter: "aj" is a substring of "Rajshahi".
+function parseDate(text: string): { date: string; label: string } {
+  const lower = text.toLowerCase()
+  if (/\b(tomorrow|kal|kaal)\b/.test(lower) || lower.includes('আগামীকাল')) {
+    return { date: addDays(1), label: 'tomorrow' }
+  }
+  return { date: addDays(0), label: 'today' }
 }
 
 export async function GET(req: NextRequest) {
@@ -50,9 +66,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
-    const entry = body?.entry?.[0]
-    const change = entry?.changes?.[0]
-    const message = change?.value?.messages?.[0]
+    const message = body?.entry?.[0]?.changes?.[0]?.value?.messages?.[0]
 
     if (!message || message.type !== 'text') {
       return NextResponse.json({ status: 'ignored' })
@@ -64,12 +78,11 @@ export async function POST(req: NextRequest) {
 
     const { db } = await connectToDatabase()
     const sessions = db.collection('sessions')
-    const session = (await sessions.findOne({ phone: from })) || { phone: from, step: 'idle' }
 
-    if (['hi', 'hello', 'hey', 'start', 'menu'].includes(lowerText)) {
+    if (GREETINGS.includes(lowerText)) {
       await sendWhatsAppMessage(
         from,
-        `👋 Welcome to BusHub!\n\nTo find a bus, tell me your route, e.g.:\n"Dhaka to Sylhet"\n\nAvailable cities: ${CITIES.join(', ')}`
+        `Welcome to BusHub!\n\nTell me your route and I will find your bus, for example:\n"Dhaka to Sylhet"\n"Dhaka to Chittagong tomorrow"\n\nYou can also send your booking code (BH-...) to check a ticket.\n\nCities: ${CITIES.join(', ')}`
       )
       await sessions.updateOne(
         { phone: from },
@@ -79,10 +92,36 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ status: 'ok' })
     }
 
+    const codeMatch = text.match(BOOKING_CODE)
+    if (codeMatch) {
+      const bookingCode = codeMatch[0].toUpperCase()
+      const booking = await db.collection('bookings').findOne({ bookingCode })
+
+      if (!booking) {
+        await sendWhatsAppMessage(from, `No ticket found with the code ${bookingCode}. Please check the code and try again.`)
+      } else {
+        const expired = isExpired(booking.validUntil)
+        const state =
+          booking.status === 'refunded'
+            ? 'This ticket was refunded and can no longer be used.'
+            : booking.paymentStatus !== 'paid'
+            ? 'Payment for this ticket was never completed.'
+            : expired || booking.status === 'expired'
+            ? 'This ticket has expired.'
+            : 'This ticket is valid.'
+
+        await sendWhatsAppMessage(
+          from,
+          `Ticket ${booking.bookingCode}\n${state}\n\n${booking.from} to ${booking.to}\nDate: ${booking.date} ${booking.departureTime}\nSeats: ${booking.seats.join(', ')}\nTotal: ৳${booking.totalPrice}\n\nShow this to the conductor:\n${getVerifyUrl(booking.bookingCode)}`
+        )
+      }
+      return NextResponse.json({ status: 'ok' })
+    }
+
     const { from: fromCity, to: toCity } = parseRoute(text)
 
     if (fromCity && toCity) {
-      const date = today()
+      const { date, label } = parseDate(text)
       const buses = await db
         .collection('buses')
         .find({ from: fromCity, to: toCity, date, status: 'active' })
@@ -95,21 +134,40 @@ export async function POST(req: NextRequest) {
       )}&date=${date}`
 
       if (buses.length === 0) {
-        await sendWhatsAppMessage(
-          from,
-          `No buses found right now from ${fromCity} to ${toCity}.\n\nCheck the latest availability here:\n${searchLink}`
-        )
+        // Nothing on the day they asked for, so point them at the next day that does have buses.
+        const next = await db
+          .collection('buses')
+          .find({ from: fromCity, to: toCity, status: 'active', date: { $gt: date } })
+          .sort({ date: 1 })
+          .limit(1)
+          .toArray()
+
+        if (next.length > 0) {
+          const nextDate = next[0].date
+          const nextLink = `${getBaseUrl()}/search?from=${encodeURIComponent(fromCity)}&to=${encodeURIComponent(
+            toCity
+          )}&date=${nextDate}`
+          await sendWhatsAppMessage(
+            from,
+            `No buses from ${fromCity} to ${toCity} ${label}.\n\nThe next available day is ${nextDate}:\n${nextLink}`
+          )
+        } else {
+          await sendWhatsAppMessage(
+            from,
+            `No buses from ${fromCity} to ${toCity} ${label}.\n\nCheck the latest availability here:\n${searchLink}`
+          )
+        }
       } else {
         const list = buses
-          .map(
-            (b) =>
-              `🚌 ${b.busName} (${b.busType})\n⏰ ${b.departureTime} | ৳${b.price}\n🪑 ${b.totalSeats - (b.bookedSeats?.length || 0)} seats left`
-          )
+          .map((b) => {
+            const seatsLeft = b.totalSeats - (b.bookedSeats?.length || 0)
+            return `${b.busName} (${b.busType})\n${b.departureTime} · ৳${b.price} · ${seatsLeft} seats left`
+          })
           .join('\n\n')
 
         await sendWhatsAppMessage(
           from,
-          `Buses from ${fromCity} to ${toCity} today:\n\n${list}\n\n👉 Book & pay here (link valid now):\n${searchLink}\n\nYour ticket will be generated instantly after payment, valid for 24 hours.`
+          `Buses from ${fromCity} to ${toCity} ${label}:\n\n${list}\n\nBook and pay here:\n${searchLink}\n\nYour QR ticket is generated the moment you pay, and stays valid for 24 hours.`
         )
       }
 
@@ -123,11 +181,12 @@ export async function POST(req: NextRequest) {
 
     await sendWhatsAppMessage(
       from,
-      `Sorry, I didn't understand that. Please tell me your route like:\n"Dhaka to Sylhet"\n\nAvailable cities: ${CITIES.join(', ')}`
+      `Sorry, I did not understand that.\n\nTell me your route like this:\n"Dhaka to Sylhet"\n"Dhaka to Chittagong tomorrow"\n\nOr send your booking code (BH-...) to check a ticket.\n\nCities: ${CITIES.join(', ')}`
     )
     return NextResponse.json({ status: 'ok' })
   } catch (err) {
     console.error('WhatsApp webhook error:', err)
+    // Always 200: Meta retries aggressively on any non-200, which would spam the customer.
     return NextResponse.json({ status: 'error' }, { status: 200 })
   }
 }
