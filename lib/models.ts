@@ -37,7 +37,7 @@ export interface Booking {
   passengerEmail?: string
   paymentStatus: 'pending' | 'paid'
   paymentMethod?: 'bkash' | 'nagad' | 'card'
-  status: 'pending' | 'confirmed' | 'expired' | 'cancelled'
+  status: 'pending' | 'confirmed' | 'expired' | 'cancelled' | 'refunded'
   qrCode: string
   source: 'web' | 'whatsapp'
   createdAt: string
@@ -45,6 +45,7 @@ export interface Booking {
   holdExpiresAt: string
   checkedIn: boolean
   checkedInAt?: string
+  refundedAt?: string
 }
 
 export interface Company {

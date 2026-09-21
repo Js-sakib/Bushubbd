@@ -25,9 +25,11 @@ interface Booking {
   _id: string
   bookingCode: string
   busName: string
+  companyName: string
   from: string
   to: string
   date: string
+  departureTime: string
   seats: string[]
   totalPrice: number
   commissionAmount: number
@@ -53,7 +55,7 @@ const CITIES = ['Dhaka', 'Chittagong', 'Sylhet', 'Rajshahi', 'Khulna', "Cox's Ba
 export default function AdminDashboard() {
   const router = useRouter()
   const [checking, setChecking] = useState(true)
-  const [tab, setTab] = useState<'buses' | 'bookings' | 'companies'>('buses')
+  const [tab, setTab] = useState<'overview' | 'buses' | 'companies'>('overview')
 
   const [buses, setBuses] = useState<Bus[]>([])
   const [bookings, setBookings] = useState<Booking[]>([])
@@ -125,6 +127,18 @@ export default function AdminDashboard() {
     }
   }
 
+  const handleRefund = async (bookingId: string) => {
+    if (!confirm('Mark this ticket as refunded? The seat will be released back to available.')) return
+    const res = await fetch(`/api/bookings/${bookingId}/refund`, { method: 'PATCH' })
+    const data = await res.json()
+    if (!res.ok) {
+      toast.error(data.error || 'Failed to refund')
+      return
+    }
+    toast.success('Ticket refunded')
+    loadAll()
+  }
+
   const handleCompanyStatus = async (id: string, status: string) => {
     const res = await fetch(`/api/companies/${id}`, {
       method: 'PATCH',
@@ -151,7 +165,7 @@ export default function AdminDashboard() {
       </div>
 
       <div className="flex gap-2 mb-6">
-        {(['buses', 'bookings', 'companies'] as const).map((t) => (
+        {(['overview', 'buses', 'companies'] as const).map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
@@ -261,59 +275,104 @@ export default function AdminDashboard() {
         </div>
       )}
 
-      {tab === 'bookings' && (
-        <div className="space-y-4">
-          <div className="grid grid-cols-3 gap-4">
-            <div className="bg-white rounded-lg shadow p-4">
-              <p className="text-xs text-gray-500">Total Revenue (paid)</p>
-              <p className="text-xl font-bold text-gray-900">
-                ৳{bookings.filter((b) => b.paymentStatus === 'paid').reduce((sum, b) => sum + b.totalPrice, 0)}
-              </p>
-            </div>
-            <div className="bg-white rounded-lg shadow p-4">
-              <p className="text-xs text-gray-500">Your Commission</p>
-              <p className="text-xl font-bold text-green-600">
-                ৳{bookings.filter((b) => b.paymentStatus === 'paid').reduce((sum, b) => sum + (b.commissionAmount || 0), 0)}
-              </p>
-            </div>
-            <div className="bg-white rounded-lg shadow p-4">
-              <p className="text-xs text-gray-500">Owed to Companies</p>
-              <p className="text-xl font-bold text-gray-900">
-                ৳{bookings.filter((b) => b.paymentStatus === 'paid').reduce((sum, b) => sum + (b.companyPayout || 0), 0)}
-              </p>
-            </div>
-          </div>
+      {tab === 'overview' && (() => {
+        const sold = bookings.filter((b) => b.paymentStatus === 'paid' && b.status === 'confirmed')
+        const refunded = bookings.filter((b) => b.status === 'refunded')
+        const totalRevenue = sold.reduce((sum, b) => sum + b.totalPrice, 0)
+        const totalCommission = sold.reduce((sum, b) => sum + (b.commissionAmount || 0), 0)
+        const refundedAmount = refunded.reduce((sum, b) => sum + b.totalPrice, 0)
 
-          <div className="bg-white rounded-lg shadow overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-gray-50 text-left">
-                <tr>
-                  <th className="p-3">Code</th><th className="p-3">Passenger</th><th className="p-3">Route</th>
-                  <th className="p-3">Seats</th><th className="p-3">Total</th><th className="p-3">Commission</th>
-                  <th className="p-3">Payment</th><th className="p-3">Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {bookings.map((b) => (
-                  <tr key={b._id} className="border-t">
-                    <td className="p-3">{b.bookingCode}</td>
-                    <td className="p-3">{b.passengerName}<br /><span className="text-xs text-gray-500">{b.passengerPhone}</span></td>
-                    <td className="p-3">{b.from} → {b.to} ({b.date})</td>
-                    <td className="p-3">{b.seats.join(', ')}</td>
-                    <td className="p-3">৳{b.totalPrice}</td>
-                    <td className="p-3">৳{b.commissionAmount ?? 0}</td>
-                    <td className="p-3">{b.paymentStatus}</td>
-                    <td className="p-3">{b.status}</td>
+        const payoutByCompany: Record<string, { tickets: number; owed: number }> = {}
+        for (const b of sold) {
+          if (!payoutByCompany[b.companyName]) payoutByCompany[b.companyName] = { tickets: 0, owed: 0 }
+          payoutByCompany[b.companyName].tickets += 1
+          payoutByCompany[b.companyName].owed += b.companyPayout || 0
+        }
+
+        return (
+          <div className="space-y-6">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="rounded-lg shadow p-5 text-white" style={{ background: '#14b8a6' }}>
+                <p className="text-xs opacity-90">Tickets Sold</p>
+                <p className="text-3xl font-bold">{sold.length}</p>
+              </div>
+              <div className="rounded-lg shadow p-5 text-white" style={{ background: '#3b82f6' }}>
+                <p className="text-xs opacity-90">Total Revenue</p>
+                <p className="text-3xl font-bold">৳{totalRevenue}</p>
+              </div>
+              <div className="rounded-lg shadow p-5 text-white" style={{ background: '#22c55e' }}>
+                <p className="text-xs opacity-90">Your Commission</p>
+                <p className="text-3xl font-bold">৳{totalCommission}</p>
+              </div>
+              <div className="rounded-lg shadow p-5 text-white" style={{ background: '#ef4444' }}>
+                <p className="text-xs opacity-90">Refunded Tickets</p>
+                <p className="text-3xl font-bold">{refunded.length}</p>
+                <p className="text-xs opacity-90 mt-1">৳{refundedAmount} refunded</p>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-lg shadow p-6">
+              <h3 className="font-bold mb-4">Amount You Owe Each Bus Company</h3>
+              {Object.keys(payoutByCompany).length === 0 ? (
+                <p className="text-sm text-gray-500">No paid tickets yet.</p>
+              ) : (
+                <div className="space-y-2">
+                  {Object.entries(payoutByCompany).map(([company, data]) => (
+                    <div key={company} className="flex justify-between items-center border-b last:border-0 py-2">
+                      <div>
+                        <p className="font-medium">{company}</p>
+                        <p className="text-xs text-gray-500">{data.tickets} ticket(s) sold</p>
+                      </div>
+                      <p className="text-lg font-bold text-gray-900">৳{data.owed}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="bg-white rounded-lg shadow overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="bg-gray-50 text-left">
+                  <tr>
+                    <th className="p-3">Route</th><th className="p-3">Date / Time</th><th className="p-3">Company</th>
+                    <th className="p-3">Price</th><th className="p-3">You Owe</th><th className="p-3">Payment</th>
+                    <th className="p-3">Status</th><th className="p-3">Action</th>
                   </tr>
-                ))}
-                {bookings.length === 0 && (
-                  <tr><td className="p-4 text-gray-500" colSpan={8}>No bookings yet.</td></tr>
-                )}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {bookings.map((b) => (
+                    <tr key={b._id} className="border-t">
+                      <td className="p-3">{b.from} → {b.to}</td>
+                      <td className="p-3">{b.date} {b.departureTime}</td>
+                      <td className="p-3">{b.companyName}</td>
+                      <td className="p-3">৳{b.totalPrice}</td>
+                      <td className="p-3">৳{b.companyPayout ?? 0}</td>
+                      <td className="p-3">{b.paymentStatus}</td>
+                      <td className="p-3">
+                        <span className={
+                          b.status === 'refunded' ? 'text-red-600' :
+                          b.status === 'confirmed' ? 'text-green-600' :
+                          b.status === 'expired' ? 'text-gray-400' : 'text-orange-500'
+                        }>
+                          {b.status}
+                        </span>
+                      </td>
+                      <td className="p-3">
+                        {b.paymentStatus === 'paid' && b.status === 'confirmed' && (
+                          <button onClick={() => handleRefund(b._id)} className="text-red-600 hover:underline">Refund</button>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                  {bookings.length === 0 && (
+                    <tr><td className="p-4 text-gray-500" colSpan={8}>No bookings yet.</td></tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
-        </div>
-      )}
+        )
+      })()}
 
       {tab === 'companies' && (
         <div className="bg-white rounded-lg shadow overflow-x-auto">

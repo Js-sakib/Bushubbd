@@ -25,6 +25,7 @@ const REASON_LABELS: Record<string, string> = {
   unpaid: 'Payment was never completed for this ticket',
   expired: 'This ticket has expired (24-hour window passed)',
   cancelled: 'This ticket was cancelled',
+  refunded: 'This ticket was refunded and is no longer valid',
 }
 
 export default function VerifyTicket() {
