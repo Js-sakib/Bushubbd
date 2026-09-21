@@ -170,16 +170,16 @@ function BookingContent() {
         <div className="mt-5 flex flex-col gap-4">
           <div className="flex items-center gap-4 rounded-[14px] border border-[#1f2729] bg-[#12181a] px-3.5 py-2.5">
             <span className="inline-flex items-center gap-2 text-[11.5px] font-semibold text-[#c4cdcf]">
-              <span className="h-3.5 w-3.5 rounded border border-[#38444a] bg-[#1c2426]" />
-              Free
+              <span className="h-3.5 w-3.5 rounded border border-[#2a6b52] bg-[#12372c]" />
+              Available
             </span>
             <span className="inline-flex items-center gap-2 text-[11.5px] font-semibold text-[#c4cdcf]">
               <span className="h-3.5 w-3.5 rounded bg-gradient-to-br from-[#f2661d] to-[#f5a524]" />
               Yours
             </span>
             <span className="inline-flex items-center gap-2 text-[11.5px] font-semibold text-[#c4cdcf]">
-              <span className="h-3.5 w-3.5 rounded border border-dashed border-[#4a585c] bg-[#262e31]" />
-              Taken
+              <span className="h-3.5 w-3.5 rounded border border-dashed border-[#7a3230] bg-[#3a1a1a]" />
+              Booked
             </span>
           </div>
 
@@ -210,10 +210,10 @@ function BookingContent() {
                         onClick={() => toggleSeat(seat)}
                         className={`h-9 min-w-0 grow basis-0 rounded-[9px] text-[11.5px] font-bold transition ${
                           isBooked
-                            ? 'cursor-not-allowed border border-dashed border-[#4a585c] bg-[#262e31] text-[#737f82]'
+                            ? 'cursor-not-allowed border border-dashed border-[#7a3230] bg-[#3a1a1a] text-[#d98a86]'
                             : isSelected
                             ? 'border border-[#f5a524] bg-gradient-to-br from-[#f2661d] to-[#f5a524] text-[#170b02]'
-                            : 'border border-[#38444a] bg-[#1c2426] text-[#d6dee0] hover:border-[#f5a524]'
+                            : 'border border-[#2a6b52] bg-[#12372c] text-[#7de3b8] hover:border-[#34d399] hover:bg-[#16452f]'
                         }`}
                       >
                         {seat}
@@ -232,10 +232,10 @@ function BookingContent() {
                         onClick={() => toggleSeat(seat)}
                         className={`h-9 min-w-0 grow basis-0 rounded-[9px] text-[11.5px] font-bold transition ${
                           isBooked
-                            ? 'cursor-not-allowed border border-dashed border-[#4a585c] bg-[#262e31] text-[#737f82]'
+                            ? 'cursor-not-allowed border border-dashed border-[#7a3230] bg-[#3a1a1a] text-[#d98a86]'
                             : isSelected
                             ? 'border border-[#f5a524] bg-gradient-to-br from-[#f2661d] to-[#f5a524] text-[#170b02]'
-                            : 'border border-[#38444a] bg-[#1c2426] text-[#d6dee0] hover:border-[#f5a524]'
+                            : 'border border-[#2a6b52] bg-[#12372c] text-[#7de3b8] hover:border-[#34d399] hover:bg-[#16452f]'
                         }`}
                       >
                         {seat}

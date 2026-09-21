@@ -460,8 +460,8 @@ export default function AdminDashboard() {
                         onClick={() => handleToggleSeat(bus, seatLabel)}
                         className={`h-9 rounded-lg text-[11.5px] font-bold transition ${
                           isBooked
-                            ? 'bg-[#f87171] text-[#1a0808] hover:bg-[#ef5b5b]'
-                            : 'border border-[#38444a] bg-[#1c2426] text-[#d6dee0] hover:border-[#34d399]'
+                            ? 'border border-dashed border-[#7a3230] bg-[#3a1a1a] text-[#d98a86] hover:bg-[#4a2020]'
+                            : 'border border-[#2a6b52] bg-[#12372c] text-[#7de3b8] hover:bg-[#16452f]'
                         }`}
                       >
                         {seatLabel}
@@ -471,11 +471,11 @@ export default function AdminDashboard() {
                 </div>
                 <div className="flex gap-4 text-[12.5px] text-[#c4cdcf]">
                   <span className="inline-flex items-center gap-2">
-                    <span className="h-3.5 w-3.5 rounded border border-[#38444a] bg-[#1c2426]" />
+                    <span className="h-3.5 w-3.5 rounded border border-[#2a6b52] bg-[#12372c]" />
                     Available
                   </span>
                   <span className="inline-flex items-center gap-2">
-                    <span className="h-3.5 w-3.5 rounded bg-[#f87171]" />
+                    <span className="h-3.5 w-3.5 rounded border border-dashed border-[#7a3230] bg-[#3a1a1a]" />
                     Sold / booked
                   </span>
                 </div>
