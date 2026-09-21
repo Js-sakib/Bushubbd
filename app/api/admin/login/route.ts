@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { signAdminToken } from '@/lib/auth'
 
+export const dynamic = 'force-dynamic'
+
 export async function POST(req: NextRequest) {
   const { email, password } = await req.json()
 

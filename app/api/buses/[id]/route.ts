@@ -4,6 +4,10 @@ import { connectToDatabase } from '@/lib/db'
 import { getCompanyFromCookies, getAdminFromCookies } from '@/lib/auth'
 import { releaseExpiredHolds } from '@/lib/seatHold'
 
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+export const fetchCache = 'force-no-store'
+
 export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
   try {
     if (!ObjectId.isValid(params.id)) {
@@ -15,7 +19,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
     if (!bus) {
       return NextResponse.json({ error: 'Bus not found' }, { status: 404 })
     }
-    return NextResponse.json({ bus })
+    return NextResponse.json({ bus }, { headers: { 'Cache-Control': 'no-store, max-age=0, must-revalidate' } })
   } catch (err) {
     console.error(err)
     return NextResponse.json({ error: 'Failed to fetch bus' }, { status: 500 })

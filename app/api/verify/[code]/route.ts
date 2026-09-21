@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { connectToDatabase } from '@/lib/db'
 import { isExpired } from '@/lib/tickets'
 
+export const dynamic = 'force-dynamic'
+
 export async function GET(req: NextRequest, { params }: { params: { code: string } }) {
   try {
     const { db } = await connectToDatabase()

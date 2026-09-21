@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { connectToDatabase } from '@/lib/db'
 import { getAdminFromCookies } from '@/lib/auth'
 
+export const dynamic = 'force-dynamic'
+
 export async function GET() {
   const admin = getAdminFromCookies()
   if (!admin) {

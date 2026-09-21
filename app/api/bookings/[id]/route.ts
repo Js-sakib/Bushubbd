@@ -5,6 +5,8 @@ import { isExpired, getVerifyUrl } from '@/lib/tickets'
 import { releaseExpiredHolds } from '@/lib/seatHold'
 import { sendWhatsAppMessage } from '@/lib/whatsapp'
 
+export const dynamic = 'force-dynamic'
+
 export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
   try {
     const { db } = await connectToDatabase()

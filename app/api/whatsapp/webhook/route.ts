@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { connectToDatabase } from '@/lib/db'
 import { sendWhatsAppMessage } from '@/lib/whatsapp'
 
+export const dynamic = 'force-dynamic'
+
 const CITIES = ['Dhaka', 'Chittagong', 'Sylhet', 'Rajshahi', 'Khulna', "Cox's Bazar", 'Barishal', 'Rangpur']
 
 function getBaseUrl() {

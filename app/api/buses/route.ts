@@ -4,6 +4,10 @@ import { getCompanyFromCookies, getAdminFromCookies } from '@/lib/auth'
 import { Bus } from '@/lib/models'
 import { DEFAULT_COMMISSION_RATE } from '@/lib/tickets'
 
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+export const fetchCache = 'force-no-store'
+
 export async function GET(req: NextRequest) {
   try {
     const { db } = await connectToDatabase()
@@ -20,7 +24,7 @@ export async function GET(req: NextRequest) {
     if (companyId) query.companyId = companyId
 
     const buses = await db.collection('buses').find(query).sort({ departureTime: 1 }).toArray()
-    return NextResponse.json({ buses })
+    return NextResponse.json({ buses }, { headers: { 'Cache-Control': 'no-store, max-age=0, must-revalidate' } })
   } catch (err) {
     console.error(err)
     return NextResponse.json({ error: 'Failed to fetch buses' }, { status: 500 })

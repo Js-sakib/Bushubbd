@@ -3,6 +3,8 @@ import bcrypt from 'bcryptjs'
 import { connectToDatabase } from '@/lib/db'
 import { signCompanyToken } from '@/lib/auth'
 
+export const dynamic = 'force-dynamic'
+
 export async function POST(req: NextRequest) {
   try {
     const { email, password } = await req.json()

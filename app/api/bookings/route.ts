@@ -14,6 +14,10 @@ import { releaseExpiredHolds } from '@/lib/seatHold'
 import { getCompanyFromCookies, getAdminFromCookies } from '@/lib/auth'
 import { Booking } from '@/lib/models'
 
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+export const fetchCache = 'force-no-store'
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
@@ -110,7 +114,7 @@ export async function GET(req: NextRequest) {
       query = { busId: { $in: busIds } }
     }
     const bookings = await db.collection('bookings').find(query).sort({ createdAt: -1 }).limit(200).toArray()
-    return NextResponse.json({ bookings })
+    return NextResponse.json({ bookings }, { headers: { 'Cache-Control': 'no-store, max-age=0, must-revalidate' } })
   } catch (err) {
     console.error(err)
     return NextResponse.json({ error: 'Failed to fetch bookings' }, { status: 500 })

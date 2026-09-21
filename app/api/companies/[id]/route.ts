@@ -3,6 +3,8 @@ import { ObjectId } from 'mongodb'
 import { connectToDatabase } from '@/lib/db'
 import { getAdminFromCookies } from '@/lib/auth'
 
+export const dynamic = 'force-dynamic'
+
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
   const admin = getAdminFromCookies()
   if (!admin) {
