@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import toast from 'react-hot-toast'
+import { adminPath } from '@/lib/panelNav'
 
 export default function AdminLogin() {
   const router = useRouter()
@@ -25,7 +26,7 @@ export default function AdminLogin() {
         return
       }
       toast.success('Welcome back!')
-      router.push('/admin')
+      router.push(adminPath('/admin'))
     } finally {
       setLoading(false)
     }

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { companyPath } from '@/lib/panelNav'
 import toast from 'react-hot-toast'
 
 interface Bus {
@@ -54,7 +55,7 @@ export default function CompanyDashboard() {
       .then((res) => res.json())
       .then((data) => {
         if (data.role !== 'company') {
-          router.push('/company/login')
+          router.push(companyPath('/company/login'))
         } else {
           setCompanyEmail(data.email)
           setChecking(false)
@@ -70,7 +71,7 @@ export default function CompanyDashboard() {
 
   const handleLogout = async () => {
     await fetch('/api/company/login', { method: 'DELETE' })
-    router.push('/company/login')
+    router.push(companyPath('/company/login'))
   }
 
   const handleAddBus = async (e: React.FormEvent) => {

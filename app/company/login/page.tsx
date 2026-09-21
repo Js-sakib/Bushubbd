@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import toast from 'react-hot-toast'
+import { companyPath } from '@/lib/panelNav'
 
 export default function CompanyLogin() {
   const router = useRouter()
@@ -25,7 +26,7 @@ export default function CompanyLogin() {
         return
       }
       toast.success('Welcome back!')
-      router.push('/company')
+      router.push(companyPath('/company'))
     } finally {
       setLoading(false)
     }
@@ -43,7 +44,10 @@ export default function CompanyLogin() {
           </button>
         </form>
         <p className="text-sm text-center mt-4 text-gray-500">
-          New operator? <a href="/company/register" className="text-blue-600 hover:underline">Register here</a>
+          New operator?{' '}
+          <button onClick={() => router.push(companyPath('/company/register'))} className="text-blue-600 hover:underline">
+            Register here
+          </button>
         </p>
       </div>
     </div>

@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import toast from 'react-hot-toast'
+import { companyPath } from '@/lib/panelNav'
 
 export default function CompanyRegister() {
   const router = useRouter()
@@ -24,7 +25,7 @@ export default function CompanyRegister() {
         return
       }
       toast.success(data.message || 'Registered! Await approval.')
-      router.push('/company/login')
+      router.push(companyPath('/company/login'))
     } finally {
       setLoading(false)
     }
@@ -46,7 +47,10 @@ export default function CompanyRegister() {
           </button>
         </form>
         <p className="text-sm text-center mt-4 text-gray-500">
-          Already registered? <a href="/company/login" className="text-blue-600 hover:underline">Log in</a>
+          Already registered?{' '}
+          <button onClick={() => router.push(companyPath('/company/login'))} className="text-blue-600 hover:underline">
+            Log in
+          </button>
         </p>
       </div>
     </div>

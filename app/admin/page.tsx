@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import toast from 'react-hot-toast'
+import { adminPath } from '@/lib/panelNav'
 
 interface Bus {
   _id: string
@@ -65,7 +66,7 @@ export default function AdminDashboard() {
       .then((res) => res.json())
       .then((data) => {
         if (data.role !== 'admin') {
-          router.push('/admin/login')
+          router.push(adminPath('/admin/login'))
         } else {
           setChecking(false)
           loadAll()
@@ -81,7 +82,7 @@ export default function AdminDashboard() {
 
   const handleLogout = async () => {
     await fetch('/api/admin/login', { method: 'DELETE' })
-    router.push('/admin/login')
+    router.push(adminPath('/admin/login'))
   }
 
   const handleAddBus = async (e: React.FormEvent) => {
