@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { connectToDatabase } from '@/lib/db'
 import { getCompanyFromCookies, getAdminFromCookies } from '@/lib/auth'
 import { Bus } from '@/lib/models'
+import { DEFAULT_COMMISSION_RATE } from '@/lib/tickets'
 
 export async function GET(req: NextRequest) {
   try {
@@ -35,7 +36,7 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json()
-    const { busName, busType, from, to, date, departureTime, arrivalTime, price, totalSeats, companyName } = body
+    const { busName, busType, from, to, date, departureTime, arrivalTime, price, totalSeats, companyName, commissionRate } = body
 
     if (!busName || !from || !to || !date || !departureTime || !price || !totalSeats) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
@@ -54,6 +55,8 @@ export async function POST(req: NextRequest) {
       price: Number(price),
       totalSeats: Number(totalSeats),
       bookedSeats: [],
+      // Only the platform admin can set a custom commission rate; companies always get the default
+      commissionRate: admin && commissionRate ? Number(commissionRate) : DEFAULT_COMMISSION_RATE,
       status: 'active',
       createdAt: new Date().toISOString(),
     }

@@ -12,6 +12,7 @@ export interface Bus {
   price: number
   totalSeats: number
   bookedSeats: string[]
+  commissionRate: number
   status: 'active' | 'cancelled'
   createdAt: string
 }
@@ -28,16 +29,20 @@ export interface Booking {
   departureTime: string
   seats: string[]
   totalPrice: number
+  commissionRate: number
+  commissionAmount: number
+  companyPayout: number
   passengerName: string
   passengerPhone: string
   passengerEmail?: string
   paymentStatus: 'pending' | 'paid'
   paymentMethod?: 'bkash' | 'nagad' | 'card'
-  status: 'confirmed' | 'expired' | 'cancelled'
+  status: 'pending' | 'confirmed' | 'expired' | 'cancelled'
   qrCode: string
   source: 'web' | 'whatsapp'
   createdAt: string
   validUntil: string
+  holdExpiresAt: string
   checkedIn: boolean
   checkedInAt?: string
 }

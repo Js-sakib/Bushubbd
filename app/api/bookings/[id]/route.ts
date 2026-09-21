@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { ObjectId } from 'mongodb'
 import { connectToDatabase } from '@/lib/db'
 import { isExpired, getVerifyUrl } from '@/lib/tickets'
+import { releaseExpiredHolds } from '@/lib/seatHold'
 import { sendWhatsAppMessage } from '@/lib/whatsapp'
 
 export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
@@ -16,7 +17,10 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
       return NextResponse.json({ error: 'Booking not found' }, { status: 404 })
     }
 
-    if (booking.status === 'confirmed' && isExpired(booking.validUntil)) {
+    if (booking.status === 'pending' && booking.holdExpiresAt && isExpired(booking.holdExpiresAt)) {
+      await releaseExpiredHolds(db, booking.busId)
+      booking.status = 'expired'
+    } else if (booking.status === 'confirmed' && isExpired(booking.validUntil)) {
       await db.collection('bookings').updateOne({ _id: booking._id }, { $set: { status: 'expired' } })
       booking.status = 'expired'
     }
@@ -42,7 +46,24 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
       : { bookingCode: params.id }
 
     const before = await db.collection('bookings').findOne(query)
-    await db.collection('bookings').updateOne(query, { $set: { paymentStatus, paymentMethod } })
+    if (!before) {
+      return NextResponse.json({ error: 'Booking not found' }, { status: 404 })
+    }
+
+    if (paymentStatus === 'paid') {
+      if (before.status === 'expired' || (before.holdExpiresAt && isExpired(before.holdExpiresAt) && before.status === 'pending')) {
+        await releaseExpiredHolds(db, before.busId)
+        return NextResponse.json(
+          { error: 'This booking hold has expired. Please search and select seats again.' },
+          { status: 410 }
+        )
+      }
+    }
+
+    const update: Record<string, any> = { paymentStatus, paymentMethod }
+    if (paymentStatus === 'paid') update.status = 'confirmed'
+
+    await db.collection('bookings').updateOne(query, { $set: update })
     const booking = await db.collection('bookings').findOne(query)
 
     if (booking && before?.paymentStatus !== 'paid' && paymentStatus === 'paid') {

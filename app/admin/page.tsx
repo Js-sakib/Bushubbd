@@ -29,6 +29,8 @@ interface Booking {
   date: string
   seats: string[]
   totalPrice: number
+  commissionAmount: number
+  companyPayout: number
   passengerName: string
   passengerPhone: string
   paymentStatus: string
@@ -58,7 +60,7 @@ export default function AdminDashboard() {
 
   const [form, setForm] = useState({
     busName: '', busType: 'AC', companyName: 'BusHub', from: '', to: '',
-    date: '', departureTime: '', arrivalTime: '', price: '', totalSeats: '40',
+    date: '', departureTime: '', arrivalTime: '', price: '', totalSeats: '40', commissionRate: '10',
   })
 
   useEffect(() => {
@@ -90,7 +92,12 @@ export default function AdminDashboard() {
     const res = await fetch('/api/buses', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...form, price: Number(form.price), totalSeats: Number(form.totalSeats) }),
+      body: JSON.stringify({
+        ...form,
+        price: Number(form.price),
+        totalSeats: Number(form.totalSeats),
+        commissionRate: Number(form.commissionRate),
+      }),
     })
     const data = await res.json()
     if (!res.ok) {
@@ -164,6 +171,7 @@ export default function AdminDashboard() {
               <input type="time" placeholder="Arrival" value={form.arrivalTime} onChange={(e) => setForm({ ...form, arrivalTime: e.target.value })} className="border rounded-lg px-3 py-2" />
               <input required type="number" placeholder="Price (৳)" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} className="border rounded-lg px-3 py-2" />
               <input required type="number" placeholder="Total Seats" value={form.totalSeats} onChange={(e) => setForm({ ...form, totalSeats: e.target.value })} className="border rounded-lg px-3 py-2" />
+              <input required type="number" placeholder="Commission %" value={form.commissionRate} onChange={(e) => setForm({ ...form, commissionRate: e.target.value })} className="border rounded-lg px-3 py-2" />
               <button type="submit" className="md:col-span-3 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg">Add Bus</button>
             </form>
           </div>
@@ -197,31 +205,56 @@ export default function AdminDashboard() {
       )}
 
       {tab === 'bookings' && (
-        <div className="bg-white rounded-lg shadow overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead className="bg-gray-50 text-left">
-              <tr>
-                <th className="p-3">Code</th><th className="p-3">Passenger</th><th className="p-3">Route</th>
-                <th className="p-3">Seats</th><th className="p-3">Total</th><th className="p-3">Payment</th><th className="p-3">Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {bookings.map((b) => (
-                <tr key={b._id} className="border-t">
-                  <td className="p-3">{b.bookingCode}</td>
-                  <td className="p-3">{b.passengerName}<br /><span className="text-xs text-gray-500">{b.passengerPhone}</span></td>
-                  <td className="p-3">{b.from} → {b.to} ({b.date})</td>
-                  <td className="p-3">{b.seats.join(', ')}</td>
-                  <td className="p-3">৳{b.totalPrice}</td>
-                  <td className="p-3">{b.paymentStatus}</td>
-                  <td className="p-3">{b.status}</td>
+        <div className="space-y-4">
+          <div className="grid grid-cols-3 gap-4">
+            <div className="bg-white rounded-lg shadow p-4">
+              <p className="text-xs text-gray-500">Total Revenue (paid)</p>
+              <p className="text-xl font-bold text-gray-900">
+                ৳{bookings.filter((b) => b.paymentStatus === 'paid').reduce((sum, b) => sum + b.totalPrice, 0)}
+              </p>
+            </div>
+            <div className="bg-white rounded-lg shadow p-4">
+              <p className="text-xs text-gray-500">Your Commission</p>
+              <p className="text-xl font-bold text-green-600">
+                ৳{bookings.filter((b) => b.paymentStatus === 'paid').reduce((sum, b) => sum + (b.commissionAmount || 0), 0)}
+              </p>
+            </div>
+            <div className="bg-white rounded-lg shadow p-4">
+              <p className="text-xs text-gray-500">Owed to Companies</p>
+              <p className="text-xl font-bold text-gray-900">
+                ৳{bookings.filter((b) => b.paymentStatus === 'paid').reduce((sum, b) => sum + (b.companyPayout || 0), 0)}
+              </p>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg shadow overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-gray-50 text-left">
+                <tr>
+                  <th className="p-3">Code</th><th className="p-3">Passenger</th><th className="p-3">Route</th>
+                  <th className="p-3">Seats</th><th className="p-3">Total</th><th className="p-3">Commission</th>
+                  <th className="p-3">Payment</th><th className="p-3">Status</th>
                 </tr>
-              ))}
-              {bookings.length === 0 && (
-                <tr><td className="p-4 text-gray-500" colSpan={7}>No bookings yet.</td></tr>
-              )}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {bookings.map((b) => (
+                  <tr key={b._id} className="border-t">
+                    <td className="p-3">{b.bookingCode}</td>
+                    <td className="p-3">{b.passengerName}<br /><span className="text-xs text-gray-500">{b.passengerPhone}</span></td>
+                    <td className="p-3">{b.from} → {b.to} ({b.date})</td>
+                    <td className="p-3">{b.seats.join(', ')}</td>
+                    <td className="p-3">৳{b.totalPrice}</td>
+                    <td className="p-3">৳{b.commissionAmount ?? 0}</td>
+                    <td className="p-3">{b.paymentStatus}</td>
+                    <td className="p-3">{b.status}</td>
+                  </tr>
+                ))}
+                {bookings.length === 0 && (
+                  <tr><td className="p-4 text-gray-500" colSpan={8}>No bookings yet.</td></tr>
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 

@@ -1,7 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { ObjectId } from 'mongodb'
 import { connectToDatabase } from '@/lib/db'
-import { generateBookingCode, calculateExpiry, generateTicketQRCode, getVerifyUrl } from '@/lib/tickets'
+import {
+  generateBookingCode,
+  calculateExpiry,
+  calculateHoldExpiry,
+  calculateCommission,
+  DEFAULT_COMMISSION_RATE,
+  generateTicketQRCode,
+  getVerifyUrl,
+} from '@/lib/tickets'
+import { releaseExpiredHolds } from '@/lib/seatHold'
 import { getCompanyFromCookies, getAdminFromCookies } from '@/lib/auth'
 import { Booking } from '@/lib/models'
 
@@ -18,6 +27,8 @@ export async function POST(req: NextRequest) {
     }
 
     const { db } = await connectToDatabase()
+    await releaseExpiredHolds(db, busId)
+
     const bus = await db.collection('buses').findOne({ _id: new ObjectId(busId) })
     if (!bus || bus.status !== 'active') {
       return NextResponse.json({ error: 'Bus not available' }, { status: 404 })
@@ -29,11 +40,23 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: `Seat ${conflict} is already booked` }, { status: 409 })
     }
 
+    // Atomically reserve the seats so two customers can't grab the same seat at once
+    const reserveResult = await db.collection('buses').updateOne(
+      { _id: new ObjectId(busId), bookedSeats: { $nin: seats } },
+      { $push: { bookedSeats: { $each: seats } } } as any
+    )
+    if (reserveResult.modifiedCount === 0) {
+      return NextResponse.json({ error: 'One or more seats were just taken by someone else' }, { status: 409 })
+    }
+
     const bookingCode = generateBookingCode()
     const validUntil = calculateExpiry(24)
+    const holdExpiresAt = calculateHoldExpiry(10)
     const verifyUrl = getVerifyUrl(bookingCode)
     const qrCode = await generateTicketQRCode(verifyUrl)
     const totalPrice = seats.length * bus.price
+    const commissionRate = bus.commissionRate ?? DEFAULT_COMMISSION_RATE
+    const { commissionAmount, companyPayout } = calculateCommission(totalPrice, commissionRate)
 
     const booking: Booking = {
       bookingCode,
@@ -46,23 +69,23 @@ export async function POST(req: NextRequest) {
       departureTime: bus.departureTime,
       seats,
       totalPrice,
+      commissionRate,
+      commissionAmount,
+      companyPayout,
       passengerName,
       passengerPhone,
       passengerEmail,
       paymentStatus: 'pending',
-      status: 'confirmed',
+      status: 'pending',
       qrCode,
       source: source === 'whatsapp' ? 'whatsapp' : 'web',
       createdAt: new Date().toISOString(),
       validUntil,
+      holdExpiresAt,
       checkedIn: false,
     }
 
     const result = await db.collection('bookings').insertOne(booking as any)
-    await db.collection('buses').updateOne(
-      { _id: new ObjectId(busId) },
-      { $push: { bookedSeats: { $each: seats } } } as any
-    )
 
     return NextResponse.json({ booking: { ...booking, _id: result.insertedId } }, { status: 201 })
   } catch (err) {

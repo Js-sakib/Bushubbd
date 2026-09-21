@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { ObjectId } from 'mongodb'
 import { connectToDatabase } from '@/lib/db'
 import { getCompanyFromCookies, getAdminFromCookies } from '@/lib/auth'
+import { releaseExpiredHolds } from '@/lib/seatHold'
 
 export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
   try {
@@ -9,6 +10,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
       return NextResponse.json({ error: 'Invalid bus id' }, { status: 400 })
     }
     const { db } = await connectToDatabase()
+    await releaseExpiredHolds(db, params.id)
     const bus = await db.collection('buses').findOne({ _id: new ObjectId(params.id) })
     if (!bus) {
       return NextResponse.json({ error: 'Bus not found' }, { status: 404 })
@@ -32,7 +34,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     }
 
     const body = await req.json()
-    const allowedFields = ['busName', 'busType', 'from', 'to', 'date', 'departureTime', 'arrivalTime', 'price', 'totalSeats', 'status']
+    const allowedFields = ['busName', 'busType', 'from', 'to', 'date', 'departureTime', 'arrivalTime', 'price', 'totalSeats', 'status', 'commissionRate']
     const update: Record<string, any> = {}
     for (const key of allowedFields) {
       if (body[key] !== undefined) update[key] = body[key]

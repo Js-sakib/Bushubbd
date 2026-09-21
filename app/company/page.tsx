@@ -28,6 +28,7 @@ interface Booking {
   date: string
   seats: string[]
   totalPrice: number
+  companyPayout: number
   passengerName: string
   passengerPhone: string
   paymentStatus: string
@@ -186,30 +187,40 @@ export default function CompanyDashboard() {
       )}
 
       {tab === 'bookings' && (
-        <div className="bg-white rounded-lg shadow overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead className="bg-gray-50 text-left">
-              <tr>
-                <th className="p-3">Code</th><th className="p-3">Passenger</th><th className="p-3">Route</th>
-                <th className="p-3">Seats</th><th className="p-3">Total</th><th className="p-3">Payment</th>
-              </tr>
-            </thead>
-            <tbody>
-              {bookings.map((b) => (
-                <tr key={b._id} className="border-t">
-                  <td className="p-3">{b.bookingCode}</td>
-                  <td className="p-3">{b.passengerName}<br /><span className="text-xs text-gray-500">{b.passengerPhone}</span></td>
-                  <td className="p-3">{b.from} → {b.to} ({b.date})</td>
-                  <td className="p-3">{b.seats.join(', ')}</td>
-                  <td className="p-3">৳{b.totalPrice}</td>
-                  <td className="p-3">{b.paymentStatus}</td>
+        <div className="space-y-4">
+          <div className="bg-white rounded-lg shadow p-4 max-w-xs">
+            <p className="text-xs text-gray-500">Your Total Payout (paid bookings)</p>
+            <p className="text-xl font-bold text-green-600">
+              ৳{bookings.filter((b) => b.paymentStatus === 'paid').reduce((sum, b) => sum + (b.companyPayout || 0), 0)}
+            </p>
+          </div>
+
+          <div className="bg-white rounded-lg shadow overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-gray-50 text-left">
+                <tr>
+                  <th className="p-3">Code</th><th className="p-3">Passenger</th><th className="p-3">Route</th>
+                  <th className="p-3">Seats</th><th className="p-3">Ticket Total</th><th className="p-3">Your Payout</th><th className="p-3">Payment</th>
                 </tr>
-              ))}
-              {bookings.length === 0 && (
-                <tr><td className="p-4 text-gray-500" colSpan={6}>No bookings yet.</td></tr>
-              )}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {bookings.map((b) => (
+                  <tr key={b._id} className="border-t">
+                    <td className="p-3">{b.bookingCode}</td>
+                    <td className="p-3">{b.passengerName}<br /><span className="text-xs text-gray-500">{b.passengerPhone}</span></td>
+                    <td className="p-3">{b.from} → {b.to} ({b.date})</td>
+                    <td className="p-3">{b.seats.join(', ')}</td>
+                    <td className="p-3">৳{b.totalPrice}</td>
+                    <td className="p-3 font-medium text-green-700">৳{b.companyPayout ?? b.totalPrice}</td>
+                    <td className="p-3">{b.paymentStatus}</td>
+                  </tr>
+                ))}
+                {bookings.length === 0 && (
+                  <tr><td className="p-4 text-gray-500" colSpan={7}>No bookings yet.</td></tr>
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
     </div>

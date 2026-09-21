@@ -177,6 +177,7 @@ function BookingContent() {
                 <span>Booked</span>
               </div>
             </div>
+            <p className="text-xs text-gray-500 mt-4">⏱️ Selected seats are held for you for 10 minutes while you complete payment.</p>
           </div>
 
           <div className="flex justify-between items-center bg-gray-100 p-4 rounded-lg">

@@ -16,6 +16,17 @@ export function isExpired(validUntil: string): boolean {
   return new Date(validUntil).getTime() < Date.now()
 }
 
+export function calculateHoldExpiry(minutesFromNow = 10): string {
+  return new Date(Date.now() + minutesFromNow * 60 * 1000).toISOString()
+}
+
+export const DEFAULT_COMMISSION_RATE = 10
+
+export function calculateCommission(totalPrice: number, commissionRate: number) {
+  const commissionAmount = Math.round(totalPrice * (commissionRate / 100))
+  return { commissionAmount, companyPayout: totalPrice - commissionAmount }
+}
+
 export async function generateTicketQRCode(verifyUrl: string): Promise<string> {
   return QRCode.toDataURL(verifyUrl, { width: 240, margin: 1 })
 }
