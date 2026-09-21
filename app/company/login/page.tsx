@@ -25,7 +25,7 @@ export default function CompanyLogin() {
         toast.error(data.error || 'Login failed')
         return
       }
-      toast.success('Welcome back!')
+      toast.success('Welcome back')
       router.push(companyPath('/company'))
     } finally {
       setLoading(false)
@@ -33,19 +33,38 @@ export default function CompanyLogin() {
   }
 
   return (
-    <div className="max-w-md mx-auto mt-16">
-      <div className="bg-white rounded-lg shadow-2xl p-8">
-        <h1 className="text-2xl font-bold text-gray-900 mb-6 text-center">🚌 Company Login</h1>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <input required type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full px-4 py-3 border border-gray-300 rounded-lg" />
-          <input required type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full px-4 py-3 border border-gray-300 rounded-lg" />
-          <button type="submit" disabled={loading} className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-bold py-3 rounded-lg">
-            {loading ? 'Signing in...' : 'Sign In'}
+    <div className="mx-auto mt-12 max-w-sm">
+      <div className="card-2 flex flex-col gap-5 p-7">
+        <div className="flex flex-col items-center gap-3 text-center">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo.png" alt="" className="h-12 w-12 object-contain" />
+          <div>
+            <h1 className="display text-xl font-bold">Operator login</h1>
+            <p className="mt-1 text-[12.5px] text-[#8e9a9d]">Manage your buses and bookings</p>
+          </div>
+        </div>
+
+        <form onSubmit={handleSubmit} className="flex flex-col gap-3.5">
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor="email" className="label-xs">
+              Email
+            </label>
+            <input id="email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className="input-dark" />
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor="password" className="label-xs">
+              Password
+            </label>
+            <input id="password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} className="input-dark" />
+          </div>
+          <button type="submit" disabled={loading} className="glass-btn w-full">
+            {loading ? 'Signing in...' : 'Sign in'}
           </button>
         </form>
-        <p className="text-sm text-center mt-4 text-gray-500">
+
+        <p className="text-center text-[12.5px] text-[#8e9a9d]">
           New operator?{' '}
-          <button onClick={() => router.push(companyPath('/company/register'))} className="text-blue-600 hover:underline">
+          <button type="button" onClick={() => router.push(companyPath('/company/register'))} className="font-semibold text-[#f5a524] hover:underline">
             Register here
           </button>
         </p>

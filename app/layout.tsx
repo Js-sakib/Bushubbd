@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { Toaster } from 'react-hot-toast'
+import SiteChrome from './SiteChrome'
 import './globals.css'
 
 export const metadata: Metadata = {
@@ -10,29 +11,22 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body className="bg-gray-50">
-        <nav className="bg-white shadow-sm border-b">
-          <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-            <a href="/" className="flex items-center gap-2 text-2xl font-bold text-blue-600">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/logo.png" alt="BusHub" className="h-9 w-9" />
-              BusHub
-            </a>
-            <div className="flex items-center gap-4 text-sm">
-              <span className="text-gray-500">24/7 Support</span>
-            </div>
-          </div>
-        </nav>
-        
-        <main className="max-w-7xl mx-auto px-4 py-8">
-          {children}
-        </main>
-
-        <footer className="bg-gray-900 text-white mt-16 py-8 text-center">
-          <p>© 2024 BusHub Bangladesh</p>
-        </footer>
-
-        <Toaster position="top-center" />
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap"
+        />
+      </head>
+      <body>
+        <SiteChrome>{children}</SiteChrome>
+        <Toaster
+          position="top-center"
+          toastOptions={{
+            style: { background: '#151b1d', color: '#f6f4ef', border: '1px solid #2a3437' },
+          }}
+        />
       </body>
     </html>
   )

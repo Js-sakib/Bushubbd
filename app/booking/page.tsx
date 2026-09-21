@@ -3,6 +3,7 @@
 import { Suspense, useEffect, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import toast from 'react-hot-toast'
+import { generateSeatLabels } from '@/lib/seats'
 
 interface Bus {
   _id: string
@@ -32,7 +33,10 @@ function BookingContent() {
   const [passenger, setPassenger] = useState({ name: '', phone: '', email: '' })
 
   useEffect(() => {
-    if (!busId) return
+    if (!busId) {
+      setLoading(false)
+      return
+    }
     fetch(`/api/buses/${busId}`)
       .then((res) => res.json())
       .then((data) => {
@@ -90,212 +94,300 @@ function BookingContent() {
       }
 
       const bookingId = data.booking._id
-      await fetch(`/api/bookings/${bookingId}`, {
+      const payRes = await fetch(`/api/bookings/${bookingId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ paymentStatus: 'paid', paymentMethod }),
       })
+      if (!payRes.ok) {
+        const payData = await payRes.json()
+        toast.error(payData.error || 'Payment could not be confirmed')
+        setSubmitting(false)
+        return
+      }
 
-      toast.success('Booking confirmed!')
+      toast.success('Booking confirmed')
       router.push(`/confirmation?bookingId=${bookingId}`)
-    } catch (err) {
+    } catch {
       toast.error('Something went wrong, please try again')
       setSubmitting(false)
     }
   }
 
   if (loading) {
-    return <div className="text-center py-16 text-gray-500">Loading bus details...</div>
+    return <div className="py-16 text-center text-sm text-[#8e9a9d]">Loading bus details...</div>
   }
 
   if (!bus) {
     return (
-      <div className="text-center py-16">
-        <p className="text-gray-600 mb-4">Bus not found.</p>
-        <button onClick={() => router.push('/')} className="text-blue-600 hover:underline">
-          ← Back to Search
+      <div className="flex flex-col items-center gap-4 py-16 text-center">
+        <p className="text-sm text-[#9ba7aa]">Bus not found.</p>
+        <button type="button" onClick={() => router.push('/')} className="glass-btn glass-btn-plain h-11 text-sm">
+          Back to search
         </button>
       </div>
     )
   }
 
-  const seatLabels = Array.from({ length: bus.totalSeats }, (_, i) => `${Math.floor(i / 4) + 1}${String.fromCharCode(65 + (i % 4))}`)
+  const seatLabels = generateSeatLabels(bus.totalSeats)
+  const rows: string[][] = []
+  for (let i = 0; i < seatLabels.length; i += 4) {
+    rows.push(seatLabels.slice(i, i + 4))
+  }
 
   return (
-    <div className="max-w-4xl mx-auto">
-      <div className="bg-white rounded-lg shadow p-4 mb-6">
-        <h1 className="font-bold text-lg text-gray-900">{bus.busName} · {bus.companyName}</h1>
-        <p className="text-sm text-gray-600">{bus.from} → {bus.to} · {bus.date} · {bus.departureTime}</p>
+    <div className="px-5 pb-8 pt-5">
+      <div className="flex items-center gap-3">
+        <button
+          type="button"
+          onClick={() => (step === 'seats' ? router.back() : setStep(step === 'payment' ? 'details' : 'seats'))}
+          aria-label="Go back"
+          className="icon-btn"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round" className="h-[18px] w-[18px]">
+            <path d="M19 12H6" />
+            <path d="m11.5 5.5-6 6.5 6 6.5" />
+          </svg>
+        </button>
+        <div className="flex grow flex-col gap-0.5">
+          <span className="display text-[17px] font-bold">{bus.busName}</span>
+          <span className="text-xs text-[#8e9a9d]">
+            {bus.from} → {bus.to} · {bus.departureTime} · {bus.date}
+          </span>
+        </div>
       </div>
 
-      <div className="flex justify-between mb-8 gap-2">
-        <div className={`flex-1 ${step === 'seats' ? 'bg-blue-600' : 'bg-gray-300'} h-2 rounded`}></div>
-        <div className={`flex-1 ${step === 'details' ? 'bg-blue-600' : 'bg-gray-300'} h-2 rounded`}></div>
-        <div className={`flex-1 ${step === 'payment' ? 'bg-blue-600' : 'bg-gray-300'} h-2 rounded`}></div>
+      <div className="mt-4 flex gap-2">
+        {(['seats', 'details', 'payment'] as const).map((s) => (
+          <span
+            key={s}
+            className={`h-1.5 grow rounded-full ${step === s ? 'bg-[#f2661d]' : 'bg-[#242d30]'}`}
+          />
+        ))}
       </div>
 
       {step === 'seats' && (
-        <div>
-          <h2 className="text-2xl font-bold mb-6">Select Your Seats</h2>
-
-          <div className="bg-white rounded-lg shadow p-6 mb-6">
-            <div className="grid grid-cols-4 gap-2 max-w-md mb-4">
-              {seatLabels.map((seatLabel) => {
-                const isSelected = selectedSeats.includes(seatLabel)
-                const isBooked = bus.bookedSeats?.includes(seatLabel)
-
-                return (
-                  <button
-                    key={seatLabel}
-                    onClick={() => !isBooked && toggleSeat(seatLabel)}
-                    disabled={isBooked}
-                    className={`p-2 rounded text-xs font-bold transition ${
-                      isBooked
-                        ? 'bg-gray-300 cursor-not-allowed'
-                        : isSelected
-                        ? 'bg-green-500 text-white'
-                        : 'bg-blue-100 hover:bg-blue-200'
-                    }`}
-                  >
-                    {seatLabel}
-                  </button>
-                )
-              })}
-            </div>
-
-            <div className="flex gap-4 text-sm">
-              <div className="flex items-center gap-2">
-                <div className="w-4 h-4 bg-blue-100"></div>
-                <span>Available</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-4 h-4 bg-green-500"></div>
-                <span>Selected</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-4 h-4 bg-gray-300"></div>
-                <span>Booked</span>
-              </div>
-            </div>
-            <p className="text-xs text-gray-500 mt-4">⏱️ Selected seats are held for you for 10 minutes while you complete payment.</p>
+        <div className="mt-5 flex flex-col gap-4">
+          <div className="flex items-center gap-4 rounded-[14px] border border-[#1f2729] bg-[#12181a] px-3.5 py-2.5">
+            <span className="inline-flex items-center gap-2 text-[11.5px] font-semibold text-[#c4cdcf]">
+              <span className="h-3.5 w-3.5 rounded border border-[#38444a] bg-[#1c2426]" />
+              Free
+            </span>
+            <span className="inline-flex items-center gap-2 text-[11.5px] font-semibold text-[#c4cdcf]">
+              <span className="h-3.5 w-3.5 rounded bg-gradient-to-br from-[#f2661d] to-[#f5a524]" />
+              Yours
+            </span>
+            <span className="inline-flex items-center gap-2 text-[11.5px] font-semibold text-[#c4cdcf]">
+              <span className="h-3.5 w-3.5 rounded border border-dashed border-[#4a585c] bg-[#262e31]" />
+              Taken
+            </span>
           </div>
 
-          <div className="flex justify-between items-center bg-gray-100 p-4 rounded-lg">
-            <div>
-              <p className="text-gray-600">Selected: {selectedSeats.length} seats</p>
-              <p className="text-3xl font-bold text-blue-600">৳{totalPrice}</p>
+          <div className="rounded-[22px] border border-[#202a2d] bg-[#10171a] p-4">
+            <div className="flex items-center justify-between border-b border-dashed border-[#263033] pb-3">
+              <span className="label-xs">Deck</span>
+              <span className="inline-flex items-center gap-1.5 text-[11.5px] font-semibold text-[#8e9a9d]">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-[15px] w-[15px]">
+                  <circle cx="12" cy="12" r="7.5" />
+                  <path d="M12 4.5v3M12 16.5v3M4.5 12h3M16.5 12h3" />
+                </svg>
+                Driver
+              </span>
             </div>
-            <button
-              onClick={handleConfirmSeats}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-bold"
-            >
+
+            <div className="mt-4 flex flex-col gap-2.5">
+              {rows.map((row, rowIndex) => (
+                <div key={rowIndex} className="flex items-center gap-2.5">
+                  <span className="w-4 shrink-0 text-[11px] font-bold text-[#6e7b7e]">{rowIndex + 1}</span>
+                  {row.slice(0, 2).map((seat) => {
+                    const isBooked = bus.bookedSeats?.includes(seat)
+                    const isSelected = selectedSeats.includes(seat)
+                    return (
+                      <button
+                        key={seat}
+                        type="button"
+                        disabled={isBooked}
+                        onClick={() => toggleSeat(seat)}
+                        className={`h-9 min-w-0 grow basis-0 rounded-[9px] text-[11.5px] font-bold transition ${
+                          isBooked
+                            ? 'cursor-not-allowed border border-dashed border-[#4a585c] bg-[#262e31] text-[#737f82]'
+                            : isSelected
+                            ? 'border border-[#f5a524] bg-gradient-to-br from-[#f2661d] to-[#f5a524] text-[#170b02]'
+                            : 'border border-[#38444a] bg-[#1c2426] text-[#d6dee0] hover:border-[#f5a524]'
+                        }`}
+                      >
+                        {seat}
+                      </button>
+                    )
+                  })}
+                  <span className="w-5 shrink-0" />
+                  {row.slice(2, 4).map((seat) => {
+                    const isBooked = bus.bookedSeats?.includes(seat)
+                    const isSelected = selectedSeats.includes(seat)
+                    return (
+                      <button
+                        key={seat}
+                        type="button"
+                        disabled={isBooked}
+                        onClick={() => toggleSeat(seat)}
+                        className={`h-9 min-w-0 grow basis-0 rounded-[9px] text-[11.5px] font-bold transition ${
+                          isBooked
+                            ? 'cursor-not-allowed border border-dashed border-[#4a585c] bg-[#262e31] text-[#737f82]'
+                            : isSelected
+                            ? 'border border-[#f5a524] bg-gradient-to-br from-[#f2661d] to-[#f5a524] text-[#170b02]'
+                            : 'border border-[#38444a] bg-[#1c2426] text-[#d6dee0] hover:border-[#f5a524]'
+                        }`}
+                      >
+                        {seat}
+                      </button>
+                    )
+                  })}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-3 rounded-[18px] border border-[#232c2f] bg-[#151b1d] p-4">
+            <div className="flex items-center justify-between">
+              <span className="text-[12.5px] text-[#8e9a9d]">
+                {selectedSeats.length} seat{selectedSeats.length === 1 ? '' : 's'}
+                {selectedSeats.length > 0 ? ` · ${selectedSeats.join(', ')}` : ''}
+              </span>
+              <span className="display text-[22px] font-bold text-[#f5a524]">৳{totalPrice}</span>
+            </div>
+            <button type="button" onClick={handleConfirmSeats} className="glass-btn w-full">
+              <span className="icon-disc">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+                  <path d="M5 12h13" />
+                  <path d="m12.5 5.5 6.5 6.5-6.5 6.5" />
+                </svg>
+              </span>
               Continue
             </button>
+            <span className="text-center text-[11.5px] text-[#78868a]">
+              Seats are held for 10 minutes while you pay.
+            </span>
           </div>
         </div>
       )}
 
       {step === 'details' && (
-        <div>
-          <h2 className="text-2xl font-bold mb-6">Passenger Details</h2>
-          <p className="text-sm text-gray-500 mb-4">No account needed — just enter your contact details.</p>
+        <div className="mt-5 flex flex-col gap-4">
+          <div>
+            <h2 className="text-xl font-bold">Passenger details</h2>
+            <p className="mt-1 text-[12.5px] text-[#9ba7aa]">No account needed — just your contact details.</p>
+          </div>
 
-          <div className="bg-white rounded-lg shadow p-6 space-y-4">
-            <div>
-              <label className="block text-sm font-medium mb-2">Full Name</label>
+          <div className="flex flex-col gap-3.5 rounded-[18px] border border-[#232c2f] bg-[#151b1d] p-4">
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="name" className="label-xs">
+                Full name
+              </label>
               <input
+                id="name"
                 type="text"
                 value={passenger.name}
                 onChange={(e) => setPassenger({ ...passenger, name: e.target.value })}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="input-dark"
                 placeholder="Your full name"
               />
             </div>
-            <div>
-              <label className="block text-sm font-medium mb-2">Phone Number (WhatsApp)</label>
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="phone" className="label-xs">
+                Phone (WhatsApp)
+              </label>
               <input
+                id="phone"
                 type="tel"
                 value={passenger.phone}
                 onChange={(e) => setPassenger({ ...passenger, phone: e.target.value })}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="e.g. 8801XXXXXXXXX"
+                className="input-dark"
+                placeholder="8801XXXXXXXXX"
               />
             </div>
-            <div>
-              <label className="block text-sm font-medium mb-2">Email (optional)</label>
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="email" className="label-xs">
+                Email (optional)
+              </label>
               <input
+                id="email"
                 type="email"
                 value={passenger.email}
                 onChange={(e) => setPassenger({ ...passenger, email: e.target.value })}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="input-dark"
                 placeholder="you@example.com"
               />
             </div>
-
-            <div className="flex justify-between items-center pt-2">
-              <button onClick={() => setStep('seats')} className="text-gray-600 hover:underline">
-                ← Back
-              </button>
-              <button
-                onClick={handleConfirmDetails}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-bold"
-              >
-                Continue to Payment
-              </button>
-            </div>
+            <button type="button" onClick={handleConfirmDetails} className="glass-btn w-full">
+              <span className="icon-disc">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+                  <path d="M5 12h13" />
+                  <path d="m12.5 5.5 6.5 6.5-6.5 6.5" />
+                </svg>
+              </span>
+              Continue to payment
+            </button>
           </div>
         </div>
       )}
 
       {step === 'payment' && (
-        <div>
-          <h2 className="text-2xl font-bold mb-6">Payment</h2>
+        <div className="mt-5 flex flex-col gap-4">
+          <h2 className="text-xl font-bold">Payment</h2>
 
-          <div className="bg-white rounded-lg shadow p-6 space-y-6">
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-              <p className="text-gray-600 mb-2">Total Amount</p>
-              <p className="text-4xl font-bold text-blue-600">৳{totalPrice}</p>
-              <p className="text-sm text-gray-500 mt-2">Seats: {selectedSeats.join(', ')}</p>
+          <div className="flex flex-col gap-4 rounded-[18px] border border-[#232c2f] bg-[#151b1d] p-4">
+            <div className="rounded-2xl border border-[#2a3437] bg-[#0f1517] p-4">
+              <p className="text-[12.5px] text-[#8e9a9d]">Total amount</p>
+              <p className="display mt-1 text-[32px] font-bold leading-none text-[#f5a524]">৳{totalPrice}</p>
+              <p className="mt-2 text-xs text-[#8e9a9d]">Seats: {selectedSeats.join(', ')}</p>
             </div>
 
-            <div className="space-y-3">
+            <div className="flex flex-col gap-2.5">
               <label
-                className={`flex items-center p-4 border-2 rounded-lg cursor-pointer ${paymentMethod === 'bkash' ? 'border-pink-500 bg-pink-50' : 'border-gray-300'}`}
+                className={`flex cursor-pointer items-center gap-3 rounded-2xl border p-3.5 ${
+                  paymentMethod === 'bkash' ? 'border-[#f2661d] bg-[#f2661d]/10' : 'border-[#2a3437] bg-[#0f1517]'
+                }`}
               >
                 <input
                   type="radio"
+                  name="payment"
                   checked={paymentMethod === 'bkash'}
                   onChange={() => setPaymentMethod('bkash')}
-                  className="w-4 h-4"
+                  className="h-4 w-4 accent-[#f2661d]"
                 />
-                <span className="ml-3">
-                  <span className="font-bold text-pink-600">bKash</span>
-                  <p className="text-sm text-gray-600">Instant payment</p>
+                <span className="flex flex-col">
+                  <span className="text-sm font-bold">bKash</span>
+                  <span className="text-xs text-[#8e9a9d]">Instant payment</span>
                 </span>
               </label>
 
               <label
-                className={`flex items-center p-4 border-2 rounded-lg cursor-pointer ${paymentMethod === 'nagad' ? 'border-orange-500 bg-orange-50' : 'border-gray-300'}`}
+                className={`flex cursor-pointer items-center gap-3 rounded-2xl border p-3.5 ${
+                  paymentMethod === 'nagad' ? 'border-[#f2661d] bg-[#f2661d]/10' : 'border-[#2a3437] bg-[#0f1517]'
+                }`}
               >
                 <input
                   type="radio"
+                  name="payment"
                   checked={paymentMethod === 'nagad'}
                   onChange={() => setPaymentMethod('nagad')}
-                  className="w-4 h-4"
+                  className="h-4 w-4 accent-[#f2661d]"
                 />
-                <span className="ml-3">
-                  <span className="font-bold">Nagad</span>
-                  <p className="text-sm text-gray-600">Instant payment</p>
+                <span className="flex flex-col">
+                  <span className="text-sm font-bold">Nagad</span>
+                  <span className="text-xs text-[#8e9a9d]">Instant payment</span>
                 </span>
               </label>
             </div>
 
-            <button
-              onClick={handlePayment}
-              disabled={submitting}
-              className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-bold py-4 rounded-lg transition text-lg"
-            >
-              {submitting ? 'Processing...' : `Pay ৳${totalPrice} Now`}
+            <button type="button" onClick={handlePayment} disabled={submitting} className="glass-btn w-full">
+              <span className="icon-disc">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+                  <rect x="2.5" y="6" width="19" height="13" rx="3" />
+                  <path d="M2.5 10.5h19" />
+                </svg>
+              </span>
+              {submitting ? 'Processing...' : `Pay ৳${totalPrice}`}
             </button>
           </div>
         </div>
@@ -306,7 +398,7 @@ function BookingContent() {
 
 export default function BookingPage() {
   return (
-    <Suspense fallback={<div className="flex justify-center items-center h-screen"><span>Loading...</span></div>}>
+    <Suspense fallback={<div className="py-16 text-center text-sm text-[#8e9a9d]">Loading...</div>}>
       <BookingContent />
     </Suspense>
   )

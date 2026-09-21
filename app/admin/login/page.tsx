@@ -25,7 +25,7 @@ export default function AdminLogin() {
         toast.error(data.error || 'Login failed')
         return
       }
-      toast.success('Welcome back!')
+      toast.success('Welcome back')
       router.push(adminPath('/admin'))
     } finally {
       setLoading(false)
@@ -33,36 +33,38 @@ export default function AdminLogin() {
   }
 
   return (
-    <div className="max-w-md mx-auto mt-16">
-      <div className="bg-white rounded-lg shadow-2xl p-8">
-        <h1 className="text-2xl font-bold text-gray-900 mb-6 text-center">🔑 Admin Login</h1>
-        <form onSubmit={handleSubmit} className="space-y-4">
+    <div className="mx-auto mt-12 max-w-sm">
+      <div className="card-2 flex flex-col gap-5 p-7">
+        <div className="flex flex-col items-center gap-3 text-center">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo.png" alt="" className="h-12 w-12 object-contain" />
           <div>
-            <label className="block text-sm font-medium mb-2">Email</label>
-            <input
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
+            <h1 className="display text-xl font-bold">Admin login</h1>
+            <p className="mt-1 text-[12.5px] text-[#8e9a9d]">BusHub control panel</p>
           </div>
-          <div>
-            <label className="block text-sm font-medium mb-2">Password</label>
-            <input
-              type="password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
+        </div>
+
+        <form onSubmit={handleSubmit} className="flex flex-col gap-3.5">
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor="email" className="label-xs">
+              Email
+            </label>
+            <input id="email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className="input-dark" />
           </div>
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-bold py-3 rounded-lg transition"
-          >
-            {loading ? 'Signing in...' : 'Sign In'}
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor="password" className="label-xs">
+              Password
+            </label>
+            <input id="password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} className="input-dark" />
+          </div>
+          <button type="submit" disabled={loading} className="glass-btn w-full">
+            <span className="icon-disc">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+                <rect x="4" y="10.5" width="16" height="10" rx="2.5" />
+                <path d="M8 10.5V7.5a4 4 0 0 1 8 0v3" />
+              </svg>
+            </span>
+            {loading ? 'Signing in...' : 'Sign in'}
           </button>
         </form>
       </div>

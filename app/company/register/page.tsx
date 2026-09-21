@@ -24,7 +24,7 @@ export default function CompanyRegister() {
         toast.error(data.error || 'Registration failed')
         return
       }
-      toast.success(data.message || 'Registered! Await approval.')
+      toast.success(data.message || 'Registered. Await approval.')
       router.push(companyPath('/company/login'))
     } finally {
       setLoading(false)
@@ -32,23 +32,33 @@ export default function CompanyRegister() {
   }
 
   return (
-    <div className="max-w-md mx-auto mt-8">
-      <div className="bg-white rounded-lg shadow-2xl p-8">
-        <h1 className="text-2xl font-bold text-gray-900 mb-2 text-center">🚌 Register Your Bus Company</h1>
-        <p className="text-sm text-gray-500 mb-6 text-center">An admin will review and approve your account before you can log in.</p>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <input required placeholder="Company Name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="w-full px-4 py-3 border border-gray-300 rounded-lg" />
-          <input required placeholder="Owner Name" value={form.ownerName} onChange={(e) => setForm({ ...form, ownerName: e.target.value })} className="w-full px-4 py-3 border border-gray-300 rounded-lg" />
-          <input required type="email" placeholder="Email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className="w-full px-4 py-3 border border-gray-300 rounded-lg" />
-          <input required placeholder="Phone Number" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} className="w-full px-4 py-3 border border-gray-300 rounded-lg" />
-          <input required type="password" placeholder="Password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} className="w-full px-4 py-3 border border-gray-300 rounded-lg" />
-          <button type="submit" disabled={loading} className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-bold py-3 rounded-lg">
+    <div className="mx-auto mt-8 max-w-sm">
+      <div className="card-2 flex flex-col gap-5 p-7">
+        <div className="flex flex-col items-center gap-3 text-center">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo.png" alt="" className="h-12 w-12 object-contain" />
+          <div>
+            <h1 className="display text-xl font-bold">Register your bus company</h1>
+            <p className="mt-1 text-[12.5px] leading-snug text-[#8e9a9d]">
+              An admin reviews and approves your account before you can log in.
+            </p>
+          </div>
+        </div>
+
+        <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+          <input required placeholder="Company name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="input-dark" />
+          <input required placeholder="Owner name" value={form.ownerName} onChange={(e) => setForm({ ...form, ownerName: e.target.value })} className="input-dark" />
+          <input required type="email" placeholder="Email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className="input-dark" />
+          <input required placeholder="Phone number" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} className="input-dark" />
+          <input required type="password" placeholder="Password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} className="input-dark" />
+          <button type="submit" disabled={loading} className="glass-btn w-full">
             {loading ? 'Submitting...' : 'Register'}
           </button>
         </form>
-        <p className="text-sm text-center mt-4 text-gray-500">
+
+        <p className="text-center text-[12.5px] text-[#8e9a9d]">
           Already registered?{' '}
-          <button onClick={() => router.push(companyPath('/company/login'))} className="text-blue-600 hover:underline">
+          <button type="button" onClick={() => router.push(companyPath('/company/login'))} className="font-semibold text-[#f5a524] hover:underline">
             Log in
           </button>
         </p>

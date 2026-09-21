@@ -4,145 +4,226 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import toast from 'react-hot-toast'
 
+const CITIES = ['Dhaka', 'Chittagong', 'Sylhet', 'Rajshahi', 'Khulna', "Cox's Bazar", 'Barishal', 'Rangpur']
+
+const POPULAR_ROUTES = [
+  { from: 'Dhaka', to: 'Sylhet' },
+  { from: 'Dhaka', to: "Cox's Bazar" },
+  { from: 'Dhaka', to: 'Chittagong' },
+  { from: 'Dhaka', to: 'Rajshahi' },
+]
+
 export default function Home() {
   const router = useRouter()
-  const [formData, setFormData] = useState({
-    from: '',
-    to: '',
-    date: '',
-    passengers: '1',
-  })
+  const today = new Date().toISOString().split('T')[0]
+  const [formData, setFormData] = useState({ from: '', to: '', date: today, passengers: '1' })
 
-  const cities = [
-    'Dhaka', 'Chittagong', 'Sylhet', 'Rajshahi', 
-    'Khulna', "Cox's Bazar", 'Barishal', 'Rangpur'
-  ]
-
-  const handleChange = (e: any) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    })
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value })
   }
 
-  const handleSearch = (e: any) => {
+  const handleSwap = () => {
+    setFormData({ ...formData, from: formData.to, to: formData.from })
+  }
+
+  const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     if (!formData.from || !formData.to || !formData.date) {
       toast.error('Please fill all fields')
       return
     }
-    
     if (formData.from === formData.to) {
       toast.error('From and To cities must be different')
       return
     }
 
-    const params = new URLSearchParams({
-      from: formData.from,
-      to: formData.to,
-      date: formData.date,
-    })
+    const params = new URLSearchParams({ from: formData.from, to: formData.to, date: formData.date })
     router.push(`/search?${params}`)
   }
 
-  const today = new Date().toISOString().split('T')[0]
+  const goToRoute = (from: string, to: string) => {
+    router.push(`/search?${new URLSearchParams({ from, to, date: formData.date || today })}`)
+  }
 
   return (
-    <div className="min-h-[80vh] bg-gradient-to-br from-blue-500 to-blue-600 text-white">
-      <div className="max-w-4xl mx-auto px-4 py-16">
-        <h1 className="text-5xl font-bold mb-4">Book Bus Tickets Online</h1>
-        <p className="text-xl mb-8 opacity-90">Fast, Secure, Reliable. Travel Anywhere in Bangladesh.</p>
+    <div className="px-5 pb-4 pt-5">
+      <section className="flex flex-col gap-3">
+        <span className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#f5a524]">
+          Online bus tickets · Bangladesh
+        </span>
+        <h1 className="text-[36px] font-bold leading-[1.08] sm:text-5xl">
+          Every seat,
+          <br />
+          one tap away.
+        </h1>
+        <p className="max-w-md text-sm leading-relaxed text-[#9ba7aa]">
+          Live seat availability, payment with bKash or Nagad, and a QR ticket on WhatsApp the moment you pay.
+        </p>
+      </section>
 
-        <div className="bg-white rounded-lg shadow-2xl p-8 text-gray-900">
-          <form onSubmit={handleSearch} className="space-y-4">
-            <div className="grid md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium mb-2">From</label>
-                <select
-                  name="from"
-                  value={formData.from}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="">Select city</option>
-                  {cities.map((city) => (
-                    <option key={city} value={city}>{city}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-2">To</label>
-                <select
-                  name="to"
-                  value={formData.to}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="">Select city</option>
-                  {cities.map((city) => (
-                    <option key={city} value={city}>{city}</option>
-                  ))}
-                </select>
-              </div>
+      <form
+        onSubmit={handleSearch}
+        className="mt-6 flex flex-col gap-3.5 rounded-[22px] border border-[#232c2f] bg-[#151b1d] p-4 shadow-[0_24px_50px_rgba(0,0,0,0.45)] sm:max-w-xl"
+      >
+        <div className="flex items-stretch gap-2.5">
+          <div className="flex grow flex-col gap-2.5">
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="from" className="label-xs">
+                From
+              </label>
+              <select id="from" name="from" value={formData.from} onChange={handleChange} className="input-dark">
+                <option value="">Select city</option>
+                {CITIES.map((city) => (
+                  <option key={city} value={city}>
+                    {city}
+                  </option>
+                ))}
+              </select>
             </div>
-
-            <div className="grid md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium mb-2">Date</label>
-                <input
-                  type="date"
-                  name="date"
-                  value={formData.date}
-                  onChange={handleChange}
-                  min={today}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-2">Passengers</label>
-                <select
-                  name="passengers"
-                  value={formData.passengers}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  {[1, 2, 3, 4, 5, 6].map((num) => (
-                    <option key={num} value={num}>{num}</option>
-                  ))}
-                </select>
-              </div>
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="to" className="label-xs">
+                To
+              </label>
+              <select id="to" name="to" value={formData.to} onChange={handleChange} className="input-dark">
+                <option value="">Select city</option>
+                {CITIES.map((city) => (
+                  <option key={city} value={city}>
+                    {city}
+                  </option>
+                ))}
+              </select>
             </div>
+          </div>
+          <button
+            type="button"
+            onClick={handleSwap}
+            aria-label="Swap origin and destination"
+            className="h-11 w-11 shrink-0 self-center rounded-full border border-[#2e3a3d] bg-[#1c2426] text-[#f5a524] transition hover:border-[#f5a524]"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mx-auto h-[19px] w-[19px]">
+              <path d="M7 4v16" />
+              <path d="M3.5 7.5 7 4l3.5 3.5" />
+              <path d="M17 20V4" />
+              <path d="M13.5 16.5 17 20l3.5-3.5" />
+            </svg>
+          </button>
+        </div>
 
+        <div className="grid grid-cols-2 gap-2.5">
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor="date" className="label-xs">
+              Date
+            </label>
+            <input id="date" name="date" type="date" min={today} value={formData.date} onChange={handleChange} className="input-dark" />
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor="passengers" className="label-xs">
+              Passengers
+            </label>
+            <select id="passengers" name="passengers" value={formData.passengers} onChange={handleChange} className="input-dark">
+              {[1, 2, 3, 4, 5, 6].map((num) => (
+                <option key={num} value={num}>
+                  {num} {num === 1 ? 'passenger' : 'passengers'}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        <button type="submit" className="glass-btn w-full">
+          <span className="icon-disc">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+              <circle cx="11" cy="11" r="7" />
+              <path d="m20 20-3.2-3.2" />
+            </svg>
+          </span>
+          Search buses
+        </button>
+      </form>
+
+      <section className="mt-8 flex flex-col gap-3">
+        <h2 className="text-[17px] font-bold">Popular routes</h2>
+        <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-4">
+          {POPULAR_ROUTES.map((route) => (
             <button
-              type="submit"
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition text-lg"
+              key={`${route.from}-${route.to}`}
+              type="button"
+              onClick={() => goToRoute(route.from, route.to)}
+              className="flex flex-col gap-1.5 rounded-2xl border border-[#222b2e] bg-[#141a1c] p-3.5 text-left transition hover:border-[#f5a524]"
             >
-              🔍 Search Buses
+              <span className="text-sm font-bold">
+                {route.from} → {route.to}
+              </span>
+              <span className="text-xs text-[#9ba7aa]">See today&apos;s buses</span>
             </button>
-          </form>
+          ))}
+        </div>
+      </section>
+
+      <section className="mt-8 flex flex-col gap-3">
+        <h2 className="text-[17px] font-bold">Why book here</h2>
+
+        <div className="flex items-start gap-3.5 rounded-2xl border border-[#222b2e] bg-[#141a1c] p-3.5">
+          <span className="flex h-[38px] w-[38px] shrink-0 items-center justify-center rounded-xl bg-[#2dd4bf]/[0.14] text-[#2dd4bf]">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-[19px] w-[19px]">
+              <path d="M12 3 4 6v6c0 4.4 3.3 8.3 8 9 4.7-.7 8-4.6 8-9V6z" />
+              <path d="m9 12 2 2 4-4" />
+            </svg>
+          </span>
+          <div className="flex flex-col gap-1">
+            <span className="text-sm font-bold">A ticket that can&apos;t be faked</span>
+            <span className="text-[12.5px] leading-relaxed text-[#9ba7aa]">
+              The conductor scans your QR and checks it live against our database. A screenshot won&apos;t pass.
+            </span>
+          </div>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-8 mt-16">
-          <div className="bg-white bg-opacity-20 backdrop-blur p-6 rounded-lg">
-            <div className="text-4xl mb-2">⚡</div>
-            <h3 className="text-xl font-bold mb-2">Instant Booking</h3>
-            <p>Get your ticket in seconds</p>
-          </div>
-          <div className="bg-white bg-opacity-20 backdrop-blur p-6 rounded-lg">
-            <div className="text-4xl mb-2">🛡️</div>
-            <h3 className="text-xl font-bold mb-2">100% Secure</h3>
-            <p>Safe payment with bKash & Nagad</p>
-          </div>
-          <div className="bg-white bg-opacity-20 backdrop-blur p-6 rounded-lg">
-            <div className="text-4xl mb-2">📱</div>
-            <h3 className="text-xl font-bold mb-2">QR Tickets</h3>
-            <p>Digital tickets on WhatsApp instantly</p>
+        <div className="flex items-start gap-3.5 rounded-2xl border border-[#222b2e] bg-[#141a1c] p-3.5">
+          <span className="flex h-[38px] w-[38px] shrink-0 items-center justify-center rounded-xl bg-[#f5a524]/[0.14] text-[#f5a524]">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-[19px] w-[19px]">
+              <circle cx="12" cy="12" r="9" />
+              <path d="M12 7v5l3 2" />
+            </svg>
+          </span>
+          <div className="flex flex-col gap-1">
+            <span className="text-sm font-bold">Seats held for 10 minutes</span>
+            <span className="text-[12.5px] leading-relaxed text-[#9ba7aa]">
+              Your seat is locked while you pay, then released automatically if you change your mind.
+            </span>
           </div>
         </div>
-      </div>
+
+        <div className="flex items-start gap-3.5 rounded-2xl border border-[#222b2e] bg-[#141a1c] p-3.5">
+          <span className="flex h-[38px] w-[38px] shrink-0 items-center justify-center rounded-xl bg-[#f2661d]/[0.16] text-[#f2661d]">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-[19px] w-[19px]">
+              <rect x="2.5" y="6" width="19" height="13" rx="3" />
+              <path d="M2.5 10.5h19" />
+              <path d="M16.5 15.5h2" />
+            </svg>
+          </span>
+          <div className="flex flex-col gap-1">
+            <span className="text-sm font-bold">bKash, Nagad, no account</span>
+            <span className="text-[12.5px] leading-relaxed text-[#9ba7aa]">
+              Pay the way you already pay. You never have to create a BusHub account to book.
+            </span>
+          </div>
+        </div>
+      </section>
+
+      <section className="mt-6 flex items-center gap-3.5 rounded-[20px] border border-[#1e4b4f] bg-gradient-to-br from-[#0e3f43]/90 to-[#141a1c]/90 p-4">
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[14px] bg-[#2dd4bf]/[0.16] text-[#2dd4bf]">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-[22px] w-[22px]">
+            <path d="M21 11.5a8.4 8.4 0 0 1-12.3 7.4L3 20.5l1.7-5.5A8.4 8.4 0 1 1 21 11.5z" />
+          </svg>
+        </span>
+        <div className="flex grow flex-col gap-1">
+          <span className="text-sm font-bold">Book on WhatsApp</span>
+          <span className="text-[12.5px] leading-snug text-[#a9bbbc]">
+            Say &ldquo;hi&rdquo; to our bot and it finds your bus in seconds.
+          </span>
+        </div>
+      </section>
     </div>
   )
 }

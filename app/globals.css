@@ -2,6 +2,24 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --bg: #0b0e0f;
+  --surface: #141a1c;
+  --surface-2: #12181a;
+  --surface-3: #151b1d;
+  --line: #222b2e;
+  --line-soft: #1f2729;
+  --field: #0f1517;
+  --field-line: #2a3437;
+  --gold: #f5a524;
+  --orange: #f2661d;
+  --teal: #2dd4bf;
+  --teal-deep: #0e3f43;
+  --ink: #f6f4ef;
+  --muted: #9ba7aa;
+  --muted-2: #78868a;
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -13,5 +31,182 @@ html {
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: 'Manrope', system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, .display {
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  letter-spacing: -0.01em;
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+}
+
+.card-2 {
+  background: var(--surface-2);
+  border: 1px solid var(--line-soft);
+  border-radius: 18px;
+}
+
+/* Frosted pill button, from the design system */
+.glass-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  height: 54px;
+  padding: 0 22px;
+  border-radius: 999px;
+  color: var(--ink);
+  font-size: 15px;
+  font-weight: 700;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.04));
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 14px 30px rgba(242, 102, 29, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.22);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  cursor: pointer;
+}
+
+.glass-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 18px 36px rgba(242, 102, 29, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.28);
+}
+
+.glass-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.glass-btn-teal {
+  box-shadow: 0 14px 30px rgba(45, 212, 191, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.22);
+}
+
+.glass-btn-teal:hover:not(:disabled) {
+  box-shadow: 0 18px 36px rgba(45, 212, 191, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.28);
+}
+
+.glass-btn-plain {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow: none;
+}
+
+.glass-btn-plain:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow: none;
+}
+
+.icon-disc {
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #f2661d, #f5a524);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #160b02;
+}
+
+.icon-disc-teal {
+  background: linear-gradient(135deg, #2dd4bf, #17a398);
+  color: #04211f;
+}
+
+.input-dark {
+  width: 100%;
+  height: 48px;
+  border-radius: 13px;
+  border: 1px solid var(--field-line);
+  background: var(--field);
+  color: var(--ink);
+  font-size: 15px;
+  font-weight: 600;
+  padding: 0 14px;
+}
+
+.input-dark::placeholder {
+  color: #6e7b7e;
+  font-weight: 500;
+}
+
+.input-dark:focus {
+  outline: none;
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px rgba(245, 165, 36, 0.16);
+}
+
+select.input-dark {
+  appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, #8e9a9d 50%), linear-gradient(135deg, #8e9a9d 50%, transparent 50%);
+  background-position: calc(100% - 18px) 21px, calc(100% - 13px) 21px;
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+  padding-right: 34px;
+}
+
+input[type='date']::-webkit-calendar-picker-indicator {
+  filter: invert(0.7);
+  cursor: pointer;
+}
+
+.label-xs {
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #8e9a9d;
+  font-weight: 700;
+}
+
+.chip {
+  height: 34px;
+  padding: 0 15px;
+  border-radius: 999px;
+  border: 1px solid #262f32;
+  background: var(--surface-2);
+  color: #c4cdcf;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.chip-active {
+  border-color: var(--orange);
+  background: rgba(242, 102, 29, 0.15);
+  color: #ffb877;
+  font-weight: 700;
+}
+
+.icon-btn {
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+  border-radius: 12px;
+  border: 1px solid #242d30;
+  background: var(--surface);
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+@media print {
+  body {
+    background: #ffffff;
+    color: #16191a;
+  }
+  .no-print {
+    display: none !important;
+  }
 }
