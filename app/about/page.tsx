@@ -161,8 +161,8 @@ export default function About() {
           <p className="text-[13px] leading-relaxed text-[#9ba7aa]">
             Question about a booking, a refund, or listing your buses? Write to us and we will come back to you.
           </p>
-          <a href="mailto:support@bushubbd.com" className="text-sm font-bold text-[#f5a524] hover:underline">
-            support@bushubbd.com
+          <a href="mailto:info@bushubbd.com" className="text-sm font-bold text-[#f5a524] hover:underline">
+            info@bushubbd.com
           </a>
           <span className="text-[11.5px] text-[#78868a]">BusHubBD · Bangladesh</span>
         </div>
