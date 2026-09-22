@@ -21,7 +21,9 @@ export default function SiteChrome({ children }: { children: React.ReactNode }) 
             <img src="/logo.png" alt="BusHub" className="h-9 w-9 object-contain" />
             <span className="display text-xl font-bold">BusHub</span>
           </a>
-          <span className="text-xs font-semibold text-[#78868a]">24/7 Support</span>
+          <a href="/about" className="text-xs font-semibold text-[#78868a] hover:text-[#f5a524]">
+            About us
+          </a>
         </div>
       </nav>
 
@@ -50,7 +52,7 @@ export default function SiteChrome({ children }: { children: React.ReactNode }) 
             <a href="#refund" className="text-[13px] text-[#b7c1c3] hover:text-[#f5a524]">
               Refund policy
             </a>
-            <a href="#contact" className="text-[13px] text-[#b7c1c3] hover:text-[#f5a524]">
+            <a href="/about#contact" className="text-[13px] text-[#b7c1c3] hover:text-[#f5a524]">
               Contact us
             </a>
             <a href="#terms" className="text-[13px] text-[#b7c1c3] hover:text-[#f5a524]">
@@ -59,7 +61,7 @@ export default function SiteChrome({ children }: { children: React.ReactNode }) 
             <a href="#privacy" className="text-[13px] text-[#b7c1c3] hover:text-[#f5a524]">
               Privacy
             </a>
-            <a href="#about" className="text-[13px] text-[#b7c1c3] hover:text-[#f5a524]">
+            <a href="/about" className="text-[13px] text-[#b7c1c3] hover:text-[#f5a524]">
               About BusHub
             </a>
           </div>
