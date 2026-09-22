@@ -59,6 +59,7 @@ export async function POST(req: NextRequest) {
       price: Number(price),
       totalSeats: Number(totalSeats),
       bookedSeats: [],
+      blockedSeats: [],
       // Only the platform admin can set a custom commission rate; companies always get the default
       commissionRate: admin && commissionRate ? Number(commissionRate) : DEFAULT_COMMISSION_RATE,
       status: 'active',

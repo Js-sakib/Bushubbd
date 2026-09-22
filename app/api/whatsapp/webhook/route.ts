@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { connectToDatabase } from '@/lib/db'
 import { sendWhatsAppMessage } from '@/lib/whatsapp'
 import { isExpired, getVerifyUrl } from '@/lib/tickets'
+import { seatsLeft as calcSeatsLeft } from '@/lib/seats'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -160,7 +161,7 @@ export async function POST(req: NextRequest) {
       } else {
         const list = buses
           .map((b) => {
-            const seatsLeft = b.totalSeats - (b.bookedSeats?.length || 0)
+            const seatsLeft = calcSeatsLeft(b as unknown as { totalSeats: number; bookedSeats?: string[]; blockedSeats?: string[] })
             return `${b.busName} (${b.busType})\n${b.departureTime} · ৳${b.price} · ${seatsLeft} seats left`
           })
           .join('\n\n')

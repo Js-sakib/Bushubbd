@@ -3,6 +3,7 @@
 import { useEffect, useState, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { formatTripDate } from '@/lib/dates'
+import { seatsLeft as calcSeatsLeft } from '@/lib/seats'
 
 interface Bus {
   _id: string
@@ -17,6 +18,7 @@ interface Bus {
   price: number
   totalSeats: number
   bookedSeats: string[]
+  blockedSeats?: string[]
 }
 
 const TYPE_FILTERS = ['All', 'AC', 'Non-AC', 'Sleeper']
@@ -102,7 +104,7 @@ function SearchResults() {
 
       <div className="mt-4 flex flex-col gap-3">
         {visible.map((bus) => {
-          const seatsLeft = bus.totalSeats - (bus.bookedSeats?.length || 0)
+          const seatsLeft = calcSeatsLeft(bus)
           const soldOut = seatsLeft <= 0
           const scarce = seatsLeft > 0 && seatsLeft <= 5
 

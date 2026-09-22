@@ -4,7 +4,8 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import toast from 'react-hot-toast'
 import { companyPath } from '@/lib/panelNav'
-import { generateSeatLabels } from '@/lib/seats'
+import { seatsLeft } from '@/lib/seats'
+import SeatManager from '../SeatManager'
 
 interface Bus {
   _id: string
@@ -17,12 +18,14 @@ interface Bus {
   price: number
   totalSeats: number
   bookedSeats: string[]
+  blockedSeats?: string[]
   status: string
 }
 
 interface Booking {
   _id: string
   bookingCode: string
+  busId: string
   busName: string
   from: string
   to: string
@@ -97,17 +100,6 @@ export default function CompanyDashboard() {
     toast.success('Bus added')
     setForm({ ...form, from: '', to: '', date: '', departureTime: '', arrivalTime: '', price: '' })
     reload()
-  }
-
-  const handleToggleSeat = async (bus: Bus, seatLabel: string) => {
-    const isBooked = bus.bookedSeats?.includes(seatLabel)
-    const res = await fetch(`/api/buses/${bus._id}/seats`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ seats: [seatLabel], action: isBooked ? 'release' : 'book' }),
-    })
-    if (res.ok) reload()
-    else toast.error('Failed to update seat')
   }
 
   const handleDeleteBus = async (id: string) => {
@@ -211,7 +203,7 @@ export default function CompanyDashboard() {
                     <td className="px-3 py-3 text-[12.5px] text-[#a8b3b6]">{b.date} {b.departureTime}</td>
                     <td className="px-3 py-3 text-right text-[13px] font-bold">৳{b.price}</td>
                     <td className="px-3 py-3 text-right text-[13px]">
-                      {b.totalSeats - (b.bookedSeats?.length || 0)}/{b.totalSeats}
+                      {seatsLeft(b)}/{b.totalSeats}
                     </td>
                     <td className="space-x-3 px-5 py-3 text-right">
                       <button
@@ -241,37 +233,7 @@ export default function CompanyDashboard() {
           {manageSeatsBusId && (() => {
             const bus = buses.find((b) => b._id === manageSeatsBusId)
             if (!bus) return null
-            return (
-              <div className="card-2 flex flex-col gap-4 p-5">
-                <div>
-                  <h3 className="display text-[15px] font-bold">
-                    {bus.busName} · {bus.from} → {bus.to} ({bus.date})
-                  </h3>
-                  <p className="mt-1 text-[12.5px] text-[#9ba7aa]">
-                    Tap a seat to mark it sold (counter or phone sale) or release it back to available.
-                  </p>
-                </div>
-                <div className="grid max-w-2xl grid-cols-8 gap-2 sm:grid-cols-12">
-                  {generateSeatLabels(bus.totalSeats).map((seatLabel) => {
-                    const isBooked = bus.bookedSeats?.includes(seatLabel)
-                    return (
-                      <button
-                        key={seatLabel}
-                        type="button"
-                        onClick={() => handleToggleSeat(bus, seatLabel)}
-                        className={`h-9 rounded-lg text-[11.5px] font-bold transition ${
-                          isBooked
-                            ? 'border border-dashed border-[#7a3230] bg-[#3a1a1a] text-[#d98a86] hover:bg-[#4a2020]'
-                            : 'border border-[#2a6b52] bg-[#12372c] text-[#7de3b8] hover:bg-[#16452f]'
-                        }`}
-                      >
-                        {seatLabel}
-                      </button>
-                    )
-                  })}
-                </div>
-              </div>
-            )
+            return <SeatManager bus={bus} bookings={bookings} onChange={reload} />
           })()}
         </div>
       )}

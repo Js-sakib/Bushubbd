@@ -11,6 +11,7 @@ import {
   getVerifyUrl,
 } from '@/lib/tickets'
 import { releaseExpiredHolds } from '@/lib/seatHold'
+import { takenSeats } from '@/lib/seats'
 import { getCompanyFromCookies, getAdminFromCookies } from '@/lib/auth'
 import { Booking } from '@/lib/models'
 
@@ -38,15 +39,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Bus not available' }, { status: 404 })
     }
 
-    const alreadyBooked = (bus.bookedSeats || []) as string[]
-    const conflict = seats.find((s: string) => alreadyBooked.includes(s))
+    const unavailable = takenSeats(bus as { bookedSeats?: string[]; blockedSeats?: string[] })
+    const conflict = seats.find((s: string) => unavailable.includes(s))
     if (conflict) {
-      return NextResponse.json({ error: `Seat ${conflict} is already booked` }, { status: 409 })
+      return NextResponse.json({ error: `Seat ${conflict} is no longer available` }, { status: 409 })
     }
 
     // Atomically reserve the seats so two customers can't grab the same seat at once
     const reserveResult = await db.collection('buses').updateOne(
-      { _id: new ObjectId(busId), bookedSeats: { $nin: seats } },
+      { _id: new ObjectId(busId), bookedSeats: { $nin: seats }, blockedSeats: { $nin: seats } },
       { $push: { bookedSeats: { $each: seats } } } as any
     )
     if (reserveResult.modifiedCount === 0) {

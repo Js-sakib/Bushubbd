@@ -3,7 +3,7 @@
 import { Suspense, useEffect, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import toast from 'react-hot-toast'
-import { generateSeatLabels } from '@/lib/seats'
+import { generateSeatLabels, takenSeats } from '@/lib/seats'
 
 interface Bus {
   _id: string
@@ -17,6 +17,7 @@ interface Bus {
   price: number
   totalSeats: number
   bookedSeats: string[]
+  blockedSeats?: string[]
 }
 
 function BookingContent() {
@@ -130,6 +131,7 @@ function BookingContent() {
   }
 
   const seatLabels = generateSeatLabels(bus.totalSeats)
+  const unavailable = takenSeats(bus)
   const rows: string[][] = []
   for (let i = 0; i < seatLabels.length; i += 4) {
     rows.push(seatLabels.slice(i, i + 4))
@@ -200,7 +202,7 @@ function BookingContent() {
                 <div key={rowIndex} className="flex items-center gap-2.5">
                   <span className="w-4 shrink-0 text-[11px] font-bold text-[#6e7b7e]">{rowIndex + 1}</span>
                   {row.slice(0, 2).map((seat) => {
-                    const isBooked = bus.bookedSeats?.includes(seat)
+                    const isBooked = unavailable.includes(seat)
                     const isSelected = selectedSeats.includes(seat)
                     return (
                       <button
@@ -222,7 +224,7 @@ function BookingContent() {
                   })}
                   <span className="w-5 shrink-0" />
                   {row.slice(2, 4).map((seat) => {
-                    const isBooked = bus.bookedSeats?.includes(seat)
+                    const isBooked = unavailable.includes(seat)
                     const isSelected = selectedSeats.includes(seat)
                     return (
                       <button

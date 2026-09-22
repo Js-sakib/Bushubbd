@@ -11,7 +11,10 @@ export interface Bus {
   arrivalTime: string // HH:MM
   price: number
   totalSeats: number
+  /** Seats taken by a BusHub booking (a live hold or a paid ticket). Never edited by hand. */
   bookedSeats: string[]
+  /** Seats the operator sold at their own counter, or otherwise wants kept off sale. */
+  blockedSeats: string[]
   commissionRate: number
   status: 'active' | 'cancelled'
   createdAt: string
