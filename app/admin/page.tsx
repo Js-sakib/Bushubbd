@@ -70,7 +70,7 @@ export default function AdminDashboard() {
 
   const [form, setForm] = useState({
     busName: '', busType: 'AC', companyName: 'BusHub', from: '', to: '',
-    date: '', departureTime: '', arrivalTime: '', price: '', totalSeats: '40', commissionRate: '10',
+    date: '', departureTime: '', arrivalTime: '', price: '', totalSeats: '40', commissionRate: '10', logoUrl: '',
   })
 
   useEffect(() => {
@@ -376,6 +376,7 @@ export default function AdminDashboard() {
               <input required type="number" placeholder="Price (৳)" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} className="input-dark" />
               <input required type="number" placeholder="Total seats" value={form.totalSeats} onChange={(e) => setForm({ ...form, totalSeats: e.target.value })} className="input-dark" />
               <input required type="number" placeholder="Commission %" value={form.commissionRate} onChange={(e) => setForm({ ...form, commissionRate: e.target.value })} className="input-dark" />
+              <input placeholder="Bus company logo URL (optional)" value={form.logoUrl} onChange={(e) => setForm({ ...form, logoUrl: e.target.value })} className="input-dark sm:col-span-2 lg:col-span-3" />
               <button type="submit" className="glass-btn h-12 sm:col-span-2 lg:col-span-3">
                 Add bus
               </button>

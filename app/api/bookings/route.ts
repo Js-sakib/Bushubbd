@@ -68,6 +68,7 @@ export async function POST(req: NextRequest) {
       busId,
       busName: bus.busName,
       companyName: bus.companyName,
+      logoUrl: bus.logoUrl,
       from: bus.from,
       to: bus.to,
       date: bus.date,

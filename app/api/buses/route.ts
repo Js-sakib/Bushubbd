@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json()
-    const { busName, busType, from, to, date, departureTime, arrivalTime, price, totalSeats, companyName, commissionRate } = body
+    const { busName, busType, from, to, date, departureTime, arrivalTime, price, totalSeats, companyName, commissionRate, logoUrl } = body
 
     if (!busName || !from || !to || !date || !departureTime || !price || !totalSeats) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
@@ -51,6 +51,7 @@ export async function POST(req: NextRequest) {
       companyName: company ? company.email : companyName || 'BusHub',
       busName,
       busType: busType || 'AC',
+      logoUrl: typeof logoUrl === 'string' && logoUrl.trim() ? logoUrl.trim() : undefined,
       from,
       to,
       date,

@@ -4,6 +4,8 @@ export interface Bus {
   companyName: string
   busName: string
   busType: 'AC' | 'Non-AC' | 'Sleeper'
+  /** Operator's own logo, shown in search results and on the ticket. Falls back to a generic bus mark. */
+  logoUrl?: string
   from: string
   to: string
   date: string // YYYY-MM-DD
@@ -26,6 +28,8 @@ export interface Booking {
   busId: string
   busName: string
   companyName: string
+  /** Copied from the bus at booking time so the ticket keeps its logo if the bus is edited later. */
+  logoUrl?: string
   from: string
   to: string
   date: string

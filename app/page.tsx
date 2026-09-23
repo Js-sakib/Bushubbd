@@ -16,10 +16,16 @@ const POPULAR_ROUTES = [
 export default function Home() {
   const router = useRouter()
   const today = new Date().toISOString().split('T')[0]
-  const [formData, setFormData] = useState({ from: '', to: '', date: today, passengers: '1' })
+  const [trip, setTrip] = useState<'oneway' | 'round'>('oneway')
+  const [formData, setFormData] = useState({ from: '', to: '', date: today, returnDate: '', passengers: '1' })
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value })
+    const next = { ...formData, [e.target.name]: e.target.value }
+    // A return date before the outbound date is never valid, so drag it along.
+    if (e.target.name === 'date' && next.returnDate && next.returnDate < e.target.value) {
+      next.returnDate = e.target.value
+    }
+    setFormData(next)
   }
 
   const handleSwap = () => {
@@ -37,13 +43,26 @@ export default function Home() {
       toast.error('From and To cities must be different')
       return
     }
+    if (trip === 'round' && !formData.returnDate) {
+      toast.error('Please choose your return date')
+      return
+    }
 
     const params = new URLSearchParams({ from: formData.from, to: formData.to, date: formData.date })
+    if (trip === 'round') {
+      params.set('trip', 'round')
+      params.set('returnDate', formData.returnDate)
+    }
     router.push(`/search?${params}`)
   }
 
   const goToRoute = (from: string, to: string) => {
-    router.push(`/search?${new URLSearchParams({ from, to, date: formData.date || today })}`)
+    const params = new URLSearchParams({ from, to, date: formData.date || today })
+    if (trip === 'round' && formData.returnDate) {
+      params.set('trip', 'round')
+      params.set('returnDate', formData.returnDate)
+    }
+    router.push(`/search?${params}`)
   }
 
   return (
@@ -66,6 +85,34 @@ export default function Home() {
         onSubmit={handleSearch}
         className="mt-6 flex flex-col gap-3.5 rounded-[22px] border border-[#232c2f] bg-[#151b1d] p-4 shadow-[0_24px_50px_rgba(0,0,0,0.45)] sm:max-w-xl"
       >
+        <div
+          role="radiogroup"
+          aria-label="Trip type"
+          className="flex gap-1 rounded-full border border-[#242d30] bg-[#0f1517] p-1"
+        >
+          {(
+            [
+              { key: 'oneway', label: 'One way' },
+              { key: 'round', label: 'Round trip' },
+            ] as const
+          ).map((option) => (
+            <button
+              key={option.key}
+              type="button"
+              role="radio"
+              aria-checked={trip === option.key}
+              onClick={() => setTrip(option.key)}
+              className={`h-10 grow rounded-full text-[13px] font-bold transition ${
+                trip === option.key
+                  ? 'bg-gradient-to-br from-[#f2661d] to-[#f5a524] text-[#170b02] shadow-[0_6px_16px_rgba(242,102,29,0.32)]'
+                  : 'text-[#9ba7aa] hover:text-[#e8eef0]'
+              }`}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
+
         <div className="flex items-stretch gap-2.5">
           <div className="flex grow flex-col gap-2.5">
             <div className="flex flex-col gap-1.5">
@@ -113,11 +160,27 @@ export default function Home() {
         <div className="grid grid-cols-2 gap-2.5">
           <div className="flex flex-col gap-1.5">
             <label htmlFor="date" className="label-xs">
-              Date
+              {trip === 'round' ? 'Going' : 'Date'}
             </label>
             <input id="date" name="date" type="date" min={today} value={formData.date} onChange={handleChange} className="input-dark" />
           </div>
-          <div className="flex flex-col gap-1.5">
+          {trip === 'round' && (
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="returnDate" className="label-xs">
+                Coming back
+              </label>
+              <input
+                id="returnDate"
+                name="returnDate"
+                type="date"
+                min={formData.date || today}
+                value={formData.returnDate}
+                onChange={handleChange}
+                className="input-dark"
+              />
+            </div>
+          )}
+          <div className={`flex flex-col gap-1.5 ${trip === 'round' ? 'col-span-2' : ''}`}>
             <label htmlFor="passengers" className="label-xs">
               Passengers
             </label>

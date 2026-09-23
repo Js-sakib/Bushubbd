@@ -1,7 +1,24 @@
 import type { Metadata } from 'next'
+import { Manrope, Space_Grotesk } from 'next/font/google'
 import { Toaster } from 'react-hot-toast'
 import SiteChrome from './SiteChrome'
 import './globals.css'
+
+// Self-hosted at build time. Besides being faster than the Google CDN, it keeps the fonts
+// same-origin so the ticket can be rendered to an image with its real typeface.
+const manrope = Manrope({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700', '800'],
+  variable: '--font-body',
+  display: 'swap',
+})
+
+const spaceGrotesk = Space_Grotesk({
+  subsets: ['latin'],
+  weight: ['500', '600', '700'],
+  variable: '--font-display',
+  display: 'swap',
+})
 
 export const metadata: Metadata = {
   title: 'BusHub - Book Bus Tickets Online',
@@ -10,15 +27,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link
-          rel="stylesheet"
-          href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap"
-        />
-      </head>
+    <html lang="en" className={`${manrope.variable} ${spaceGrotesk.variable}`}>
       <body>
         <SiteChrome>{children}</SiteChrome>
         <Toaster

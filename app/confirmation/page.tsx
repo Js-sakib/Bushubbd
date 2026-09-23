@@ -1,24 +1,9 @@
 'use client'
 
-import { Suspense, useEffect, useState } from 'react'
+import { Suspense, useCallback, useEffect, useRef, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
-
-interface Booking {
-  bookingCode: string
-  busName: string
-  companyName: string
-  from: string
-  to: string
-  date: string
-  departureTime: string
-  seats: string[]
-  totalPrice: number
-  passengerName: string
-  paymentStatus: string
-  status: string
-  qrCode: string
-  validUntil: string
-}
+import toast from 'react-hot-toast'
+import Ticket, { TicketBooking } from './Ticket'
 
 function timeLeft(validUntil: string) {
   const ms = new Date(validUntil).getTime() - Date.now()
@@ -28,13 +13,21 @@ function timeLeft(validUntil: string) {
   return `${hours}h ${minutes}m`
 }
 
+/** A 1x1 transparent PNG, used so one unreachable operator logo cannot fail the whole capture. */
+const BLANK_PIXEL =
+  'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII='
+
 function ConfirmationContent() {
   const searchParams = useSearchParams()
   const bookingId = searchParams.get('bookingId')
+  const returnBusId = searchParams.get('returnBusId')
 
-  const [booking, setBooking] = useState<Booking | null>(null)
+  const ticketRef = useRef<HTMLDivElement>(null)
+  const [booking, setBooking] = useState<TicketBooking | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [busy, setBusy] = useState<'download' | 'share' | null>(null)
+  const [canShareFiles, setCanShareFiles] = useState(false)
 
   useEffect(() => {
     if (!bookingId) {
@@ -51,6 +44,71 @@ function ConfirmationContent() {
       .catch(() => setError('Failed to load booking'))
       .finally(() => setLoading(false))
   }, [bookingId])
+
+  useEffect(() => {
+    // Sharing a file is a phone capability; hide the button where it cannot work.
+    try {
+      const probe = new File(['probe'], 'probe.png', { type: 'image/png' })
+      setCanShareFiles(Boolean(navigator.canShare?.({ files: [probe] })))
+    } catch {
+      setCanShareFiles(false)
+    }
+  }, [])
+
+  const renderTicket = useCallback(async (): Promise<Blob | null> => {
+    if (!ticketRef.current) return null
+    const { toBlob } = await import('html-to-image')
+    // No backgroundColor option here: html-to-image writes it onto the ticket's own root node,
+    // which would paint over the white card and leave the dark text unreadable.
+    return toBlob(ticketRef.current, {
+      pixelRatio: 2.5,
+      cacheBust: true,
+      imagePlaceholder: BLANK_PIXEL,
+    })
+  }, [])
+
+  const handleDownload = async () => {
+    if (!booking) return
+    setBusy('download')
+    try {
+      const blob = await renderTicket()
+      if (!blob) throw new Error('empty')
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `BusHub-ticket-${booking.bookingCode}.png`
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+      // Revoking straight away can cancel the download on some mobile browsers.
+      setTimeout(() => URL.revokeObjectURL(url), 30000)
+      toast.success('Ticket saved to your device')
+    } catch {
+      toast.error('Could not save the image — use Print instead')
+    } finally {
+      setBusy(null)
+    }
+  }
+
+  const handleShare = async () => {
+    if (!booking) return
+    setBusy('share')
+    try {
+      const blob = await renderTicket()
+      if (!blob) throw new Error('empty')
+      const file = new File([blob], `BusHub-ticket-${booking.bookingCode}.png`, { type: 'image/png' })
+      await navigator.share({
+        files: [file],
+        title: 'BusHub ticket',
+        text: `${booking.from} → ${booking.to} · ${booking.date} · ${booking.bookingCode}`,
+      })
+    } catch (err) {
+      // A cancelled share sheet is not a failure worth shouting about.
+      if ((err as Error)?.name !== 'AbortError') toast.error('Could not share the ticket')
+    } finally {
+      setBusy(null)
+    }
+  }
 
   if (loading) {
     return <div className="py-16 text-center text-sm text-[#8e9a9d]">Loading your ticket...</div>
@@ -75,8 +133,8 @@ function ConfirmationContent() {
 
   return (
     <div className="px-5 pb-10 pt-5">
-      <div className="flex items-center gap-3">
-        <a href="/" aria-label="Back to home" className="icon-btn no-print">
+      <div className="no-print flex items-center gap-3">
+        <a href="/" aria-label="Back to home" className="icon-btn">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round" className="h-[18px] w-[18px]">
             <path d="M19 12H6" />
             <path d="m11.5 5.5-6 6.5 6 6.5" />
@@ -85,7 +143,7 @@ function ConfirmationContent() {
         <span className="display grow text-[17px] font-bold">Your ticket</span>
       </div>
 
-      <div className="mt-3 flex flex-wrap gap-2">
+      <div className="no-print mt-3 flex flex-wrap gap-2">
         <span
           className={`inline-flex h-[30px] items-center gap-1.5 rounded-full px-3 text-xs font-bold ${
             paid ? 'bg-[#34d399]/[0.14] text-[#34d399]' : 'bg-[#f5a524]/[0.14] text-[#f5a524]'
@@ -112,97 +170,89 @@ function ConfirmationContent() {
         )}
       </div>
 
-      <div className="mt-4 overflow-hidden rounded-[24px] bg-white text-[#16191a] shadow-[0_26px_50px_rgba(0,0,0,0.5)] sm:max-w-lg">
-        <div className="flex items-center gap-3 bg-gradient-to-br from-[#0e3f43] to-[#16585d] px-4 py-4">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo.png" alt="" className="h-8 w-8 object-contain" />
-          <div className="flex grow flex-col">
-            <span className="display text-[15px] font-bold text-white">{booking.busName}</span>
-            <span className="text-[11.5px] text-[#a9c6c8]">{booking.companyName}</span>
-          </div>
-          <span className="text-[11px] font-bold tracking-wider text-white">E-TICKET</span>
-        </div>
-
-        <div className="flex items-center gap-3 px-4 py-4">
-          <div className="flex flex-col gap-0.5">
-            <span className="display text-2xl font-bold">{booking.departureTime}</span>
-            <span className="text-[12.5px] font-bold">{booking.from}</span>
-          </div>
-          <div className="flex grow flex-col items-center gap-1">
-            <div className="flex w-full items-center gap-1">
-              <span className="h-[7px] w-[7px] rounded-full bg-[#0e3f43]" />
-              <span className="h-0.5 grow bg-[repeating-linear-gradient(90deg,#c5ccce_0_5px,transparent_5px_10px)]" />
-              <svg viewBox="0 0 24 24" fill="none" stroke="#f2661d" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
-                <rect x="3" y="4" width="18" height="12.5" rx="3" />
-                <path d="M3 11h18" />
-              </svg>
-              <span className="h-0.5 grow bg-[repeating-linear-gradient(90deg,#c5ccce_0_5px,transparent_5px_10px)]" />
-              <span className="h-[7px] w-[7px] rounded-full bg-[#f2661d]" />
-            </div>
-            <span className="text-[10.5px] font-semibold text-[#6c7679]">{booking.date}</span>
-          </div>
-          <div className="flex flex-col items-end gap-0.5">
-            <span className="text-[10px] font-bold uppercase tracking-[0.1em] text-[#6c7679]">Arriving</span>
-            <span className="text-[12.5px] font-bold">{booking.to}</span>
-          </div>
-        </div>
-
-        <div className="relative h-5">
-          <span className="absolute -left-2.5 top-0 h-5 w-5 rounded-full bg-[#0b0e0f]" />
-          <span className="absolute -right-2.5 top-0 h-5 w-5 rounded-full bg-[#0b0e0f]" />
-          <span className="absolute left-4 right-4 top-2.5 h-0.5 bg-[repeating-linear-gradient(90deg,#d6dcde_0_6px,transparent_6px_12px)]" />
-        </div>
-
-        <div className="flex items-center gap-4 px-4 pb-5 pt-1">
-          {booking.qrCode && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={booking.qrCode}
-              alt="Ticket QR code"
-              className="h-28 w-28 shrink-0 rounded-[14px] border border-[#e3e8e9] bg-white p-1.5"
-            />
-          )}
-          <div className="flex grow flex-col gap-3">
-            <div className="flex flex-col gap-0.5">
-              <span className="text-[10px] font-bold uppercase tracking-[0.1em] text-[#6c7679]">Booking code</span>
-              <span className="display text-[15px] font-bold">{booking.bookingCode}</span>
-            </div>
-            <div className="flex gap-5">
-              <div className="flex flex-col gap-0.5">
-                <span className="text-[10px] font-bold uppercase tracking-[0.1em] text-[#6c7679]">Seats</span>
-                <span className="text-sm font-bold">{booking.seats.join(', ')}</span>
-              </div>
-              <div className="flex flex-col gap-0.5">
-                <span className="text-[10px] font-bold uppercase tracking-[0.1em] text-[#6c7679]">Paid</span>
-                <span className="text-sm font-bold">৳{booking.totalPrice}</span>
-              </div>
-            </div>
-            <div className="flex flex-col gap-0.5">
-              <span className="text-[10px] font-bold uppercase tracking-[0.1em] text-[#6c7679]">Passenger</span>
-              <span className="text-[13.5px] font-semibold">{booking.passengerName}</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2.5 border-t border-[#e3e8e9] bg-[#f4f6f6] px-4 py-3">
-          <svg viewBox="0 0 24 24" fill="none" stroke="#0e3f43" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4 shrink-0">
-            <path d="M12 3 4 6v6c0 4.4 3.3 8.3 8 9 4.7-.7 8-4.6 8-9V6z" />
-            <path d="m9 12 2 2 4-4" />
-          </svg>
-          <span className="text-[11.5px] leading-snug text-[#3e4749]">
-            The conductor scans this code and checks it live. A screenshot of it will not pass.
-          </span>
+      {/* The capture wrapper carries the dark backdrop so the perforation notches, which are
+          cut out in the page colour, blend in the saved image exactly as they do on screen. */}
+      <div className="mt-4 sm:max-w-lg">
+        {/* The margin stays outside the captured node, or it shows up as a blank strip in the image. */}
+        <div ref={ticketRef} className="p-3" style={{ backgroundColor: '#0b0e0f' }}>
+          <Ticket booking={booking} />
         </div>
       </div>
 
       <div className="no-print mt-5 flex flex-col gap-2.5 sm:max-w-lg">
-        <button type="button" onClick={() => window.print()} className="glass-btn glass-btn-plain w-full">
-          Print or save as PDF
-        </button>
-        <a href="/" className="glass-btn glass-btn-plain h-12 w-full text-sm">
-          Book another ticket
-        </a>
+        <div className="grid grid-cols-2 gap-2.5">
+          <button type="button" onClick={handleDownload} disabled={busy !== null} className="glass-btn h-12 whitespace-nowrap px-3 text-sm">
+            <span className="icon-disc h-6 w-6">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5">
+                <path d="M12 4v11" />
+                <path d="m7.5 11 4.5 4.5 4.5-4.5" />
+                <path d="M5 19.5h14" />
+              </svg>
+            </span>
+            {busy === 'download' ? 'Saving...' : 'Save image'}
+          </button>
+
+          {canShareFiles ? (
+            <button type="button" onClick={handleShare} disabled={busy !== null} className="glass-btn glass-btn-teal h-12 whitespace-nowrap px-3 text-sm">
+              <span className="icon-disc icon-disc-teal h-6 w-6">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5">
+                  <circle cx="18" cy="5.5" r="2.5" />
+                  <circle cx="6" cy="12" r="2.5" />
+                  <circle cx="18" cy="18.5" r="2.5" />
+                  <path d="m8.2 10.8 7.6-4M8.2 13.2l7.6 4" />
+                </svg>
+              </span>
+              {busy === 'share' ? 'Sharing...' : 'Share'}
+            </button>
+          ) : (
+            <button type="button" onClick={() => window.print()} className="glass-btn glass-btn-plain h-12 whitespace-nowrap px-3 text-sm">
+              Print / PDF
+            </button>
+          )}
+        </div>
+
+        {canShareFiles && (
+          <button type="button" onClick={() => window.print()} className="glass-btn glass-btn-plain h-12 w-full text-sm">
+            Print or save as PDF
+          </button>
+        )}
+
+        <p className="text-center text-[11.5px] leading-snug text-[#78868a]">
+          Save the image to your gallery so you can board without internet.
+        </p>
       </div>
+
+      {returnBusId && (
+        <div className="no-print mt-5 flex flex-col gap-3 rounded-[20px] border border-[#1e4b4f] bg-gradient-to-br from-[#0e3f43]/90 to-[#141a1c]/90 p-4 sm:max-w-lg">
+          <div className="flex items-center gap-3">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[13px] bg-[#2dd4bf]/[0.16] text-[#2dd4bf]">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
+                <path d="M7 4v16M3.5 16.5 7 20l3.5-3.5" />
+                <path d="M17 20V4M13.5 7.5 17 4l3.5 3.5" />
+              </svg>
+            </span>
+            <div className="flex flex-col gap-0.5">
+              <span className="text-sm font-bold">One leg to go</span>
+              <span className="text-[12px] leading-snug text-[#a9bbbc]">
+                Your return from {booking.to} is still waiting. Pick those seats now.
+              </span>
+            </div>
+          </div>
+          <a href={`/booking?busId=${returnBusId}`} className="glass-btn glass-btn-teal h-12 w-full text-sm">
+            <span className="icon-disc icon-disc-teal h-6 w-6">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" className="h-3 w-3">
+                <path d="M5 12h13" />
+                <path d="m12.5 5.5 6.5 6.5-6.5 6.5" />
+              </svg>
+            </span>
+            Book my return
+          </a>
+        </div>
+      )}
+
+      <a href="/" className="no-print glass-btn glass-btn-plain mt-2.5 h-12 w-full text-sm sm:max-w-lg">
+        Book another ticket
+      </a>
     </div>
   )
 }

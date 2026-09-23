@@ -24,6 +24,7 @@ function BookingContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const busId = searchParams.get('busId')
+  const returnBusId = searchParams.get('returnBusId')
 
   const [bus, setBus] = useState<Bus | null>(null)
   const [loading, setLoading] = useState(true)
@@ -108,7 +109,10 @@ function BookingContent() {
       }
 
       toast.success('Booking confirmed')
-      router.push(`/confirmation?bookingId=${bookingId}`)
+      const next = new URLSearchParams({ bookingId })
+      // On a round trip the return leg is booked as its own ticket, so carry it to the confirmation.
+      if (returnBusId) next.set('returnBusId', returnBusId)
+      router.push(`/confirmation?${next}`)
     } catch {
       toast.error('Something went wrong, please try again')
       setSubmitting(false)
@@ -158,6 +162,17 @@ function BookingContent() {
           </span>
         </div>
       </div>
+
+      {returnBusId && (
+        <div className="mt-4 flex items-center gap-2.5 rounded-[14px] border border-[#1e4b4f] bg-[#0e3f43]/50 px-3.5 py-2.5">
+          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#2dd4bf]/[0.18] text-[11px] font-bold text-[#2dd4bf]">
+            1
+          </span>
+          <span className="text-[12px] leading-snug text-[#a9bbbc]">
+            Going leg of your round trip. We&apos;ll book your return straight after this.
+          </span>
+        </div>
+      )}
 
       <div className="mt-4 flex gap-2">
         {(['seats', 'details', 'payment'] as const).map((s) => (
