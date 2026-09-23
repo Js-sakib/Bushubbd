@@ -17,12 +17,12 @@ export async function POST(req: NextRequest) {
       .collection('companies')
       .findOne({ email: String(email).trim() }, { collation: EMAIL_COLLATION })
     if (!company) {
-      return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 })
+      return NextResponse.json({ error: 'Wrong Password or Email' }, { status: 401 })
     }
 
     const valid = await bcrypt.compare(password, company.passwordHash)
     if (!valid) {
-      return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 })
+      return NextResponse.json({ error: 'Wrong Password or Email' }, { status: 401 })
     }
 
     if (company.status !== 'approved') {

@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import toast from 'react-hot-toast'
 import { adminPath } from '@/lib/panelNav'
+import PasswordInput from '../../PasswordInput'
 
 export default function AdminLogin() {
   const router = useRouter()
@@ -55,7 +56,7 @@ export default function AdminLogin() {
             <label htmlFor="password" className="label-xs">
               Password
             </label>
-            <input id="password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} className="input-dark" />
+            <PasswordInput id="password" value={password} onChange={setPassword} />
           </div>
           <button type="submit" disabled={loading} className="glass-btn w-full">
             <span className="icon-disc">

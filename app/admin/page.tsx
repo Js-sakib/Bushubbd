@@ -7,6 +7,7 @@ import { adminPath } from '@/lib/panelNav'
 import { seatsLeft } from '@/lib/seats'
 import { formatShortDay, formatTripDate } from '@/lib/dates'
 import SeatManager from '../SeatManager'
+import PasswordInput from '../PasswordInput'
 
 interface Bus {
   _id: string
@@ -74,6 +75,9 @@ export default function AdminDashboard() {
   const [companies, setCompanies] = useState<CompanyRow[]>([])
   const [manageSeatsBusId, setManageSeatsBusId] = useState<string | null>(null)
   const [newLogin, setNewLogin] = useState<{ name: string; email: string; phone: string; password: string } | null>(null)
+  const [resetTarget, setResetTarget] = useState<CompanyRow | null>(null)
+  const [typedPassword, setTypedPassword] = useState('')
+  const [resetting, setResetting] = useState(false)
 
   const [form, setForm] = useState({
     busName: '', busType: 'AC', companyId: '', companyName: '', from: '', to: '',
@@ -169,16 +173,35 @@ export default function AdminDashboard() {
     loadAll()
   }
 
-  const handleResetPassword = async (company: CompanyRow) => {
-    if (!confirm(`Give ${company.name} a new password? Their old password will stop working.`)) return
-    const res = await fetch(`/api/companies/${company._id}/reset-password`, { method: 'POST' })
-    const data = await res.json().catch(() => null)
-    if (!res.ok || !data?.password) {
-      toast.error(data?.error || 'Could not reset the password')
-      return
+  const startReset = (company: CompanyRow) => {
+    setNewLogin(null)
+    setTypedPassword('')
+    setResetTarget(company)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  /** With no password given, the server generates a strong one. */
+  const submitReset = async (password?: string) => {
+    if (!resetTarget) return
+    setResetting(true)
+    try {
+      const res = await fetch(`/api/companies/${resetTarget._id}/reset-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(password ? { password } : {}),
+      })
+      const data = await res.json().catch(() => null)
+      if (!res.ok || !data?.password) {
+        toast.error(data?.error || 'Could not reset the password')
+        return
+      }
+      setResetTarget(null)
+      setTypedPassword('')
+      setNewLogin(data)
+      loadAll()
+    } finally {
+      setResetting(false)
     }
-    setNewLogin(data)
-    loadAll()
   }
 
   if (checking) {
@@ -538,7 +561,66 @@ export default function AdminDashboard() {
 
       {tab === 'companies' && newLogin && <NewLoginCard login={newLogin} onClose={() => setNewLogin(null)} />}
 
-      {tab === 'companies' && !newLogin && passwordRequests > 0 && (
+      {tab === 'companies' && resetTarget && (
+        <form
+          onSubmit={(e) => {
+            e.preventDefault()
+            submitReset(typedPassword)
+          }}
+          className="mt-5 flex flex-col gap-3.5 rounded-[20px] border-2 border-[#f5a524] bg-[#f5a524]/[0.07] p-5"
+        >
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex flex-col gap-1">
+              <span className="display text-[16px] font-bold">New password for {resetTarget.name}</span>
+              <span className="text-[12px] leading-snug text-[#c4cdcf]">
+                Their old password stops working as soon as you save.
+              </span>
+            </div>
+            <button type="button" onClick={() => setResetTarget(null)} aria-label="Cancel" className="icon-btn shrink-0">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round" className="h-[17px] w-[17px]">
+                <path d="M6 6l12 12M18 6 6 18" />
+              </svg>
+            </button>
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor="new-company-password" className="label-xs">
+              Type a new password
+            </label>
+            <PasswordInput
+              id="new-company-password"
+              value={typedPassword}
+              onChange={setTypedPassword}
+              autoComplete="new-password"
+              placeholder="At least 8 characters"
+              required={false}
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-2.5">
+            <button
+              type="submit"
+              disabled={resetting || typedPassword.trim().length < 8}
+              className="glass-btn h-12 whitespace-nowrap px-3 text-[13px]"
+            >
+              Save password
+            </button>
+            <button
+              type="button"
+              disabled={resetting}
+              onClick={() => submitReset()}
+              className="glass-btn glass-btn-plain h-12 whitespace-nowrap px-3 text-[13px]"
+            >
+              Generate one
+            </button>
+          </div>
+          {typedPassword && typedPassword.trim().length < 8 && (
+            <span className="text-[11.5px] text-[#f5a524]">{8 - typedPassword.trim().length} more characters needed</span>
+          )}
+        </form>
+      )}
+
+      {tab === 'companies' && !newLogin && !resetTarget && passwordRequests > 0 && (
         <div className="mt-5 flex flex-col gap-2.5 rounded-[20px] border border-[#f5a524]/60 bg-[#f5a524]/[0.07] p-4">
           <span className="text-[13px] font-bold text-[#f5a524]">
             {passwordRequests === 1 ? '1 operator is' : `${passwordRequests} operators are`} waiting for a new password
@@ -555,7 +637,7 @@ export default function AdminDashboard() {
                 </div>
                 <button
                   type="button"
-                  onClick={() => handleResetPassword(c)}
+                  onClick={() => startReset(c)}
                   className="shrink-0 rounded-full bg-[#f5a524] px-3.5 py-2 text-[12.5px] font-bold text-[#2b1a02]"
                 >
                   Reset
@@ -615,7 +697,7 @@ export default function AdminDashboard() {
                     )}
                     <button
                       type="button"
-                      onClick={() => handleResetPassword(c)}
+                      onClick={() => startReset(c)}
                       className={
                         c.passwordResetRequestedAt
                           ? 'rounded-full bg-[#f5a524] px-3 py-1 text-[12.5px] font-bold text-[#2b1a02]'

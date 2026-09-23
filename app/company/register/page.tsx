@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import toast from 'react-hot-toast'
+import PasswordInput from '../../PasswordInput'
 import { companyPath } from '@/lib/panelNav'
 
 export default function CompanyRegister() {
@@ -50,7 +51,12 @@ export default function CompanyRegister() {
           <input required placeholder="Owner name" value={form.ownerName} onChange={(e) => setForm({ ...form, ownerName: e.target.value })} className="input-dark" />
           <input required type="email" placeholder="Email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className="input-dark" />
           <input required placeholder="Phone number" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} className="input-dark" />
-          <input required type="password" placeholder="Password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} className="input-dark" />
+          <PasswordInput
+            placeholder="Password"
+            autoComplete="new-password"
+            value={form.password}
+            onChange={(password) => setForm({ ...form, password })}
+          />
           <button type="submit" disabled={loading} className="glass-btn w-full">
             {loading ? 'Submitting...' : 'Register'}
           </button>

@@ -13,8 +13,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Admin login is not configured yet' }, { status: 500 })
   }
 
-  if (email !== adminEmail || password !== adminPassword) {
-    return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 })
+  const sameEmail = String(email || '').trim().toLowerCase() === adminEmail.trim().toLowerCase()
+  if (!sameEmail || password !== adminPassword) {
+    return NextResponse.json({ error: 'Wrong Password or Email' }, { status: 401 })
   }
 
   const token = signAdminToken()
