@@ -32,7 +32,7 @@ const VERDICTS: Record<ScanResult, { tone: Tone; title: string; detail: string }
   unpaid: { tone: 'bad', title: 'Not paid', detail: 'Payment for this ticket was never completed.' },
   refunded: { tone: 'bad', title: 'Refunded', detail: 'This ticket was refunded and is no longer valid.' },
   cancelled: { tone: 'bad', title: 'Cancelled', detail: 'This ticket was cancelled.' },
-  other_operator: { tone: 'bad', title: 'Not your bus', detail: 'This ticket belongs to another bus company.' },
+  other_operator: { tone: 'bad', title: 'Not your bus', detail: 'This ticket is for a bus not linked to your account. If it is your bus, ask the BusHub team to link it.' },
   not_found: { tone: 'bad', title: 'Fake ticket', detail: 'No BusHub ticket matches this code. It may be forged.' },
 }
 

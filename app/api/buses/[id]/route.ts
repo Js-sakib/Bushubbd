@@ -43,6 +43,23 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     }
 
     const { db } = await connectToDatabase()
+
+    // Linking a bus to an operator account is what lets that operator scan its tickets.
+    // The name follows the account, so tickets and payouts carry the registered name.
+    if (body.companyId !== undefined) {
+      const company = ObjectId.isValid(body.companyId)
+        ? await db.collection('companies').findOne({ _id: new ObjectId(body.companyId), status: 'approved' })
+        : null
+      if (!company) {
+        return NextResponse.json({ error: 'Choose an approved bus company' }, { status: 400 })
+      }
+      update.companyId = company._id.toString()
+      update.companyName = company.name
+      await db
+        .collection('bookings')
+        .updateMany({ busId: params.id }, { $set: { companyName: company.name } })
+    }
+
     await db.collection('buses').updateOne({ _id: new ObjectId(params.id) }, { $set: update })
     return NextResponse.json({ success: true })
   } catch (err) {

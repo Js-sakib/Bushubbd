@@ -10,6 +10,7 @@ import SeatManager from '../SeatManager'
 
 interface Bus {
   _id: string
+  companyId: string
   companyName: string
   busName: string
   busType: string
@@ -56,6 +57,9 @@ interface CompanyRow {
   /** Set when the operator used "Forgot password"; cleared once the admin resets it. */
   passwordResetRequestedAt?: string
 }
+
+/** Add-bus form choice for an operator with no BusHub login; such a bus cannot be scanned. */
+const NO_ACCOUNT = 'none'
 
 const CITIES = ['Dhaka', 'Chittagong', 'Sylhet', 'Rajshahi', 'Khulna', "Cox's Bazar", 'Barishal', 'Rangpur']
 const TABS = ['overview', 'buses', 'companies'] as const
@@ -107,6 +111,7 @@ export default function AdminDashboard() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         ...form,
+        companyId: form.companyId === NO_ACCOUNT ? '' : form.companyId,
         price: Number(form.price),
         totalSeats: Number(form.totalSeats),
         commissionRate: Number(form.commissionRate),
@@ -148,6 +153,22 @@ export default function AdminDashboard() {
     }
   }
 
+  const handleLinkCompany = async (bus: Bus, companyId: string) => {
+    if (!companyId) return
+    const res = await fetch(`/api/buses/${bus._id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ companyId }),
+    })
+    const data = await res.json().catch(() => null)
+    if (!res.ok) {
+      toast.error(data?.error || 'Could not link the bus')
+      return
+    }
+    toast.success('Bus linked. That company can now scan its tickets.')
+    loadAll()
+  }
+
   const handleResetPassword = async (company: CompanyRow) => {
     if (!confirm(`Give ${company.name} a new password? Their old password will stop working.`)) return
     const res = await fetch(`/api/companies/${company._id}/reset-password`, { method: 'POST' })
@@ -164,6 +185,7 @@ export default function AdminDashboard() {
     return <div className="py-16 text-center text-sm text-[#8e9a9d]">Checking access...</div>
   }
 
+  const approvedCompanies = companies.filter((c) => c.status === 'approved')
   const passwordRequests = companies.filter((c) => c.passwordResetRequestedAt).length
   // Operators waiting on a new password go to the top of the list.
   const companyRows = [...companies].sort(
@@ -388,21 +410,23 @@ export default function AdminDashboard() {
             <form onSubmit={handleAddBus} className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               <input required placeholder="Bus name" value={form.busName} onChange={(e) => setForm({ ...form, busName: e.target.value })} className="input-dark" />
               <select
+                required
                 value={form.companyId}
                 onChange={(e) => setForm({ ...form, companyId: e.target.value })}
                 className="input-dark"
                 aria-label="Bus company"
               >
-                <option value="">Bus company (no scanner login)</option>
-                {companies
-                  .filter((c) => c.status === 'approved')
-                  .map((c) => (
-                    <option key={c._id} value={c._id}>
-                      {c.name}
-                    </option>
-                  ))}
+                <option value="" disabled>
+                  Choose bus company…
+                </option>
+                {approvedCompanies.map((c) => (
+                  <option key={c._id} value={c._id}>
+                    {c.name}
+                  </option>
+                ))}
+                <option value={NO_ACCOUNT}>Other: no BusHub account (can&apos;t scan)</option>
               </select>
-              {!form.companyId && (
+              {form.companyId === NO_ACCOUNT && (
                 <input
                   placeholder="Operator name"
                   value={form.companyName}
@@ -453,7 +477,28 @@ export default function AdminDashboard() {
                   <tr key={b._id} className="border-t border-[#1a2123]">
                     <td className="px-5 py-3 text-[13px] font-semibold">
                       {b.busName}
-                      <span className="block text-[11px] font-normal text-[#78868a]">{b.companyName}</span>
+                      {approvedCompanies.some((c) => c._id === b.companyId) ? (
+                        <span className="block text-[11px] font-normal text-[#78868a]">{b.companyName}</span>
+                      ) : (
+                        <span className="mt-1 flex flex-col gap-1.5">
+                          <span className="text-[11px] font-bold text-[#f5a524]">
+                            {b.companyName} · not linked, can&apos;t scan
+                          </span>
+                          <select
+                            value=""
+                            onChange={(e) => handleLinkCompany(b, e.target.value)}
+                            aria-label={`Link ${b.busName} to a bus company`}
+                            className="input-dark h-9 min-w-[170px] py-0 text-[12.5px]"
+                          >
+                            <option value="">Link to company…</option>
+                            {approvedCompanies.map((c) => (
+                              <option key={c._id} value={c._id}>
+                                {c.name}
+                              </option>
+                            ))}
+                          </select>
+                        </span>
+                      )}
                     </td>
                     <td className="px-3 py-3 text-[12.5px] text-[#a8b3b6]">{b.from} → {b.to}</td>
                     <td className="px-3 py-3 text-[12.5px] text-[#a8b3b6]">{b.date} {b.departureTime}</td>
