@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import bcrypt from 'bcryptjs'
 import { connectToDatabase } from '@/lib/db'
 import { Company } from '@/lib/models'
+import { EMAIL_COLLATION } from '@/lib/auth'
 
 export const dynamic = 'force-dynamic'
 
@@ -14,7 +15,8 @@ export async function POST(req: NextRequest) {
     }
 
     const { db } = await connectToDatabase()
-    const existing = await db.collection('companies').findOne({ email })
+    const address = String(email).trim().toLowerCase()
+    const existing = await db.collection('companies').findOne({ email: address }, { collation: EMAIL_COLLATION })
     if (existing) {
       return NextResponse.json({ error: 'An account with this email already exists' }, { status: 409 })
     }
@@ -23,7 +25,7 @@ export async function POST(req: NextRequest) {
     const company: Company = {
       name,
       ownerName,
-      email,
+      email: address,
       phone,
       passwordHash,
       status: 'pending',

@@ -5,7 +5,7 @@ export function adminPath(path: '/admin' | '/admin/login'): string {
   return path
 }
 
-export function companyPath(path: '/company' | '/company/login' | '/company/register'): string {
+export function companyPath(path: '/company' | '/company/login' | '/company/register' | '/company/forgot'): string {
   if (typeof window !== 'undefined' && window.location.hostname.startsWith('partner.')) {
     return path === '/company' ? '/' : path.replace(/^\/company/, '')
   }

@@ -40,7 +40,7 @@ export default function CompanyLogin() {
           <img src="/logo.png" alt="" className="h-12 w-12 object-contain" />
           <div>
             <h1 className="display text-xl font-bold">Operator login</h1>
-            <p className="mt-1 text-[12.5px] text-[#8e9a9d]">Manage your buses and bookings</p>
+            <p className="mt-1 text-[12.5px] text-[#8e9a9d]">Scan tickets and track boardings</p>
           </div>
         </div>
 
@@ -52,9 +52,18 @@ export default function CompanyLogin() {
             <input id="email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className="input-dark" />
           </div>
           <div className="flex flex-col gap-1.5">
-            <label htmlFor="password" className="label-xs">
-              Password
-            </label>
+            <div className="flex items-center justify-between">
+              <label htmlFor="password" className="label-xs">
+                Password
+              </label>
+              <button
+                type="button"
+                onClick={() => router.push(companyPath('/company/forgot'))}
+                className="text-[12px] font-semibold text-[#f5a524] hover:underline"
+              >
+                Forgot password?
+              </button>
+            </div>
             <input id="password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} className="input-dark" />
           </div>
           <button type="submit" disabled={loading} className="glass-btn w-full">

@@ -39,7 +39,10 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
       .collection('companies')
       .updateOne(
         { _id: company._id },
-        { $set: { passwordHash: await bcrypt.hash(password, 10), passwordResetAt: new Date().toISOString() } }
+        {
+          $set: { passwordHash: await bcrypt.hash(password, 10), passwordResetAt: new Date().toISOString() },
+          $unset: { passwordResetRequestedAt: '' },
+        }
       )
 
     return NextResponse.json(

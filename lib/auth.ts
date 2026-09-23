@@ -3,6 +3,12 @@ import { cookies } from 'next/headers'
 
 const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-change-me'
 
+/**
+ * Emails match whatever their capitalisation: phone keyboards often capitalise the first
+ * letter, which used to make a correct password look wrong.
+ */
+export const EMAIL_COLLATION = { locale: 'en', strength: 2 } as const
+
 export interface CompanyTokenPayload {
   companyId: string
   email: string

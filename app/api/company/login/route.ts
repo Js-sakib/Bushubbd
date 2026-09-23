@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import bcrypt from 'bcryptjs'
 import { connectToDatabase } from '@/lib/db'
-import { signCompanyToken } from '@/lib/auth'
+import { EMAIL_COLLATION, signCompanyToken } from '@/lib/auth'
 
 export const dynamic = 'force-dynamic'
 
@@ -13,7 +13,9 @@ export async function POST(req: NextRequest) {
     }
 
     const { db } = await connectToDatabase()
-    const company = await db.collection('companies').findOne({ email })
+    const company = await db
+      .collection('companies')
+      .findOne({ email: String(email).trim() }, { collation: EMAIL_COLLATION })
     if (!company) {
       return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 })
     }

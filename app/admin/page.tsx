@@ -53,6 +53,8 @@ interface CompanyRow {
   phone: string
   status: string
   createdAt: string
+  /** Set when the operator used "Forgot password"; cleared once the admin resets it. */
+  passwordResetRequestedAt?: string
 }
 
 const CITIES = ['Dhaka', 'Chittagong', 'Sylhet', 'Rajshahi', 'Khulna', "Cox's Bazar", 'Barishal', 'Rangpur']
@@ -155,11 +157,18 @@ export default function AdminDashboard() {
       return
     }
     setNewLogin(data)
+    loadAll()
   }
 
   if (checking) {
     return <div className="py-16 text-center text-sm text-[#8e9a9d]">Checking access...</div>
   }
+
+  const passwordRequests = companies.filter((c) => c.passwordResetRequestedAt).length
+  // Operators waiting on a new password go to the top of the list.
+  const companyRows = [...companies].sort(
+    (a, b) => Number(Boolean(b.passwordResetRequestedAt)) - Number(Boolean(a.passwordResetRequestedAt))
+  )
 
   const sold = bookings.filter((b) => b.paymentStatus === 'paid' && b.status === 'confirmed')
   const refunded = bookings.filter((b) => b.status === 'refunded')
@@ -204,8 +213,18 @@ export default function AdminDashboard() {
 
       <div className="mt-5 flex gap-2">
         {TABS.map((t) => (
-          <button key={t} type="button" onClick={() => setTab(t)} className={`chip capitalize ${tab === t ? 'chip-active' : ''}`}>
+          <button
+            key={t}
+            type="button"
+            onClick={() => setTab(t)}
+            className={`chip flex items-center gap-1.5 capitalize ${tab === t ? 'chip-active' : ''}`}
+          >
             {t}
+            {t === 'companies' && passwordRequests > 0 && (
+              <span className="flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-[#f2661d] px-1 text-[10.5px] font-bold text-white">
+                {passwordRequests}
+              </span>
+            )}
           </button>
         ))}
       </div>
@@ -474,6 +493,33 @@ export default function AdminDashboard() {
 
       {tab === 'companies' && newLogin && <NewLoginCard login={newLogin} onClose={() => setNewLogin(null)} />}
 
+      {tab === 'companies' && !newLogin && passwordRequests > 0 && (
+        <div className="mt-5 flex flex-col gap-2.5 rounded-[20px] border border-[#f5a524]/60 bg-[#f5a524]/[0.07] p-4">
+          <span className="text-[13px] font-bold text-[#f5a524]">
+            {passwordRequests === 1 ? '1 operator is' : `${passwordRequests} operators are`} waiting for a new password
+          </span>
+          {companyRows
+            .filter((c) => c.passwordResetRequestedAt)
+            .map((c) => (
+              <div key={c._id} className="flex items-center gap-3 rounded-2xl bg-[#0f1517] px-3.5 py-3">
+                <div className="flex min-w-0 grow flex-col">
+                  <span className="truncate text-[13.5px] font-semibold">{c.name}</span>
+                  <span className="truncate text-[11.5px] text-[#8e9a9d]">
+                    {c.phone} · {c.email}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleResetPassword(c)}
+                  className="shrink-0 rounded-full bg-[#f5a524] px-3.5 py-2 text-[12.5px] font-bold text-[#2b1a02]"
+                >
+                  Reset
+                </button>
+              </div>
+            ))}
+        </div>
+      )}
+
       {tab === 'companies' && (
         <div className="card-2 mt-5 overflow-x-auto">
           <table className="w-full text-sm">
@@ -487,8 +533,8 @@ export default function AdminDashboard() {
               </tr>
             </thead>
             <tbody>
-              {companies.map((c) => (
-                <tr key={c._id} className="border-t border-[#1a2123]">
+              {companyRows.map((c) => (
+                <tr key={c._id} className={`border-t border-[#1a2123] ${c.passwordResetRequestedAt ? 'bg-[#f5a524]/[0.06]' : ''}`}>
                   <td className="px-5 py-3 text-[13px] font-semibold">{c.name}</td>
                   <td className="px-3 py-3 text-[12.5px] text-[#a8b3b6]">{c.ownerName}</td>
                   <td className="px-3 py-3 text-[12.5px] text-[#a8b3b6]">
@@ -507,6 +553,9 @@ export default function AdminDashboard() {
                     >
                       {c.status}
                     </span>
+                    {c.passwordResetRequestedAt && (
+                      <span className="mt-1.5 block whitespace-nowrap text-[11px] font-bold text-[#f5a524]">Asked for a new password</span>
+                    )}
                   </td>
                   <td className="space-x-3 px-5 py-3 text-right">
                     {c.status !== 'approved' && (
@@ -519,7 +568,15 @@ export default function AdminDashboard() {
                         Suspend
                       </button>
                     )}
-                    <button type="button" onClick={() => handleResetPassword(c)} className="text-[13px] font-semibold text-[#f5a524] hover:underline">
+                    <button
+                      type="button"
+                      onClick={() => handleResetPassword(c)}
+                      className={
+                        c.passwordResetRequestedAt
+                          ? 'rounded-full bg-[#f5a524] px-3 py-1 text-[12.5px] font-bold text-[#2b1a02]'
+                          : 'text-[13px] font-semibold text-[#f5a524] hover:underline'
+                      }
+                    >
                       Reset password
                     </button>
                   </td>

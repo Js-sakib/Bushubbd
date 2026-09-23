@@ -64,6 +64,9 @@ export interface Company {
   passwordHash: string
   status: 'pending' | 'approved' | 'suspended'
   createdAt: string
+  /** Set by "Forgot password" on the operator login; cleared when the admin issues a new one. */
+  passwordResetRequestedAt?: Date
+  passwordResetAt?: string
 }
 
 export interface WhatsAppSession {
