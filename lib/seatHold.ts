@@ -1,6 +1,17 @@
 import { Db, ObjectId } from 'mongodb'
 import { isExpired } from './tickets'
 
+/**
+ * Paid tickets used to be marked expired 24 hours after booking (see ticketExpiry), which
+ * also dropped them from sales totals and payouts. Only unpaid holds can really expire, so
+ * any paid ticket in that state is put back to confirmed.
+ */
+export async function repairWronglyExpiredTickets(db: Db, filter: Record<string, unknown> = {}) {
+  await db
+    .collection('bookings')
+    .updateMany({ ...filter, paymentStatus: 'paid', status: 'expired' }, { $set: { status: 'confirmed' } })
+}
+
 export async function releaseExpiredHolds(db: Db, busId: string) {
   const pendingHolds = await db
     .collection('bookings')

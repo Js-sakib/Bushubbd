@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
-import toast from 'react-hot-toast'
+import { formatTripDate } from '@/lib/dates'
+import { dhakaDate } from '@/lib/scan'
 
 interface VerifyResult {
   valid: boolean
@@ -23,7 +24,7 @@ interface VerifyResult {
 
 const REASON_LABELS: Record<string, string> = {
   unpaid: 'Payment was never completed for this ticket',
-  expired: 'This ticket has expired (24-hour window passed)',
+  expired: 'This ticket was for an earlier date and can no longer be used',
   cancelled: 'This ticket was cancelled',
   refunded: 'This ticket was refunded and is no longer valid',
 }
@@ -35,7 +36,6 @@ export default function VerifyTicket() {
   const [result, setResult] = useState<VerifyResult | null>(null)
   const [loading, setLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
-  const [checkingIn, setCheckingIn] = useState(false)
 
   const load = () => {
     setLoading(true)
@@ -57,22 +57,6 @@ export default function VerifyTicket() {
   useEffect(() => {
     if (code) load()
   }, [code])
-
-  const handleCheckIn = async () => {
-    setCheckingIn(true)
-    try {
-      const res = await fetch(`/api/verify/${code}`, { method: 'PATCH' })
-      const data = await res.json()
-      if (!res.ok) {
-        toast.error(data.error || 'Could not check in')
-        return
-      }
-      toast.success('Passenger checked in')
-      load()
-    } finally {
-      setCheckingIn(false)
-    }
-  }
 
   if (loading) {
     return <div className="py-16 text-center text-sm text-[#8e9a9d]">Checking ticket...</div>
@@ -133,7 +117,7 @@ export default function VerifyTicket() {
 
         {result.checkedIn && (
           <p className="text-[13px] font-semibold text-[#f5a524]">
-            Already checked in at {result.checkedInAt ? new Date(result.checkedInAt).toLocaleString() : ''}
+            Already boarded {result.checkedInAt ? `at ${new Date(result.checkedInAt).toLocaleString()}` : ''}
           </p>
         )}
 
@@ -162,7 +146,7 @@ export default function VerifyTicket() {
           <div className="flex items-center justify-between gap-3">
             <span className="text-xs text-[#8e9a9d]">Date</span>
             <span className="text-sm font-semibold">
-              {result.date} · {result.departureTime}
+              {formatTripDate(result.date)} · {result.departureTime}
             </span>
           </div>
           <div className="flex items-center justify-between gap-3">
@@ -170,20 +154,19 @@ export default function VerifyTicket() {
             <span className="text-sm font-bold text-[#f5a524]">{result.seats.join(', ')}</span>
           </div>
           <div className="flex items-center justify-between gap-3 border-t border-[#1f2729] pt-2.5">
-            <span className="text-xs text-[#8e9a9d]">Expires</span>
-            <span className="text-[13px] font-semibold">{new Date(result.validUntil).toLocaleString()}</span>
+            <span className="text-xs text-[#8e9a9d]">Valid until</span>
+            <span className="text-[13px] font-semibold">
+              {/* Always Dhaka time: a phone set to another zone must not show a different cutoff. */}
+              {new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Dhaka', hour: 'numeric', minute: '2-digit', hour12: true }).format(new Date(result.validUntil))}
+              , {formatTripDate(dhakaDate(new Date(result.validUntil)))}
+            </span>
           </div>
         </div>
 
         {result.valid && !result.checkedIn && (
-          <button onClick={handleCheckIn} disabled={checkingIn} className="glass-btn glass-btn-teal mt-2 w-full">
-            <span className="icon-disc icon-disc-teal">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
-                <path d="M5 12.5 10 17l9-10" />
-              </svg>
-            </span>
-            {checkingIn ? 'Checking in...' : 'Check in passenger'}
-          </button>
+          <p className="mt-1 text-[12px] leading-relaxed text-[#8e9a9d]">
+            Bus staff: board this passenger by scanning from the operator panel.
+          </p>
         )}
       </div>
 

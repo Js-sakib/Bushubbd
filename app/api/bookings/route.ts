@@ -3,14 +3,14 @@ import { ObjectId } from 'mongodb'
 import { connectToDatabase } from '@/lib/db'
 import {
   generateBookingCode,
-  calculateExpiry,
+  ticketExpiry,
   calculateHoldExpiry,
   calculateCommission,
   DEFAULT_COMMISSION_RATE,
   generateTicketQRCode,
   getVerifyUrl,
 } from '@/lib/tickets'
-import { releaseExpiredHolds } from '@/lib/seatHold'
+import { releaseExpiredHolds, repairWronglyExpiredTickets } from '@/lib/seatHold'
 import { takenSeats } from '@/lib/seats'
 import { getCompanyFromCookies, getAdminFromCookies } from '@/lib/auth'
 import { Booking } from '@/lib/models'
@@ -55,7 +55,7 @@ export async function POST(req: NextRequest) {
     }
 
     const bookingCode = generateBookingCode()
-    const validUntil = calculateExpiry(24)
+    const validUntil = ticketExpiry(bus.date)
     const holdExpiresAt = calculateHoldExpiry(10)
     const verifyUrl = getVerifyUrl(bookingCode)
     const qrCode = await generateTicketQRCode(verifyUrl)
@@ -109,6 +109,7 @@ export async function GET(req: NextRequest) {
     }
 
     const { db } = await connectToDatabase()
+    await repairWronglyExpiredTickets(db)
     let query: Record<string, any> = {}
     if (company) {
       const buses = await db.collection('buses').find({ companyId: company.companyId }).project({ _id: 1 }).toArray()

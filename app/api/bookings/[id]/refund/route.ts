@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { ObjectId } from 'mongodb'
 import { connectToDatabase } from '@/lib/db'
 import { getCompanyFromCookies, getAdminFromCookies } from '@/lib/auth'
+import { repairWronglyExpiredTickets } from '@/lib/seatHold'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -17,6 +18,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 
     const { db } = await connectToDatabase()
     const query = ObjectId.isValid(params.id) ? { _id: new ObjectId(params.id) } : { bookingCode: params.id }
+    await repairWronglyExpiredTickets(db, query)
     const booking = await db.collection('bookings').findOne(query)
     if (!booking) {
       return NextResponse.json({ error: 'Booking not found' }, { status: 404 })

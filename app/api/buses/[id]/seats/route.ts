@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { ObjectId } from 'mongodb'
 import { connectToDatabase } from '@/lib/db'
-import { getCompanyFromCookies, getAdminFromCookies } from '@/lib/auth'
+import { getAdminFromCookies } from '@/lib/auth'
+import { repairWronglyExpiredTickets } from '@/lib/seatHold'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -9,10 +10,8 @@ export const fetchCache = 'force-no-store'
 
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
   try {
-    const company = getCompanyFromCookies()
-    const admin = getAdminFromCookies()
-    if (!company && !admin) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    if (!getAdminFromCookies()) {
+      return NextResponse.json({ error: 'Only the BusHub admin can change seats' }, { status: 403 })
     }
     if (!ObjectId.isValid(params.id)) {
       return NextResponse.json({ error: 'Invalid bus id' }, { status: 400 })
@@ -31,9 +30,8 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     if (!bus) {
       return NextResponse.json({ error: 'Bus not found' }, { status: 404 })
     }
-    if (company && bus.companyId !== company.companyId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
-    }
+
+    await repairWronglyExpiredTickets(db, { busId: params.id })
 
     // A seat is only truly sold on BusHub when a live booking claims it. Those seats belong to a
     // paying passenger and must never be edited from here, or the seat could be sold twice.

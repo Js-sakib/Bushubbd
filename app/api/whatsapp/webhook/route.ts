@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { connectToDatabase } from '@/lib/db'
 import { sendWhatsAppMessage } from '@/lib/whatsapp'
-import { isExpired, getVerifyUrl } from '@/lib/tickets'
+import { isExpired, getVerifyUrl, ticketExpiry } from '@/lib/tickets'
 import { seatsLeft as calcSeatsLeft } from '@/lib/seats'
 
 export const dynamic = 'force-dynamic'
@@ -101,13 +101,13 @@ export async function POST(req: NextRequest) {
       if (!booking) {
         await sendWhatsAppMessage(from, `No ticket found with the code ${bookingCode}. Please check the code and try again.`)
       } else {
-        const expired = isExpired(booking.validUntil)
+        const expired = isExpired(ticketExpiry(booking.date))
         const state =
           booking.status === 'refunded'
             ? 'This ticket was refunded and can no longer be used.'
             : booking.paymentStatus !== 'paid'
             ? 'Payment for this ticket was never completed.'
-            : expired || booking.status === 'expired'
+            : expired
             ? 'This ticket has expired.'
             : 'This ticket is valid.'
 
@@ -168,7 +168,7 @@ export async function POST(req: NextRequest) {
 
         await sendWhatsAppMessage(
           from,
-          `Buses from ${fromCity} to ${toCity} ${label}:\n\n${list}\n\nBook and pay here:\n${searchLink}\n\nYour QR ticket is generated the moment you pay, and stays valid for 24 hours.`
+          `Buses from ${fromCity} to ${toCity} ${label}:\n\n${list}\n\nBook and pay here:\n${searchLink}\n\nYour QR ticket is generated the moment you pay, and is valid for your travel date.`
         )
       }
 

@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { ObjectId } from 'mongodb'
 import { connectToDatabase } from '@/lib/db'
-import { isExpired, getVerifyUrl } from '@/lib/tickets'
-import { releaseExpiredHolds } from '@/lib/seatHold'
+import { isExpired, getVerifyUrl, ticketExpiry } from '@/lib/tickets'
+import { releaseExpiredHolds, repairWronglyExpiredTickets } from '@/lib/seatHold'
 import { sendWhatsAppMessage } from '@/lib/whatsapp'
 
 export const dynamic = 'force-dynamic'
@@ -22,10 +22,14 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
     if (booking.status === 'pending' && booking.holdExpiresAt && isExpired(booking.holdExpiresAt)) {
       await releaseExpiredHolds(db, booking.busId)
       booking.status = 'expired'
-    } else if (booking.status === 'confirmed' && isExpired(booking.validUntil)) {
-      await db.collection('bookings').updateOne({ _id: booking._id }, { $set: { status: 'expired' } })
-      booking.status = 'expired'
+    } else if (booking.paymentStatus === 'paid' && booking.status === 'expired') {
+      await repairWronglyExpiredTickets(db, { _id: booking._id })
+      booking.status = 'confirmed'
     }
+
+    // Validity is derived from the travel date, not the stored value, which older bookings
+    // have set to 24 hours after purchase.
+    if (booking.date) booking.validUntil = ticketExpiry(booking.date)
 
     return NextResponse.json({ booking })
   } catch (err) {

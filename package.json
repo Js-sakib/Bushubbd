@@ -13,6 +13,7 @@
     "date-fns": "^2.30.0",
     "html-to-image": "^1.11.13",
     "jsonwebtoken": "^9.0.2",
+    "jsqr": "^1.4.0",
     "mongodb": "^6.3.0",
     "next": "^14.0.0",
     "qrcode": "^1.5.3",

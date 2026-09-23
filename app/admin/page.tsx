@@ -69,7 +69,7 @@ export default function AdminDashboard() {
   const [manageSeatsBusId, setManageSeatsBusId] = useState<string | null>(null)
 
   const [form, setForm] = useState({
-    busName: '', busType: 'AC', companyName: 'BusHub', from: '', to: '',
+    busName: '', busType: 'AC', companyId: '', companyName: '', from: '', to: '',
     date: '', departureTime: '', arrivalTime: '', price: '', totalSeats: '40', commissionRate: '10', logoUrl: '',
   })
 
@@ -356,7 +356,29 @@ export default function AdminDashboard() {
             <h2 className="display mb-4 text-[15px] font-bold">Add a bus</h2>
             <form onSubmit={handleAddBus} className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               <input required placeholder="Bus name" value={form.busName} onChange={(e) => setForm({ ...form, busName: e.target.value })} className="input-dark" />
-              <input placeholder="Operator name" value={form.companyName} onChange={(e) => setForm({ ...form, companyName: e.target.value })} className="input-dark" />
+              <select
+                value={form.companyId}
+                onChange={(e) => setForm({ ...form, companyId: e.target.value })}
+                className="input-dark"
+                aria-label="Bus company"
+              >
+                <option value="">Bus company (no scanner login)</option>
+                {companies
+                  .filter((c) => c.status === 'approved')
+                  .map((c) => (
+                    <option key={c._id} value={c._id}>
+                      {c.name}
+                    </option>
+                  ))}
+              </select>
+              {!form.companyId && (
+                <input
+                  placeholder="Operator name"
+                  value={form.companyName}
+                  onChange={(e) => setForm({ ...form, companyName: e.target.value })}
+                  className="input-dark"
+                />
+              )}
               <select value={form.busType} onChange={(e) => setForm({ ...form, busType: e.target.value })} className="input-dark">
                 <option>AC</option>
                 <option>Non-AC</option>

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { ObjectId } from 'mongodb'
 import { connectToDatabase } from '@/lib/db'
-import { getCompanyFromCookies, getAdminFromCookies } from '@/lib/auth'
+import { getAdminFromCookies } from '@/lib/auth'
 import { releaseExpiredHolds } from '@/lib/seatHold'
 
 export const dynamic = 'force-dynamic'
@@ -28,10 +28,8 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
 
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
   try {
-    const company = getCompanyFromCookies()
-    const admin = getAdminFromCookies()
-    if (!company && !admin) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    if (!getAdminFromCookies()) {
+      return NextResponse.json({ error: 'Only the BusHub admin can change buses' }, { status: 403 })
     }
     if (!ObjectId.isValid(params.id)) {
       return NextResponse.json({ error: 'Invalid bus id' }, { status: 400 })
@@ -55,10 +53,8 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 
 export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
   try {
-    const company = getCompanyFromCookies()
-    const admin = getAdminFromCookies()
-    if (!company && !admin) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    if (!getAdminFromCookies()) {
+      return NextResponse.json({ error: 'Only the BusHub admin can change buses' }, { status: 403 })
     }
     if (!ObjectId.isValid(params.id)) {
       return NextResponse.json({ error: 'Invalid bus id' }, { status: 400 })

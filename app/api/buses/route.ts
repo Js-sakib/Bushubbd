@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { ObjectId } from 'mongodb'
 import { connectToDatabase } from '@/lib/db'
-import { getCompanyFromCookies, getAdminFromCookies } from '@/lib/auth'
+import { getAdminFromCookies } from '@/lib/auth'
 import { Bus } from '@/lib/models'
 import { DEFAULT_COMMISSION_RATE } from '@/lib/tickets'
 
@@ -33,22 +34,35 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const company = getCompanyFromCookies()
-    const admin = getAdminFromCookies()
-    if (!company && !admin) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    // Operators send their schedules to the BusHub team; only the admin lists buses.
+    if (!getAdminFromCookies()) {
+      return NextResponse.json({ error: 'Only the BusHub admin can add buses' }, { status: 403 })
     }
 
     const body = await req.json()
-    const { busName, busType, from, to, date, departureTime, arrivalTime, price, totalSeats, companyName, commissionRate, logoUrl } = body
+    const { busName, busType, from, to, date, departureTime, arrivalTime, price, totalSeats, companyId, companyName, commissionRate, logoUrl } = body
 
     if (!busName || !from || !to || !date || !departureTime || !price || !totalSeats) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
     }
 
+    const { db } = await connectToDatabase()
+
+    // A bus tied to an operator account is what lets that operator scan its tickets.
+    let owner = { id: 'admin', name: (companyName || 'BusHub').trim() }
+    if (companyId) {
+      const company = ObjectId.isValid(companyId)
+        ? await db.collection('companies').findOne({ _id: new ObjectId(companyId) })
+        : null
+      if (!company) {
+        return NextResponse.json({ error: 'That bus company was not found' }, { status: 400 })
+      }
+      owner = { id: company._id.toString(), name: company.name }
+    }
+
     const bus: Bus = {
-      companyId: company ? company.companyId : 'admin',
-      companyName: company ? company.email : companyName || 'BusHub',
+      companyId: owner.id,
+      companyName: owner.name,
       busName,
       busType: busType || 'AC',
       logoUrl: typeof logoUrl === 'string' && logoUrl.trim() ? logoUrl.trim() : undefined,
@@ -61,13 +75,11 @@ export async function POST(req: NextRequest) {
       totalSeats: Number(totalSeats),
       bookedSeats: [],
       blockedSeats: [],
-      // Only the platform admin can set a custom commission rate; companies always get the default
-      commissionRate: admin && commissionRate ? Number(commissionRate) : DEFAULT_COMMISSION_RATE,
+      commissionRate: commissionRate ? Number(commissionRate) : DEFAULT_COMMISSION_RATE,
       status: 'active',
       createdAt: new Date().toISOString(),
     }
 
-    const { db } = await connectToDatabase()
     const result = await db.collection('buses').insertOne(bus as any)
     return NextResponse.json({ bus: { ...bus, _id: result.insertedId } }, { status: 201 })
   } catch (err) {
