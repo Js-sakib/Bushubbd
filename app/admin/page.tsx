@@ -67,6 +67,7 @@ export default function AdminDashboard() {
   const [bookings, setBookings] = useState<Booking[]>([])
   const [companies, setCompanies] = useState<CompanyRow[]>([])
   const [manageSeatsBusId, setManageSeatsBusId] = useState<string | null>(null)
+  const [newLogin, setNewLogin] = useState<{ name: string; email: string; phone: string; password: string } | null>(null)
 
   const [form, setForm] = useState({
     busName: '', busType: 'AC', companyId: '', companyName: '', from: '', to: '',
@@ -143,6 +144,17 @@ export default function AdminDashboard() {
     } else {
       toast.error('Failed to update company')
     }
+  }
+
+  const handleResetPassword = async (company: CompanyRow) => {
+    if (!confirm(`Give ${company.name} a new password? Their old password will stop working.`)) return
+    const res = await fetch(`/api/companies/${company._id}/reset-password`, { method: 'POST' })
+    const data = await res.json().catch(() => null)
+    if (!res.ok || !data?.password) {
+      toast.error(data?.error || 'Could not reset the password')
+      return
+    }
+    setNewLogin(data)
   }
 
   if (checking) {
@@ -460,6 +472,8 @@ export default function AdminDashboard() {
         </div>
       )}
 
+      {tab === 'companies' && newLogin && <NewLoginCard login={newLogin} onClose={() => setNewLogin(null)} />}
+
       {tab === 'companies' && (
         <div className="card-2 mt-5 overflow-x-auto">
           <table className="w-full text-sm">
@@ -505,6 +519,9 @@ export default function AdminDashboard() {
                         Suspend
                       </button>
                     )}
+                    <button type="button" onClick={() => handleResetPassword(c)} className="text-[13px] font-semibold text-[#f5a524] hover:underline">
+                      Reset password
+                    </button>
                   </td>
                 </tr>
               ))}
@@ -519,6 +536,89 @@ export default function AdminDashboard() {
           </table>
         </div>
       )}
+    </div>
+  )
+}
+
+/** Bangladeshi numbers are usually typed as 01XXXXXXXXX; wa.me needs 8801XXXXXXXXX. */
+function whatsappNumber(phone: string): string | null {
+  const digits = (phone || '').replace(/\D/g, '')
+  if (/^8801\d{9}$/.test(digits)) return digits
+  if (/^01\d{9}$/.test(digits)) return `88${digits}`
+  return null
+}
+
+function NewLoginCard({
+  login,
+  onClose,
+}: {
+  login: { name: string; email: string; phone: string; password: string }
+  onClose: () => void
+}) {
+  const wa = whatsappNumber(login.phone)
+  const message = [
+    `Your BusHub ticket scanner password has been reset.`,
+    ``,
+    `Login: https://bushubbd.com/company/login`,
+    `Email: ${login.email}`,
+    `New password: ${login.password}`,
+  ].join('\n')
+
+  const copy = async (text: string, what: string) => {
+    try {
+      await navigator.clipboard.writeText(text)
+      toast.success(`${what} copied`)
+    } catch {
+      toast.error('Copy failed. Press and hold the text to copy it.')
+    }
+  }
+
+  return (
+    <div className="mt-5 flex flex-col gap-3.5 rounded-[20px] border-2 border-[#f5a524] bg-[#f5a524]/[0.07] p-5">
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex flex-col gap-1">
+          <span className="display text-[16px] font-bold">New password for {login.name}</span>
+          <span className="text-[12px] leading-snug text-[#c4cdcf]">
+            Shown only once. Send it to them now; it cannot be seen again later.
+          </span>
+        </div>
+        <button type="button" onClick={onClose} aria-label="Close" className="icon-btn shrink-0">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round" className="h-[17px] w-[17px]">
+            <path d="M6 6l12 12M18 6 6 18" />
+          </svg>
+        </button>
+      </div>
+
+      <div className="flex flex-col gap-2.5 rounded-2xl border border-[#2a3437] bg-[#0f1517] p-4">
+        <div className="flex items-center justify-between gap-3">
+          <span className="text-[12px] text-[#8e9a9d]">Email</span>
+          <span className="break-all text-right text-[13.5px] font-semibold">{login.email}</span>
+        </div>
+        <div className="flex items-center justify-between gap-3">
+          <span className="text-[12px] text-[#8e9a9d]">Password</span>
+          <span className="select-all font-mono text-[17px] font-bold tracking-wide text-[#f5a524]">{login.password}</span>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-2.5">
+        <button type="button" onClick={() => copy(login.password, 'Password')} className="glass-btn glass-btn-plain h-12 whitespace-nowrap px-3 text-[13px]">
+          Copy password
+        </button>
+        {wa ? (
+          <a
+            href={`https://wa.me/${wa}?text=${encodeURIComponent(message)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="glass-btn glass-btn-teal h-12 whitespace-nowrap px-3 text-[13px]"
+          >
+            Send on WhatsApp
+          </a>
+        ) : (
+          <button type="button" onClick={() => copy(message, 'Message')} className="glass-btn glass-btn-teal h-12 whitespace-nowrap px-3 text-[13px]">
+            Copy message
+          </button>
+        )}
+      </div>
     </div>
   )
 }
