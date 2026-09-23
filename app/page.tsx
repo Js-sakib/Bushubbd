@@ -48,7 +48,12 @@ export default function Home() {
       return
     }
 
-    const params = new URLSearchParams({ from: formData.from, to: formData.to, date: formData.date })
+    const params = new URLSearchParams({
+      from: formData.from,
+      to: formData.to,
+      date: formData.date,
+      passengers: formData.passengers,
+    })
     if (trip === 'round') {
       params.set('trip', 'round')
       params.set('returnDate', formData.returnDate)
@@ -57,7 +62,12 @@ export default function Home() {
   }
 
   const goToRoute = (from: string, to: string) => {
-    const params = new URLSearchParams({ from, to, date: formData.date || today })
+    const params = new URLSearchParams({
+      from,
+      to,
+      date: formData.date || today,
+      passengers: formData.passengers,
+    })
     if (trip === 'round' && formData.returnDate) {
       params.set('trip', 'round')
       params.set('returnDate', formData.returnDate)

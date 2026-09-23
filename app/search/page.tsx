@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { formatTripDate } from '@/lib/dates'
+import { seatsLeft as calcSeatsLeft } from '@/lib/seats'
 import {
   BusFilters,
   EMPTY_FILTERS,
@@ -55,6 +56,7 @@ function SearchResults() {
   const date = searchParams.get('date') || ''
   const isRoundTrip = searchParams.get('trip') === 'round'
   const returnDate = searchParams.get('returnDate') || ''
+  const passengers = Math.min(6, Math.max(1, Number(searchParams.get('passengers')) || 1))
 
   const [leg, setLeg] = useState<Leg>('outbound')
   const [outboundPick, setOutboundPick] = useState<SearchBus | null>(null)
@@ -70,29 +72,30 @@ function SearchResults() {
   const current = leg === 'return' ? inbound : outbound
   const currentPick = leg === 'return' ? returnPick : outboundPick
 
-  // Each leg has its own operators and price band, so the filter sheet follows the visible leg.
-  const operators = useMemo(
-    () => Array.from(new Set(current.buses.map((b) => b.companyName))).sort(),
-    [current.buses]
+  // A bus that cannot seat the whole group is not a result worth showing.
+  const roomy = useMemo(
+    () => current.buses.filter((bus) => calcSeatsLeft(bus) >= passengers),
+    [current.buses, passengers]
   )
-  const types = useMemo(() => Array.from(new Set(current.buses.map((b) => b.busType))).sort(), [current.buses])
-  const priceRange = useMemo(() => {
-    if (current.buses.length === 0) return { min: 0, max: 0 }
-    const prices = current.buses.map((b) => b.price)
-    return { min: Math.min(...prices), max: Math.max(...prices) }
-  }, [current.buses])
+  const tooSmall = current.buses.length - roomy.length
 
-  const visible = useMemo(
-    () => sortBuses(applyFilters(current.buses, filters), sort),
-    [current.buses, filters, sort]
-  )
+  // Each leg has its own operators and price band, so the filter sheet follows the visible leg.
+  const operators = useMemo(() => Array.from(new Set(roomy.map((b) => b.companyName))).sort(), [roomy])
+  const types = useMemo(() => Array.from(new Set(roomy.map((b) => b.busType))).sort(), [roomy])
+  const priceRange = useMemo(() => {
+    if (roomy.length === 0) return { min: 0, max: 0 }
+    const prices = roomy.map((b) => b.price)
+    return { min: Math.min(...prices), max: Math.max(...prices) }
+  }, [roomy])
+
+  const visible = useMemo(() => sortBuses(applyFilters(roomy, filters), sort), [roomy, filters, sort])
   const cheapestPrice = visible.length ? Math.min(...visible.map((b) => b.price)) : null
   const activeFilters = countActiveFilters(filters)
   const sortLabel = SORT_OPTIONS.find((o) => o.key === sort)?.label ?? ''
 
   const handleSelect = (bus: SearchBus) => {
     if (!isRoundTrip) {
-      router.push(`/booking?busId=${bus._id}`)
+      router.push(`/booking?busId=${bus._id}&passengers=${passengers}`)
       return
     }
     if (leg === 'outbound') {
@@ -107,7 +110,9 @@ function SearchResults() {
 
   const startBooking = () => {
     if (!outboundPick || !returnPick) return
-    router.push(`/booking?busId=${outboundPick._id}&returnBusId=${returnPick._id}`)
+    router.push(
+      `/booking?busId=${outboundPick._id}&returnBusId=${returnPick._id}&passengers=${passengers}`
+    )
   }
 
   const legHeader =
@@ -129,6 +134,7 @@ function SearchResults() {
           <span className="text-xs text-[#8e9a9d]">
             {formatTripDate(legHeader.date)}
             {isRoundTrip ? ' · Round trip' : ''}
+            {passengers > 1 ? ` · ${passengers} passengers` : ''}
           </span>
         </div>
       </div>
@@ -206,9 +212,19 @@ function SearchResults() {
               <circle cx="16.5" cy="19" r="1.6" />
             </svg>
           </span>
-          <h2 className="text-lg font-bold">{current.buses.length === 0 ? 'No buses found' : 'Nothing matches those filters'}</h2>
+          <h2 className="text-lg font-bold">
+            {current.buses.length === 0
+              ? 'No buses found'
+              : roomy.length === 0
+                ? `No bus has ${passengers} seats free`
+                : 'Nothing matches those filters'}
+          </h2>
           <p className="text-[13px] text-[#9ba7aa]">
-            {current.buses.length === 0 ? 'Try a different date or route.' : 'Loosen a filter to see more buses.'}
+            {current.buses.length === 0
+              ? 'Try a different date or route.'
+              : roomy.length === 0
+                ? 'Try another date, or book fewer seats and travel separately.'
+                : 'Loosen a filter to see more buses.'}
           </p>
           {activeFilters > 0 && (
             <button type="button" onClick={() => setFilters(EMPTY_FILTERS)} className="glass-btn glass-btn-plain h-11 text-sm">
@@ -221,7 +237,8 @@ function SearchResults() {
       {!current.loading && visible.length > 0 && (
         <p className="mt-4 text-[12px] text-[#78868a]">
           {visible.length} bus{visible.length === 1 ? '' : 'es'}
-          {activeFilters > 0 ? ` of ${current.buses.length}` : ''} · {sortLabel.toLowerCase()}
+          {activeFilters > 0 ? ` of ${roomy.length}` : ''} · {sortLabel.toLowerCase()}
+          {tooSmall > 0 ? ` · ${tooSmall} hidden without ${passengers} seats together` : ''}
         </p>
       )}
 

@@ -25,6 +25,7 @@ function BookingContent() {
   const router = useRouter()
   const busId = searchParams.get('busId')
   const returnBusId = searchParams.get('returnBusId')
+  const passengers = Math.min(6, Math.max(1, Number(searchParams.get('passengers')) || 1))
 
   const [bus, setBus] = useState<Bus | null>(null)
   const [loading, setLoading] = useState(true)
@@ -51,9 +52,20 @@ function BookingContent() {
   const totalPrice = bus ? selectedSeats.length * bus.price : 0
 
   const toggleSeat = (seatLabel: string) => {
-    setSelectedSeats((prev) =>
-      prev.includes(seatLabel) ? prev.filter((s) => s !== seatLabel) : [...prev, seatLabel]
-    )
+    setSelectedSeats((prev) => {
+      if (prev.includes(seatLabel)) return prev.filter((s) => s !== seatLabel)
+      // Searching for N passengers means N seats; picking a further one would silently
+      // change what they are paying for.
+      if (prev.length >= passengers) {
+        toast.error(
+          passengers === 1
+            ? 'You searched for 1 passenger. Tap your seat again to change it.'
+            : `You searched for ${passengers} passengers. Unpick a seat to choose another.`
+        )
+        return prev
+      }
+      return [...prev, seatLabel]
+    })
   }
 
   const handleConfirmSeats = () => {
@@ -111,7 +123,10 @@ function BookingContent() {
       toast.success('Booking confirmed')
       const next = new URLSearchParams({ bookingId })
       // On a round trip the return leg is booked as its own ticket, so carry it to the confirmation.
-      if (returnBusId) next.set('returnBusId', returnBusId)
+      if (returnBusId) {
+        next.set('returnBusId', returnBusId)
+        next.set('passengers', String(passengers))
+      }
       router.push(`/confirmation?${next}`)
     } catch {
       toast.error('Something went wrong, please try again')
@@ -265,12 +280,15 @@ function BookingContent() {
           </div>
 
           <div className="flex flex-col gap-3 rounded-[18px] border border-[#232c2f] bg-[#151b1d] p-4">
-            <div className="flex items-center justify-between">
-              <span className="text-[12.5px] text-[#8e9a9d]">
-                {selectedSeats.length} seat{selectedSeats.length === 1 ? '' : 's'}
-                {selectedSeats.length > 0 ? ` · ${selectedSeats.join(', ')}` : ''}
+            <div className="flex items-center justify-between gap-3">
+              <span className="text-[12.5px] leading-snug text-[#8e9a9d]">
+                {selectedSeats.length === 0
+                  ? `Choose ${passengers} seat${passengers === 1 ? '' : 's'}`
+                  : selectedSeats.length < passengers
+                    ? `${selectedSeats.join(', ')} · ${passengers - selectedSeats.length} more to pick`
+                    : `${selectedSeats.length} seat${selectedSeats.length === 1 ? '' : 's'} · ${selectedSeats.join(', ')}`}
               </span>
-              <span className="display text-[22px] font-bold text-[#f5a524]">৳{totalPrice}</span>
+              <span className="display shrink-0 text-[22px] font-bold text-[#f5a524]">৳{totalPrice}</span>
             </div>
             <button type="button" onClick={handleConfirmSeats} className="glass-btn w-full">
               <span className="icon-disc">
