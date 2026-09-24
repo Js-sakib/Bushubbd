@@ -8,6 +8,11 @@ export default function SiteChrome({ children }: { children: React.ReactNode }) 
   const pathname = usePathname() || '/'
   const bare = BARE_ROUTES.some((route) => pathname.startsWith(route))
 
+  // The admin dashboard lays out its own sidebar and full-width shell.
+  if (pathname === '/admin' || pathname === '/admin/') {
+    return <>{children}</>
+  }
+
   if (bare) {
     return <main className="mx-auto w-full max-w-6xl px-4 py-6">{children}</main>
   }
