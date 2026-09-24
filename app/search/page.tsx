@@ -140,7 +140,7 @@ function SearchResults() {
       </div>
 
       {isRoundTrip && (
-        <div className="mt-4 grid grid-cols-2 gap-2 rounded-2xl border border-[#242d30] bg-[#0f1517] p-1">
+        <div className="mt-4 grid grid-cols-2 gap-2 rounded-2xl border border-white/10 bg-black/30 p-1">
           {(
             [
               { key: 'outbound' as const, label: 'Going', city: `${from} → ${to}`, day: date, pick: outboundPick },
@@ -152,7 +152,7 @@ function SearchResults() {
               type="button"
               onClick={() => setLeg(tab.key)}
               className={`flex flex-col items-start gap-0.5 rounded-[14px] px-3 py-2.5 text-left transition ${
-                leg === tab.key ? 'bg-[#1c2426]' : 'hover:bg-[#151b1d]'
+                leg === tab.key ? 'bg-white/[0.09] shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]' : 'hover:bg-white/[0.04]'
               }`}
             >
               <span className="flex w-full items-center gap-1.5">
@@ -204,7 +204,7 @@ function SearchResults() {
 
       {!current.loading && !current.error && visible.length === 0 && (
         <div className="card mt-5 flex flex-col items-center gap-3 px-6 py-14 text-center">
-          <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#1c2426] text-[#8e9a9d]">
+          <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white/[0.06] text-[#8e9a9d]">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-7 w-7">
               <rect x="3" y="4" width="18" height="12.5" rx="3" />
               <path d="M3 11h18" />
@@ -260,7 +260,7 @@ function SearchResults() {
       )}
 
       {isRoundTrip && outboundPick && returnPick && (
-        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-[#242d30] bg-[#0f1517]/95 px-5 py-3.5 backdrop-blur">
+        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-[#0b0e0f]/80 px-5 py-3.5 backdrop-blur-xl">
           <div className="mx-auto flex max-w-5xl items-center gap-3">
             <div className="flex grow flex-col gap-0.5">
               <span className="text-[11.5px] text-[#8e9a9d]">Both legs chosen · per seat</span>

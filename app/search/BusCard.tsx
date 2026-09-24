@@ -40,12 +40,12 @@ export default function BusCard({
 
   return (
     <div
-      className={`flex flex-col gap-3.5 rounded-[18px] border bg-[#151b1d] p-4 transition ${
+      className={`flex flex-col gap-3.5 glass-lite p-4 transition ${
         selected
-          ? 'border-[#f5a524] shadow-[0_0_0_1px_rgba(245,165,36,0.35)]'
+          ? '!border-[#f5a524] !shadow-[0_0_0_1px_rgba(245,165,36,0.35),0_14px_40px_rgba(0,0,0,0.32)]'
           : soldOut
-            ? 'border-[#222b2e] opacity-60'
-            : 'border-[#222b2e]'
+            ? 'opacity-60'
+            : ''
       }`}
     >
       <div className="flex items-start gap-3">

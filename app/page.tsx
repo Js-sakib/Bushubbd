@@ -93,12 +93,12 @@ export default function Home() {
 
       <form
         onSubmit={handleSearch}
-        className="mt-6 flex flex-col gap-3.5 rounded-[22px] border border-[#232c2f] bg-[#151b1d] p-4 shadow-[0_24px_50px_rgba(0,0,0,0.45)] sm:max-w-xl"
+        className="mt-6 flex flex-col gap-3.5 glass p-4 sm:max-w-xl"
       >
         <div
           role="radiogroup"
           aria-label="Trip type"
-          className="flex gap-1 rounded-full border border-[#242d30] bg-[#0f1517] p-1"
+          className="flex gap-1 rounded-full border border-white/10 bg-black/30 p-1"
         >
           {(
             [
@@ -156,7 +156,7 @@ export default function Home() {
             type="button"
             onClick={handleSwap}
             aria-label="Swap origin and destination"
-            className="h-11 w-11 shrink-0 self-center rounded-full border border-[#2e3a3d] bg-[#1c2426] text-[#f5a524] transition hover:border-[#f5a524]"
+            className="h-11 w-11 shrink-0 self-center rounded-full border border-white/10 bg-white/[0.06] text-[#f5a524] transition hover:border-[#f5a524]"
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mx-auto h-[19px] w-[19px]">
               <path d="M7 4v16" />
@@ -223,7 +223,7 @@ export default function Home() {
               key={`${route.from}-${route.to}`}
               type="button"
               onClick={() => goToRoute(route.from, route.to)}
-              className="flex flex-col gap-1.5 rounded-2xl border border-[#222b2e] bg-[#141a1c] p-3.5 text-left transition hover:border-[#f5a524]"
+              className="flex flex-col gap-1.5 glass-lite p-3.5 text-left transition hover:border-[#f5a524]"
             >
               <span className="text-sm font-bold">
                 {route.from} → {route.to}
@@ -237,7 +237,7 @@ export default function Home() {
       <section className="mt-8 flex flex-col gap-3">
         <h2 className="text-[17px] font-bold">Why book here</h2>
 
-        <div className="flex items-start gap-3.5 rounded-2xl border border-[#222b2e] bg-[#141a1c] p-3.5">
+        <div className="flex items-start gap-3.5 glass-lite p-3.5">
           <span className="flex h-[38px] w-[38px] shrink-0 items-center justify-center rounded-xl bg-[#2dd4bf]/[0.14] text-[#2dd4bf]">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-[19px] w-[19px]">
               <path d="M12 3 4 6v6c0 4.4 3.3 8.3 8 9 4.7-.7 8-4.6 8-9V6z" />
@@ -252,7 +252,7 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="flex items-start gap-3.5 rounded-2xl border border-[#222b2e] bg-[#141a1c] p-3.5">
+        <div className="flex items-start gap-3.5 glass-lite p-3.5">
           <span className="flex h-[38px] w-[38px] shrink-0 items-center justify-center rounded-xl bg-[#f5a524]/[0.14] text-[#f5a524]">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-[19px] w-[19px]">
               <circle cx="12" cy="12" r="9" />
@@ -267,7 +267,7 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="flex items-start gap-3.5 rounded-2xl border border-[#222b2e] bg-[#141a1c] p-3.5">
+        <div className="flex items-start gap-3.5 glass-lite p-3.5">
           <span className="flex h-[38px] w-[38px] shrink-0 items-center justify-center rounded-xl bg-[#f2661d]/[0.16] text-[#f2661d]">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-[19px] w-[19px]">
               <rect x="2.5" y="6" width="19" height="13" rx="3" />

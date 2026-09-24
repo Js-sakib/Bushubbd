@@ -193,7 +193,7 @@ export default function OperatorScanner() {
       {tab === 'scan' && (
         <div className="mt-5 flex flex-col gap-4">
           {verifying && (
-            <div className="flex aspect-[4/3] w-full items-center justify-center rounded-[22px] border border-[#222b2e] bg-[#12181a] text-sm text-[#9ba7aa]">
+            <div className="flex aspect-[4/3] w-full items-center justify-center glass-lite text-sm text-[#9ba7aa]">
               Checking ticket...
             </div>
           )}
@@ -244,7 +244,7 @@ export default function OperatorScanner() {
                 e.preventDefault()
                 if (manualCode.trim()) checkTicket(manualCode)
               }}
-              className="flex flex-col gap-2.5 rounded-[18px] border border-[#222b2e] bg-[#12181a] p-4"
+              className="flex flex-col gap-2.5 glass-lite p-4"
             >
               <label htmlFor="manual-code" className="label-xs">
                 Or type the booking code

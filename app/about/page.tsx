@@ -91,7 +91,7 @@ export default function About() {
       <section className="mt-8 flex flex-col gap-3">
         <h2 className="text-[17px] font-bold">What we do differently</h2>
         {PROMISES.map((item) => (
-          <div key={item.title} className="flex items-start gap-3.5 rounded-2xl border border-[#222b2e] bg-[#141a1c] p-3.5">
+          <div key={item.title} className="flex items-start gap-3.5 glass-lite p-3.5">
             <span className={`flex h-[38px] w-[38px] shrink-0 items-center justify-center rounded-xl ${item.bg} ${item.accent}`}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-[19px] w-[19px]">
                 {item.icon}
@@ -109,7 +109,7 @@ export default function About() {
         <h2 className="text-[17px] font-bold">How booking works</h2>
         <div className="grid gap-2.5 sm:grid-cols-3">
           {STEPS.map((step) => (
-            <div key={step.n} className="flex flex-col gap-2 rounded-2xl border border-[#222b2e] bg-[#141a1c] p-3.5">
+            <div key={step.n} className="flex flex-col gap-2 glass-lite p-3.5">
               <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#f5a524]/[0.14] text-sm font-bold text-[#f5a524]">
                 {step.n}
               </span>
@@ -122,7 +122,7 @@ export default function About() {
 
       <section className="mt-8 flex flex-col gap-3">
         <h2 className="text-[17px] font-bold">Why we built it</h2>
-        <div className="rounded-2xl border border-[#222b2e] bg-[#141a1c] p-4">
+        <div className="glass-lite p-4">
           <p className="text-[13px] leading-relaxed text-[#b7c1c3]">
             Buying a long-distance bus ticket in Bangladesh usually means going to a counter, calling a number that
             rings out, or trusting a seat map that was last accurate this morning. Passengers turn up to find their
@@ -157,7 +157,7 @@ export default function About() {
 
       <section className="mt-8 flex flex-col gap-3" id="contact">
         <h2 className="text-[17px] font-bold">Get in touch</h2>
-        <div className="flex flex-col gap-3 rounded-2xl border border-[#222b2e] bg-[#141a1c] p-4">
+        <div className="flex flex-col gap-3 glass-lite p-4">
           <p className="text-[13px] leading-relaxed text-[#9ba7aa]">
             Question about a booking, a refund, or listing your buses? Write to us and we will come back to you.
           </p>

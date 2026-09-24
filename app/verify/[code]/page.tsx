@@ -121,7 +121,7 @@ export default function VerifyTicket() {
           </p>
         )}
 
-        <div className="mt-2 flex w-full flex-col gap-2.5 rounded-2xl border border-[#2a3437] bg-[#0f1517] p-4 text-left">
+        <div className="mt-2 flex w-full flex-col gap-2.5 rounded-2xl border border-white/[0.08] bg-black/25 p-4 text-left">
           <div className="flex items-center justify-between gap-3">
             <span className="text-xs text-[#8e9a9d]">Booking</span>
             <span className="display text-sm font-bold">{result.bookingCode}</span>

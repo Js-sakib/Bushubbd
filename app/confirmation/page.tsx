@@ -10,7 +10,7 @@ function timeLeft(validUntil: string) {
   if (ms <= 0) return null
   const hours = Math.floor(ms / 3600000)
   const minutes = Math.floor((ms % 3600000) / 60000)
-  return `${hours}h ${minutes}m`
+  return hours >= 24 ? `${Math.floor(hours / 24)}d ${hours % 24}h` : `${hours}h ${minutes}m`
 }
 
 /** A 1x1 transparent PNG, used so one unreachable operator logo cannot fail the whole capture. */
@@ -59,10 +59,12 @@ function ConfirmationContent() {
   const renderTicket = useCallback(async (): Promise<Blob | null> => {
     if (!ticketRef.current) return null
     const { toBlob } = await import('html-to-image')
-    // No backgroundColor option here: html-to-image writes it onto the ticket's own root node,
-    // which would paint over the white card and leave the dark text unreadable.
+    // backgroundColor is written onto the captured root, which is the wrapper around the ticket,
+    // so the saved image gets the dark backdrop the notches are cut from while the page shows
+    // the glass background. (Put on the ticket itself, it would paint over the white card.)
     return toBlob(ticketRef.current, {
       pixelRatio: 2.5,
+      backgroundColor: '#0b0e0f',
       cacheBust: true,
       imagePlaceholder: BLANK_PIXEL,
     })
@@ -175,7 +177,7 @@ function ConfirmationContent() {
           cut out in the page colour, blend in the saved image exactly as they do on screen. */}
       <div className="mt-4 sm:max-w-lg">
         {/* The margin stays outside the captured node, or it shows up as a blank strip in the image. */}
-        <div ref={ticketRef} className="p-3" style={{ backgroundColor: '#0b0e0f' }}>
+        <div ref={ticketRef} className="p-3">
           <Ticket booking={booking} />
         </div>
       </div>

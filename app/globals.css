@@ -42,16 +42,16 @@ h1, h2, h3, .display {
   letter-spacing: -0.01em;
 }
 
-.card {
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: 18px;
-}
-
-.card-2 {
-  background: var(--surface-2);
-  border: 1px solid var(--line-soft);
-  border-radius: 18px;
+/* Cards share the glass look of the admin dashboard, without the backdrop blur: over the dark
+   page the blur adds little, and on budget phones it makes long lists stutter while scrolling.
+   Full blur (.glass below) is kept for a few large single panels. */
+.card,
+.card-2,
+.glass-lite {
+  background: linear-gradient(150deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.018) 60%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
 /* Frosted glass panel for the admin dashboard: a faint light-to-dark sheen, a hairline edge,
@@ -135,8 +135,8 @@ h1, h2, h3, .display {
   width: 100%;
   height: 48px;
   border-radius: 13px;
-  border: 1px solid var(--field-line);
-  background: var(--field);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.28);
   color: var(--ink);
   font-size: 15px;
   font-weight: 600;
@@ -163,6 +163,12 @@ select.input-dark {
   padding-right: 34px;
 }
 
+/* The field itself is see-through; the opened option list must not be. */
+select.input-dark option {
+  background: #12181a;
+  color: var(--ink);
+}
+
 input[type='date']::-webkit-calendar-picker-indicator {
   filter: invert(0.7);
   cursor: pointer;
@@ -180,8 +186,8 @@ input[type='date']::-webkit-calendar-picker-indicator {
   height: 34px;
   padding: 0 15px;
   border-radius: 999px;
-  border: 1px solid #262f32;
-  background: var(--surface-2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
   color: #c4cdcf;
   font-size: 13px;
   font-weight: 600;
@@ -203,8 +209,8 @@ input[type='date']::-webkit-calendar-picker-indicator {
   height: 38px;
   flex-shrink: 0;
   border-radius: 12px;
-  border: 1px solid #242d30;
-  background: var(--surface);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
   color: var(--ink);
   display: flex;
   align-items: center;

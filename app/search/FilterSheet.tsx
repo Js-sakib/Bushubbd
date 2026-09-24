@@ -46,7 +46,7 @@ function Sheet({
         role="dialog"
         aria-modal="true"
         aria-label={title}
-        className="relative flex max-h-[85vh] w-full flex-col rounded-t-[26px] border border-[#242d30] bg-[#12181a] sm:max-w-md sm:rounded-[26px]"
+        className="relative flex max-h-[85vh] w-full flex-col rounded-t-[26px] border border-white/10 bg-[#12181a]/90 backdrop-blur-xl sm:max-w-md sm:rounded-[26px]"
       >
         <div className="flex items-center gap-3 border-b border-[#1c2426] px-5 py-4">
           <span className="display grow text-[16px] font-bold">{title}</span>
@@ -84,7 +84,7 @@ export function SortSheet({
               onClose()
             }}
             className={`flex items-center gap-3 rounded-2xl border px-4 py-3 text-left transition ${
-              value === option.key ? 'border-[#f5a524] bg-[#f5a524]/[0.09]' : 'border-[#222b2e] bg-[#151b1d]'
+              value === option.key ? 'border-[#f5a524] bg-[#f5a524]/[0.09]' : 'border-white/10 bg-white/[0.04]'
             }`}
           >
             <span className="flex grow flex-col gap-0.5">
@@ -110,7 +110,7 @@ function Toggle({ active, label, hint, onClick }: { active: boolean; label: stri
       aria-pressed={active}
       onClick={onClick}
       className={`flex flex-col items-start gap-0.5 rounded-2xl border px-3.5 py-2.5 text-left transition ${
-        active ? 'border-[#f5a524] bg-[#f5a524]/[0.09] text-[#f5a524]' : 'border-[#222b2e] bg-[#151b1d] text-[#c4cdcf]'
+        active ? 'border-[#f5a524] bg-[#f5a524]/[0.09] text-[#f5a524]' : 'border-white/10 bg-white/[0.04] text-[#c4cdcf]'
       }`}
     >
       <span className="text-[13px] font-bold">{label}</span>

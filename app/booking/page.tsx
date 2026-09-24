@@ -200,7 +200,7 @@ function BookingContent() {
 
       {step === 'seats' && (
         <div className="mt-5 flex flex-col gap-4">
-          <div className="flex items-center gap-4 rounded-[14px] border border-[#1f2729] bg-[#12181a] px-3.5 py-2.5">
+          <div className="flex items-center gap-4 rounded-[14px] border border-white/[0.08] bg-white/[0.04] px-3.5 py-2.5">
             <span className="inline-flex items-center gap-2 text-[11.5px] font-semibold text-[#c4cdcf]">
               <span className="h-3.5 w-3.5 rounded border border-[#2a6b52] bg-[#12372c]" />
               Available
@@ -215,7 +215,7 @@ function BookingContent() {
             </span>
           </div>
 
-          <div className="rounded-[22px] border border-[#202a2d] bg-[#10171a] p-4">
+          <div className="glass-lite p-4">
             <div className="flex items-center justify-between border-b border-dashed border-[#263033] pb-3">
               <span className="label-xs">Deck</span>
               <span className="inline-flex items-center gap-1.5 text-[11.5px] font-semibold text-[#8e9a9d]">
@@ -279,7 +279,7 @@ function BookingContent() {
             </div>
           </div>
 
-          <div className="flex flex-col gap-3 rounded-[18px] border border-[#232c2f] bg-[#151b1d] p-4">
+          <div className="flex flex-col gap-3 glass-lite p-4">
             <div className="flex items-center justify-between gap-3">
               <span className="text-[12.5px] leading-snug text-[#8e9a9d]">
                 {selectedSeats.length === 0
@@ -313,7 +313,7 @@ function BookingContent() {
             <p className="mt-1 text-[12.5px] text-[#9ba7aa]">No account needed — just your contact details.</p>
           </div>
 
-          <div className="flex flex-col gap-3.5 rounded-[18px] border border-[#232c2f] bg-[#151b1d] p-4">
+          <div className="flex flex-col gap-3.5 glass-lite p-4">
             <div className="flex flex-col gap-1.5">
               <label htmlFor="name" className="label-xs">
                 Full name
@@ -370,8 +370,8 @@ function BookingContent() {
         <div className="mt-5 flex flex-col gap-4">
           <h2 className="text-xl font-bold">Payment</h2>
 
-          <div className="flex flex-col gap-4 rounded-[18px] border border-[#232c2f] bg-[#151b1d] p-4">
-            <div className="rounded-2xl border border-[#2a3437] bg-[#0f1517] p-4">
+          <div className="flex flex-col gap-4 glass-lite p-4">
+            <div className="rounded-2xl border border-white/[0.08] bg-black/25 p-4">
               <p className="text-[12.5px] text-[#8e9a9d]">Total amount</p>
               <p className="display mt-1 text-[32px] font-bold leading-none text-[#f5a524]">৳{totalPrice}</p>
               <p className="mt-2 text-xs text-[#8e9a9d]">Seats: {selectedSeats.join(', ')}</p>
@@ -380,7 +380,7 @@ function BookingContent() {
             <div className="flex flex-col gap-2.5">
               <label
                 className={`flex cursor-pointer items-center gap-3 rounded-2xl border p-3.5 ${
-                  paymentMethod === 'bkash' ? 'border-[#f2661d] bg-[#f2661d]/10' : 'border-[#2a3437] bg-[#0f1517]'
+                  paymentMethod === 'bkash' ? 'border-[#f2661d] bg-[#f2661d]/10' : 'border-white/[0.08] bg-black/25'
                 }`}
               >
                 <input
@@ -398,7 +398,7 @@ function BookingContent() {
 
               <label
                 className={`flex cursor-pointer items-center gap-3 rounded-2xl border p-3.5 ${
-                  paymentMethod === 'nagad' ? 'border-[#f2661d] bg-[#f2661d]/10' : 'border-[#2a3437] bg-[#0f1517]'
+                  paymentMethod === 'nagad' ? 'border-[#f2661d] bg-[#f2661d]/10' : 'border-white/[0.08] bg-black/25'
                 }`}
               >
                 <input
