@@ -11,7 +11,7 @@ import Overview from './Overview'
 import BookingsSection from './BookingsSection'
 import BusesSection from './BusesSection'
 import CompaniesSection from './CompaniesSection'
-import type { Booking, Bus, CompanyRow, Section } from './types'
+import type { Booking, Bus, CompanyRow, FleetBus, Section } from './types'
 
 const NAV: { key: Section; label: string; icon: React.ReactNode }[] = [
   {
@@ -87,12 +87,14 @@ export default function AdminDashboard() {
   const [buses, setBuses] = useState<Bus[]>([])
   const [bookings, setBookings] = useState<Booking[]>([])
   const [companies, setCompanies] = useState<CompanyRow[]>([])
+  const [fleet, setFleet] = useState<FleetBus[]>([])
 
   const loadAll = useCallback(() => {
     fetch('/api/admin/stats').then((r) => r.json()).then((d) => !d.error && setStats(d)).catch(() => undefined)
     fetch('/api/buses').then((r) => r.json()).then((d) => setBuses(d.buses || [])).catch(() => undefined)
     fetch('/api/bookings').then((r) => r.json()).then((d) => setBookings(d.bookings || [])).catch(() => undefined)
     fetch('/api/companies').then((r) => r.json()).then((d) => setCompanies(d.companies || [])).catch(() => undefined)
+    fetch('/api/fleet').then((r) => r.json()).then((d) => setFleet(d.fleet || [])).catch(() => undefined)
   }, [])
 
   useEffect(() => {
@@ -242,7 +244,7 @@ export default function AdminDashboard() {
             <Overview stats={stats} bookings={bookings} buses={buses} onRefund={handleRefund} onSeeAllBookings={() => go('bookings')} />
           )}
           {section === 'bookings' && <BookingsSection bookings={bookings} query={query} onQuery={setQuery} onRefund={handleRefund} />}
-          {section === 'buses' && <BusesSection buses={buses} bookings={bookings} companies={companies} onChanged={loadAll} />}
+          {section === 'buses' && <BusesSection buses={buses} bookings={bookings} companies={companies} fleet={fleet} onChanged={loadAll} />}
           {section === 'companies' && <CompaniesSection companies={companies} onChanged={loadAll} />}
         </main>
       </div>

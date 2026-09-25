@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { ObjectId } from 'mongodb'
-import { connectToDatabase } from '@/lib/db'
+import { Db, ObjectId } from 'mongodb'
+import { connectToDatabase, isDuplicateKeyError } from '@/lib/db'
 import {
   generateBookingCode,
   ticketExpiry,
@@ -11,7 +11,7 @@ import {
   getVerifyUrl,
 } from '@/lib/tickets'
 import { releaseExpiredHolds, repairWronglyExpiredTickets } from '@/lib/seatHold'
-import { takenSeats } from '@/lib/seats'
+import { seatSelectionError, takenSeats } from '@/lib/seats'
 import { getCompanyFromCookies, getAdminFromCookies } from '@/lib/auth'
 import { Booking } from '@/lib/models'
 
@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json()
     const { busId, seats, passengerName, passengerPhone, passengerEmail, source } = body
 
-    if (!busId || !Array.isArray(seats) || seats.length === 0 || !passengerName || !passengerPhone) {
+    if (!busId || !Array.isArray(seats) || seats.length === 0 || !String(passengerName || '').trim() || !String(passengerPhone || '').trim()) {
       return NextResponse.json({ error: 'Missing required booking fields' }, { status: 400 })
     }
     if (!ObjectId.isValid(busId)) {
@@ -37,6 +37,11 @@ export async function POST(req: NextRequest) {
     const bus = await db.collection('buses').findOne({ _id: new ObjectId(busId) })
     if (!bus || bus.status !== 'active') {
       return NextResponse.json({ error: 'Bus not available' }, { status: 404 })
+    }
+
+    const seatProblem = seatSelectionError(seats, bus.totalSeats)
+    if (seatProblem) {
+      return NextResponse.json({ error: seatProblem }, { status: 400 })
     }
 
     const unavailable = takenSeats(bus as { bookedSeats?: string[]; blockedSeats?: string[] })
@@ -54,17 +59,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'One or more seats were just taken by someone else' }, { status: 409 })
     }
 
-    const bookingCode = generateBookingCode()
     const validUntil = ticketExpiry(bus.date)
     const holdExpiresAt = calculateHoldExpiry(10)
-    const verifyUrl = getVerifyUrl(bookingCode)
-    const qrCode = await generateTicketQRCode(verifyUrl)
     const totalPrice = seats.length * bus.price
     const commissionRate = bus.commissionRate ?? DEFAULT_COMMISSION_RATE
     const { commissionAmount, companyPayout } = calculateCommission(totalPrice, commissionRate)
 
     const booking: Booking = {
-      bookingCode,
+      bookingCode: '',
       busId,
       busName: bus.busName,
       companyName: bus.companyName,
@@ -78,12 +80,12 @@ export async function POST(req: NextRequest) {
       commissionRate,
       commissionAmount,
       companyPayout,
-      passengerName,
-      passengerPhone,
-      passengerEmail,
+      passengerName: String(passengerName).trim(),
+      passengerPhone: String(passengerPhone).trim(),
+      passengerEmail: passengerEmail ? String(passengerEmail).trim() : undefined,
       paymentStatus: 'pending',
       status: 'pending',
-      qrCode,
+      qrCode: '',
       source: source === 'whatsapp' ? 'whatsapp' : 'web',
       createdAt: new Date().toISOString(),
       validUntil,
@@ -91,13 +93,33 @@ export async function POST(req: NextRequest) {
       checkedIn: false,
     }
 
-    const result = await db.collection('bookings').insertOne(booking as any)
-
-    return NextResponse.json({ booking: { ...booking, _id: result.insertedId } }, { status: 201 })
+    // The database refuses a ticket code that is already in use; on that rare clash a fresh
+    // code is drawn. If the ticket can't be saved at all, the seats go back on sale.
+    for (let attempt = 0; attempt < 5; attempt++) {
+      booking.bookingCode = generateBookingCode()
+      booking.qrCode = await generateTicketQRCode(getVerifyUrl(booking.bookingCode))
+      try {
+        const result = await db.collection('bookings').insertOne({ ...booking } as any)
+        return NextResponse.json({ booking: { ...booking, _id: result.insertedId } }, { status: 201 })
+      } catch (err) {
+        if (!isDuplicateKeyError(err)) {
+          await releaseSeats(db, busId, seats)
+          throw err
+        }
+      }
+    }
+    await releaseSeats(db, busId, seats)
+    return NextResponse.json({ error: 'Could not create the ticket, please try again' }, { status: 503 })
   } catch (err) {
     console.error(err)
     return NextResponse.json({ error: 'Failed to create booking' }, { status: 500 })
   }
+}
+
+async function releaseSeats(db: Db, busId: string, seats: string[]) {
+  await db
+    .collection('buses')
+    .updateOne({ _id: new ObjectId(busId) }, { $pull: { bookedSeats: { $in: seats } } } as any)
 }
 
 export async function GET(req: NextRequest) {

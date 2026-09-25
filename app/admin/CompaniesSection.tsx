@@ -5,7 +5,10 @@ import toast from 'react-hot-toast'
 import PasswordInput from '../PasswordInput'
 import type { CompanyRow } from './types'
 
-type NewLogin = { name: string; email: string; phone: string; password: string }
+/** A password to pass on once: after a reset, or for a company the admin just added (isNew). */
+type NewLogin = { name: string; email: string; phone: string; password: string; isNew?: boolean }
+
+const EMPTY_COMPANY = { name: '', ownerName: '', phone: '', email: '' }
 
 /** Bangladeshi numbers are usually typed as 01XXXXXXXXX; wa.me needs 8801XXXXXXXXX. */
 function whatsappNumber(phone: string): string | null {
@@ -34,11 +37,13 @@ function CloseButton({ onClick, label }: { onClick: () => void; label: string })
 function NewLoginCard({ login, onClose }: { login: NewLogin; onClose: () => void }) {
   const wa = whatsappNumber(login.phone)
   const message = [
-    `Your BusHub ticket scanner password has been reset.`,
+    login.isNew
+      ? `Welcome to BusHub! Your ticket scanner account for ${login.name} is ready.`
+      : `Your BusHub ticket scanner password has been reset.`,
     ``,
     `Login: https://bushubbd.com/company/login`,
     `Email: ${login.email}`,
-    `New password: ${login.password}`,
+    `${login.isNew ? 'Password' : 'New password'}: ${login.password}`,
   ].join('\n')
 
   const copy = async (text: string, what: string) => {
@@ -54,7 +59,9 @@ function NewLoginCard({ login, onClose }: { login: NewLogin; onClose: () => void
     <div className="glass flex flex-col gap-3.5 border-[#f5a524]/60 p-5" style={{ borderColor: 'rgba(245,165,36,0.55)' }}>
       <div className="flex items-start justify-between gap-3">
         <div className="flex flex-col gap-1">
-          <span className="display text-[16px] font-bold">New password for {login.name}</span>
+          <span className="display text-[16px] font-bold">
+            {login.isNew ? `${login.name} is added` : `New password for ${login.name}`}
+          </span>
           <span className="text-[12px] leading-snug text-[#c4cdcf]">Shown only once. Send it to them now; it cannot be seen again later.</span>
         </div>
         <CloseButton onClick={onClose} label="Close" />
@@ -94,6 +101,9 @@ export default function CompaniesSection({ companies, onChanged }: { companies: 
   const [resetTarget, setResetTarget] = useState<CompanyRow | null>(null)
   const [typedPassword, setTypedPassword] = useState('')
   const [resetting, setResetting] = useState(false)
+  const [adding, setAdding] = useState(false)
+  const [companyForm, setCompanyForm] = useState(EMPTY_COMPANY)
+  const [saving, setSaving] = useState(false)
 
   // Operators waiting on a new password go to the top of the list.
   const rows = [...companies].sort(
@@ -146,9 +156,68 @@ export default function CompaniesSection({ companies, onChanged }: { companies: 
     }
   }
 
+  const addCompany = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setSaving(true)
+    try {
+      const res = await fetch('/api/companies', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(companyForm),
+      })
+      const data = await res.json().catch(() => null)
+      if (!res.ok || !data?.password) {
+        toast.error(data?.error || 'Could not add the company')
+        return
+      }
+      setAdding(false)
+      setCompanyForm(EMPTY_COMPANY)
+      setResetTarget(null)
+      setNewLogin({ ...data.company, password: data.password, isNew: true })
+      onChanged()
+    } finally {
+      setSaving(false)
+    }
+  }
+
   return (
     <div className="flex flex-col gap-4 sm:gap-5">
       {newLogin && <NewLoginCard login={newLogin} onClose={() => setNewLogin(null)} />}
+
+      <section className="glass flex flex-col">
+        <button
+          type="button"
+          onClick={() => setAdding((v) => !v)}
+          aria-expanded={adding}
+          className="flex items-center justify-between gap-3 px-5 py-4 text-left"
+        >
+          <span className="flex items-center gap-3">
+            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-[#f2661d] to-[#f5a524] text-[#1a0d03] shadow-[0_6px_18px_rgba(242,102,29,0.35)]">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" className="h-4 w-4">
+                <path d="M12 5v14M5 12h14" />
+              </svg>
+            </span>
+            <span className="flex flex-col">
+              <span className="display text-[15.5px] font-bold">Add a bus company</span>
+              <span className="text-[11.5px] text-[#78868a]">Each company once. They get a login to scan tickets.</span>
+            </span>
+          </span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className={`h-5 w-5 shrink-0 text-[#8e9a9d] transition ${adding ? 'rotate-180' : ''}`}>
+            <path d="m6 9 6 6 6-6" />
+          </svg>
+        </button>
+        {adding && (
+          <form onSubmit={addCompany} className="grid gap-3 border-t border-white/[0.06] px-5 pb-5 pt-4 sm:grid-cols-2">
+            <input required placeholder="Company name, e.g. Green Line" value={companyForm.name} onChange={(e) => setCompanyForm({ ...companyForm, name: e.target.value })} className="input-dark" aria-label="Company name" />
+            <input required placeholder="Contact person" value={companyForm.ownerName} onChange={(e) => setCompanyForm({ ...companyForm, ownerName: e.target.value })} className="input-dark" aria-label="Contact person" />
+            <input required type="tel" placeholder="Phone (01…)" value={companyForm.phone} onChange={(e) => setCompanyForm({ ...companyForm, phone: e.target.value })} className="input-dark" aria-label="Phone" />
+            <input required type="email" placeholder="Email for their login" value={companyForm.email} onChange={(e) => setCompanyForm({ ...companyForm, email: e.target.value })} className="input-dark" aria-label="Login email" />
+            <button type="submit" disabled={saving} className="glass-btn h-12 sm:col-span-2">
+              {saving ? 'Adding…' : 'Add company and create login'}
+            </button>
+          </form>
+        )}
+      </section>
 
       {resetTarget && (
         <form

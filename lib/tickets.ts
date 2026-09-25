@@ -1,10 +1,17 @@
 import QRCode from 'qrcode'
+import { randomInt } from 'crypto'
 export { ticketExpiry } from './scan'
 
-export function generateBookingCode(): string {
-  const date = new Date()
-  const datePart = date.toISOString().slice(0, 10).replace(/-/g, '')
-  const randomPart = Math.random().toString(36).substring(2, 7).toUpperCase()
+const CODE_ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+
+/**
+ * A ticket code like BH-20260925-7QK2M. The random part comes from the system's secure random
+ * source, so codes can't be guessed from one another. The database's unique index is what
+ * finally guarantees no two tickets share a code; callers retry on the rare clash.
+ */
+export function generateBookingCode(now = new Date()): string {
+  const datePart = now.toISOString().slice(0, 10).replace(/-/g, '')
+  const randomPart = Array.from({ length: 5 }, () => CODE_ALPHABET[randomInt(CODE_ALPHABET.length)]).join('')
   return `BH-${datePart}-${randomPart}`
 }
 

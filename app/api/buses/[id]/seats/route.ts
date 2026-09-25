@@ -3,6 +3,7 @@ import { ObjectId } from 'mongodb'
 import { connectToDatabase } from '@/lib/db'
 import { getAdminFromCookies } from '@/lib/auth'
 import { repairWronglyExpiredTickets } from '@/lib/seatHold'
+import { seatSelectionError } from '@/lib/seats'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -31,6 +32,11 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
       return NextResponse.json({ error: 'Bus not found' }, { status: 404 })
     }
 
+    const seatProblem = seatSelectionError(seats, bus.totalSeats, bus.totalSeats)
+    if (seatProblem) {
+      return NextResponse.json({ error: seatProblem }, { status: 400 })
+    }
+
     await repairWronglyExpiredTickets(db, { busId: params.id })
 
     // A seat is only truly sold on BusHub when a live booking claims it. Those seats belong to a
@@ -54,7 +60,13 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
           // by hand before counter sales had their own list.
           { $pull: { blockedSeats: { $in: seats }, bookedSeats: { $in: seats } } }
 
-    await db.collection('buses').updateOne({ _id: new ObjectId(params.id) }, update as any)
+    // Blocking only goes through if no customer grabbed one of these seats a moment ago.
+    const filter =
+      action === 'block' ? { _id: new ObjectId(params.id), bookedSeats: { $nin: seats } } : { _id: new ObjectId(params.id) }
+    const result = await db.collection('buses').updateOne(filter, update as any)
+    if (result.matchedCount === 0) {
+      return NextResponse.json({ error: 'One of these seats was just sold on BusHub. Refresh and try again.' }, { status: 409 })
+    }
 
     const updated = await db.collection('buses').findOne({ _id: new ObjectId(params.id) })
     return NextResponse.json(

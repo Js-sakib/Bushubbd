@@ -1,5 +1,4 @@
 import { Db, ObjectId } from 'mongodb'
-import { isExpired } from './tickets'
 
 /**
  * Paid tickets used to be marked expired 24 hours after booking (see ticketExpiry), which
@@ -12,21 +11,27 @@ export async function repairWronglyExpiredTickets(db: Db, filter: Record<string,
     .updateMany({ ...filter, paymentStatus: 'paid', status: 'expired' }, { $set: { status: 'confirmed' } })
 }
 
+/**
+ * Frees the seats of unpaid holds whose 10 minutes have run out. Each hold is claimed with a
+ * single conditional update before its seats are released, so when several requests notice
+ * the same hold at once only one of them releases it. Otherwise a late duplicate could free a
+ * seat that a new customer had just bought.
+ */
 export async function releaseExpiredHolds(db: Db, busId: string) {
-  const pendingHolds = await db
+  const expiredHolds = await db
     .collection('bookings')
-    .find({ busId, status: 'pending', paymentStatus: 'pending' })
+    .find({ busId, status: 'pending', paymentStatus: 'pending', holdExpiresAt: { $lt: new Date().toISOString() } })
+    .project({ _id: 1, seats: 1 })
     .toArray()
 
-  const expiredHolds = pendingHolds.filter((b) => b.holdExpiresAt && isExpired(b.holdExpiresAt))
-  if (expiredHolds.length === 0) return
-
-  const seatsToRelease = expiredHolds.flatMap((b) => b.seats as string[])
-  const bookingIds = expiredHolds.map((b) => b._id)
-
-  await db.collection('buses').updateOne(
-    { _id: new ObjectId(busId) },
-    { $pull: { bookedSeats: { $in: seatsToRelease } } } as any
-  )
-  await db.collection('bookings').updateMany({ _id: { $in: bookingIds } }, { $set: { status: 'expired' } })
+  for (const hold of expiredHolds) {
+    const claimed = await db
+      .collection('bookings')
+      .updateOne({ _id: hold._id, status: 'pending', paymentStatus: 'pending' }, { $set: { status: 'expired' } })
+    if (claimed.modifiedCount === 1 && ObjectId.isValid(busId)) {
+      await db
+        .collection('buses')
+        .updateOne({ _id: new ObjectId(busId) }, { $pull: { bookedSeats: { $in: hold.seats as string[] } } } as any)
+    }
+  }
 }

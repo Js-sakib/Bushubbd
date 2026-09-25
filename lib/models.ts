@@ -1,5 +1,25 @@
+/**
+ * A bus the admin has listed once, with its fixed name, owner and seat count. Every trip is
+ * created from one of these, so the name on a ticket always matches the company that scans it.
+ */
+export interface FleetBus {
+  _id?: string
+  name: string
+  /** Lowercased, single-spaced name; unique across the fleet. */
+  nameKey: string
+  companyId: string
+  companyName: string
+  busType: 'AC' | 'Non-AC' | 'Sleeper'
+  totalSeats: number
+  logoUrl?: string
+  createdAt: string
+}
+
+/** One trip: a fleet bus on a route, date and time. */
 export interface Bus {
   _id?: string
+  /** The fleet bus this trip runs. Older trips, from before the fleet list, have none. */
+  fleetId?: string
   companyId: string
   companyName: string
   busName: string

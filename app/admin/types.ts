@@ -1,5 +1,18 @@
+/** A bus the admin listed once; trips are created from it. */
+export interface FleetBus {
+  _id: string
+  name: string
+  companyId: string
+  companyName: string
+  busType: string
+  totalSeats: number
+  logoUrl?: string
+  tripCount: number
+}
+
 export interface Bus {
   _id: string
+  fleetId?: string
   companyId: string
   companyName: string
   busName: string

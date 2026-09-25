@@ -1,19 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { randomInt } from 'crypto'
 import bcrypt from 'bcryptjs'
 import { ObjectId } from 'mongodb'
 import { connectToDatabase } from '@/lib/db'
 import { getAdminFromCookies } from '@/lib/auth'
+import { temporaryPassword } from '@/lib/passwords'
 
 export const dynamic = 'force-dynamic'
-
-// No 0/O, 1/l/I: the password is read out over the phone or copied from WhatsApp.
-const ALPHABET = 'abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789'
-
-function temporaryPassword(): string {
-  const group = () => Array.from({ length: 4 }, () => ALPHABET[randomInt(ALPHABET.length)]).join('')
-  return `${group()}-${group()}-${group()}`
-}
 
 const MIN_LENGTH = 8
 /** bcrypt ignores everything past 72 bytes, so a longer password would not mean what it says. */

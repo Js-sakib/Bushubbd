@@ -3,12 +3,15 @@ import bcrypt from 'bcryptjs'
 import { connectToDatabase } from '@/lib/db'
 import { Company } from '@/lib/models'
 import { EMAIL_COLLATION } from '@/lib/auth'
+import { findCompanyByName } from '@/lib/companies'
+import { cleanName } from '@/lib/names'
 
 export const dynamic = 'force-dynamic'
 
 export async function POST(req: NextRequest) {
   try {
-    const { name, ownerName, email, phone, password } = await req.json()
+    const { name: rawName, ownerName, email, phone, password } = await req.json()
+    const name = cleanName(rawName)
 
     if (!name || !ownerName || !email || !phone || !password) {
       return NextResponse.json({ error: 'All fields are required' }, { status: 400 })
@@ -19,6 +22,14 @@ export async function POST(req: NextRequest) {
     const existing = await db.collection('companies').findOne({ email: address }, { collation: EMAIL_COLLATION })
     if (existing) {
       return NextResponse.json({ error: 'An account with this email already exists' }, { status: 409 })
+    }
+
+    // One account per company, so tickets and scans can't be split across look-alike names.
+    if (await findCompanyByName(db, name)) {
+      return NextResponse.json(
+        { error: 'This company already has a BusHub account. Please contact the BusHub team.' },
+        { status: 409 }
+      )
     }
 
     const passwordHash = await bcrypt.hash(password, 10)

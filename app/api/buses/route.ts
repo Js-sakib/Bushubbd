@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { ObjectId } from 'mongodb'
-import { connectToDatabase } from '@/lib/db'
+import { connectToDatabase, isDuplicateKeyError } from '@/lib/db'
 import { getAdminFromCookies } from '@/lib/auth'
 import { Bus } from '@/lib/models'
 import { DEFAULT_COMMISSION_RATE } from '@/lib/tickets'
@@ -32,56 +32,93 @@ export async function GET(req: NextRequest) {
   }
 }
 
+const DATE = /^\d{4}-\d{2}-\d{2}$/
+const TIME = /^([01]\d|2[0-3]):[0-5]\d$/
+
+/**
+ * Adds a trip. The bus is picked from the admin's bus list; its name, company, type, seats and
+ * logo are copied from there, never typed, so every ticket names the company that scans it.
+ */
 export async function POST(req: NextRequest) {
   try {
-    // Operators send their schedules to the BusHub team; only the admin lists buses.
+    // Operators send their schedules to the BusHub team; only the admin lists trips.
     if (!getAdminFromCookies()) {
       return NextResponse.json({ error: 'Only the BusHub admin can add buses' }, { status: 403 })
     }
 
-    const body = await req.json()
-    const { busName, busType, from, to, date, departureTime, arrivalTime, price, totalSeats, companyId, companyName, commissionRate, logoUrl } = body
+    const body = await req.json().catch(() => ({}))
+    const { fleetId, from, to, date, departureTime } = body
+    const arrivalTime = body.arrivalTime ? String(body.arrivalTime) : ''
+    const price = Number(body.price)
+    const commissionRate = body.commissionRate === undefined || body.commissionRate === '' ? DEFAULT_COMMISSION_RATE : Number(body.commissionRate)
 
-    if (!busName || !from || !to || !date || !departureTime || !price || !totalSeats) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
+    if (typeof fleetId !== 'string' || !ObjectId.isValid(fleetId)) {
+      return NextResponse.json({ error: 'Choose the bus from your bus list' }, { status: 400 })
+    }
+    if (!from || !to || from === to) {
+      return NextResponse.json({ error: 'Choose two different cities' }, { status: 400 })
+    }
+    if (!DATE.test(String(date)) || !TIME.test(String(departureTime)) || (arrivalTime && !TIME.test(arrivalTime))) {
+      return NextResponse.json({ error: 'Check the date and times' }, { status: 400 })
+    }
+    if (!Number.isFinite(price) || price <= 0) {
+      return NextResponse.json({ error: 'Enter the fare' }, { status: 400 })
+    }
+    if (!Number.isFinite(commissionRate) || commissionRate < 0 || commissionRate > 50) {
+      return NextResponse.json({ error: 'Commission must be between 0 and 50%' }, { status: 400 })
     }
 
     const { db } = await connectToDatabase()
+    const fleetBus = await db.collection('fleet').findOne({ _id: new ObjectId(fleetId) })
+    if (!fleetBus) {
+      return NextResponse.json({ error: 'That bus is not on your bus list' }, { status: 400 })
+    }
+    const company = ObjectId.isValid(fleetBus.companyId)
+      ? await db.collection('companies').findOne({ _id: new ObjectId(fleetBus.companyId) })
+      : null
+    if (!company || company.status !== 'approved') {
+      return NextResponse.json({ error: `${fleetBus.companyName} is not an approved company right now` }, { status: 400 })
+    }
 
-    // A bus tied to an operator account is what lets that operator scan its tickets.
-    let owner = { id: 'admin', name: (companyName || 'BusHub').trim() }
-    if (companyId) {
-      const company = ObjectId.isValid(companyId)
-        ? await db.collection('companies').findOne({ _id: new ObjectId(companyId) })
-        : null
-      if (!company) {
-        return NextResponse.json({ error: 'That bus company was not found' }, { status: 400 })
-      }
-      owner = { id: company._id.toString(), name: company.name }
+    // One bus can't leave twice at the same moment.
+    const clash = await db
+      .collection('buses')
+      .findOne({ fleetId, date, departureTime, status: 'active' }, { projection: { from: 1, to: 1 } })
+    if (clash) {
+      return NextResponse.json(
+        { error: `${fleetBus.name} already has a trip on ${date} at ${departureTime} (${clash.from} → ${clash.to})` },
+        { status: 409 }
+      )
     }
 
     const bus: Bus = {
-      companyId: owner.id,
-      companyName: owner.name,
-      busName,
-      busType: busType || 'AC',
-      logoUrl: typeof logoUrl === 'string' && logoUrl.trim() ? logoUrl.trim() : undefined,
+      fleetId,
+      companyId: company._id.toString(),
+      companyName: company.name,
+      busName: fleetBus.name,
+      busType: fleetBus.busType,
+      logoUrl: fleetBus.logoUrl,
       from,
       to,
       date,
       departureTime,
-      arrivalTime: arrivalTime || '',
-      price: Number(price),
-      totalSeats: Number(totalSeats),
+      arrivalTime,
+      price,
+      totalSeats: fleetBus.totalSeats,
       bookedSeats: [],
       blockedSeats: [],
-      commissionRate: commissionRate ? Number(commissionRate) : DEFAULT_COMMISSION_RATE,
+      commissionRate,
       status: 'active',
       createdAt: new Date().toISOString(),
     }
 
-    const result = await db.collection('buses').insertOne(bus as any)
-    return NextResponse.json({ bus: { ...bus, _id: result.insertedId } }, { status: 201 })
+    try {
+      const result = await db.collection('buses').insertOne({ ...bus } as any)
+      return NextResponse.json({ bus: { ...bus, _id: result.insertedId } }, { status: 201 })
+    } catch (err) {
+      if (!isDuplicateKeyError(err)) throw err
+      return NextResponse.json({ error: `${fleetBus.name} already has a trip on ${date} at ${departureTime}` }, { status: 409 })
+    }
   } catch (err) {
     console.error(err)
     return NextResponse.json({ error: 'Failed to create bus' }, { status: 500 })
