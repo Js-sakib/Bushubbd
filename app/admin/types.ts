@@ -63,4 +63,28 @@ export interface CompanyRow {
   passwordResetRequestedAt?: string
 }
 
-export type Section = 'dashboard' | 'bookings' | 'buses' | 'companies'
+/** A bus company the team is talking to about joining. */
+export interface LeadRow {
+  _id: string
+  companyName: string
+  contactName: string
+  phone: string
+  altPhone: string
+  area: string
+  source: string
+  status: string
+  followUpDate: string
+  notes: { text: string; at: string }[]
+  lastContactedAt?: string
+  createdAt: string
+  updatedAt: string
+}
+
+/** Details carried from a lead into the Add a bus company form. */
+export interface CompanyPrefill {
+  name: string
+  ownerName: string
+  phone: string
+}
+
+export type Section = 'dashboard' | 'bookings' | 'buses' | 'companies' | 'leads'

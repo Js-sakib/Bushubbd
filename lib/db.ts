@@ -18,6 +18,7 @@ async function ensureIndexes(db: Db) {
       { unique: true, name: 'fleet_trip_unique', partialFilterExpression: { fleetId: { $exists: true }, status: 'active' } },
     ],
     ['bookings', { busId: 1, status: 1 }, { name: 'bus_bookings' }],
+    ['leads', { nameKey: 1 }, { unique: true, name: 'lead_name_unique' }],
   ]
   for (const [collection, key, options] of indexes) {
     try {
@@ -43,7 +44,7 @@ export async function connectToDatabase() {
   // Create collections if they don't exist
   const collections = await db.listCollections().toArray()
   const collectionNames = collections.map((c) => c.name)
-  for (const name of ['buses', 'bookings', 'companies', 'payments', 'sessions', 'fleet']) {
+  for (const name of ['buses', 'bookings', 'companies', 'payments', 'sessions', 'fleet', 'leads']) {
     if (!collectionNames.includes(name)) {
       await db.createCollection(name)
     }

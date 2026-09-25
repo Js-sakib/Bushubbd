@@ -11,7 +11,8 @@ import Overview from './Overview'
 import BookingsSection from './BookingsSection'
 import BusesSection from './BusesSection'
 import CompaniesSection from './CompaniesSection'
-import type { Booking, Bus, CompanyRow, FleetBus, Section } from './types'
+import LeadsSection, { isDue } from './LeadsSection'
+import type { Booking, Bus, CompanyPrefill, CompanyRow, FleetBus, LeadRow, Section } from './types'
 
 const NAV: { key: Section; label: string; icon: React.ReactNode }[] = [
   {
@@ -58,6 +59,15 @@ const NAV: { key: Section; label: string; icon: React.ReactNode }[] = [
       </svg>
     ),
   },
+  {
+    key: 'leads',
+    label: 'Leads',
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-[19px] w-[19px]">
+        <path d="M5 4h3.5l1.5 4.5-2 1.5a11 11 0 0 0 6 6l1.5-2L20 15.5V19a1.5 1.5 0 0 1-1.5 1.5A15.5 15.5 0 0 1 3.5 5.5 1.5 1.5 0 0 1 5 4z" />
+      </svg>
+    ),
+  },
 ]
 
 function greeting(): string {
@@ -88,6 +98,10 @@ export default function AdminDashboard() {
   const [bookings, setBookings] = useState<Booking[]>([])
   const [companies, setCompanies] = useState<CompanyRow[]>([])
   const [fleet, setFleet] = useState<FleetBus[]>([])
+  const [leads, setLeads] = useState<LeadRow[]>([])
+  const [companyPrefill, setCompanyPrefill] = useState<CompanyPrefill | null>(null)
+
+  const clearPrefill = useCallback(() => setCompanyPrefill(null), [])
 
   const loadAll = useCallback(() => {
     fetch('/api/admin/stats').then((r) => r.json()).then((d) => !d.error && setStats(d)).catch(() => undefined)
@@ -95,6 +109,7 @@ export default function AdminDashboard() {
     fetch('/api/bookings').then((r) => r.json()).then((d) => setBookings(d.bookings || [])).catch(() => undefined)
     fetch('/api/companies').then((r) => r.json()).then((d) => setCompanies(d.companies || [])).catch(() => undefined)
     fetch('/api/fleet').then((r) => r.json()).then((d) => setFleet(d.fleet || [])).catch(() => undefined)
+    fetch('/api/leads').then((r) => r.json()).then((d) => setLeads(d.leads || [])).catch(() => undefined)
   }, [])
 
   useEffect(() => {
@@ -137,6 +152,8 @@ export default function AdminDashboard() {
   }
 
   const passwordRequests = companies.filter((c) => c.passwordResetRequestedAt).length
+  const leadsDue = leads.filter((l) => isDue(l)).length
+  const badgeFor = (key: Section) => (key === 'companies' ? passwordRequests : key === 'leads' ? leadsDue : 0)
   const title = NAV.find((n) => n.key === section)?.label ?? 'Dashboard'
 
   return (
@@ -176,7 +193,7 @@ export default function AdminDashboard() {
                 >
                   {item.icon}
                   <span className="grow text-left">{item.label}</span>
-                  {item.key === 'companies' && <Badge count={passwordRequests} />}
+                  <Badge count={badgeFor(item.key)} />
                 </button>
               )
             })}
@@ -245,13 +262,26 @@ export default function AdminDashboard() {
           )}
           {section === 'bookings' && <BookingsSection bookings={bookings} query={query} onQuery={setQuery} onRefund={handleRefund} />}
           {section === 'buses' && <BusesSection buses={buses} bookings={bookings} companies={companies} fleet={fleet} onChanged={loadAll} />}
-          {section === 'companies' && <CompaniesSection companies={companies} onChanged={loadAll} />}
+          {section === 'companies' && (
+            <CompaniesSection companies={companies} onChanged={loadAll} prefill={companyPrefill} onPrefillUsed={clearPrefill} />
+          )}
+          {section === 'leads' && (
+            <LeadsSection
+              leads={leads}
+              companies={companies}
+              onChanged={loadAll}
+              onCreateLogin={(lead) => {
+                setCompanyPrefill({ name: lead.companyName, ownerName: lead.contactName, phone: lead.phone })
+                go('companies')
+              }}
+            />
+          )}
         </main>
       </div>
 
       {/* Bottom tabs, phones */}
       <nav className="fixed inset-x-0 bottom-0 z-30 px-3 pb-[max(12px,env(safe-area-inset-bottom))] lg:hidden">
-        <div className="glass grid grid-cols-4 gap-1 p-1.5">
+        <div className="glass grid grid-cols-5 gap-1 p-1.5">
           {NAV.map((item) => {
             const active = section === item.key
             return (
@@ -266,9 +296,9 @@ export default function AdminDashboard() {
               >
                 {item.icon}
                 {item.label}
-                {item.key === 'companies' && passwordRequests > 0 && (
-                  <span className="absolute right-3 top-1">
-                    <Badge count={passwordRequests} />
+                {badgeFor(item.key) > 0 && (
+                  <span className="absolute right-1.5 top-1">
+                    <Badge count={badgeFor(item.key)} />
                   </span>
                 )}
               </button>

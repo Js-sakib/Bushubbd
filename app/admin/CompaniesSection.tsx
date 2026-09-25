@@ -1,22 +1,15 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import toast from 'react-hot-toast'
+import { whatsappNumber } from '@/lib/phone'
 import PasswordInput from '../PasswordInput'
-import type { CompanyRow } from './types'
+import type { CompanyPrefill, CompanyRow } from './types'
 
 /** A password to pass on once: after a reset, or for a company the admin just added (isNew). */
 type NewLogin = { name: string; email: string; phone: string; password: string; isNew?: boolean }
 
 const EMPTY_COMPANY = { name: '', ownerName: '', phone: '', email: '' }
-
-/** Bangladeshi numbers are usually typed as 01XXXXXXXXX; wa.me needs 8801XXXXXXXXX. */
-function whatsappNumber(phone: string): string | null {
-  const digits = (phone || '').replace(/\D/g, '')
-  if (/^8801\d{9}$/.test(digits)) return digits
-  if (/^01\d{9}$/.test(digits)) return `88${digits}`
-  return null
-}
 
 const STATUS_STYLE: Record<string, string> = {
   approved: 'bg-[#34d399]/[0.13] text-[#6ee7b7]',
@@ -96,7 +89,18 @@ function NewLoginCard({ login, onClose }: { login: NewLogin; onClose: () => void
   )
 }
 
-export default function CompaniesSection({ companies, onChanged }: { companies: CompanyRow[]; onChanged: () => void }) {
+export default function CompaniesSection({
+  companies,
+  onChanged,
+  prefill,
+  onPrefillUsed,
+}: {
+  companies: CompanyRow[]
+  onChanged: () => void
+  /** A lead that said yes: opens the Add form with their details filled in. */
+  prefill?: CompanyPrefill | null
+  onPrefillUsed?: () => void
+}) {
   const [newLogin, setNewLogin] = useState<NewLogin | null>(null)
   const [resetTarget, setResetTarget] = useState<CompanyRow | null>(null)
   const [typedPassword, setTypedPassword] = useState('')
@@ -104,6 +108,15 @@ export default function CompaniesSection({ companies, onChanged }: { companies: 
   const [adding, setAdding] = useState(false)
   const [companyForm, setCompanyForm] = useState(EMPTY_COMPANY)
   const [saving, setSaving] = useState(false)
+
+  useEffect(() => {
+    if (!prefill) return
+    setCompanyForm({ ...EMPTY_COMPANY, ...prefill })
+    setAdding(true)
+    setNewLogin(null)
+    setResetTarget(null)
+    onPrefillUsed?.()
+  }, [prefill, onPrefillUsed])
 
   // Operators waiting on a new password go to the top of the list.
   const rows = [...companies].sort(
