@@ -4,3 +4,4 @@ node_modules/
 .DS_Store
 *.log
 next-env.d.ts
+tsconfig.tsbuildinfo
