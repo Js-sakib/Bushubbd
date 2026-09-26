@@ -169,6 +169,21 @@ select.input-dark option {
   color: var(--ink);
 }
 
+/* iPhone and iPad Safari give date fields their own narrow width and centred text; make them
+   fill their box like every other field. */
+input[type='date'].input-dark {
+  -webkit-appearance: none;
+  appearance: none;
+  display: block;
+  min-width: 0;
+  max-width: 100%;
+}
+
+input[type='date'].input-dark::-webkit-date-and-time-value {
+  text-align: left;
+  margin: 0;
+}
+
 input[type='date']::-webkit-calendar-picker-indicator {
   filter: invert(0.7);
   cursor: pointer;
