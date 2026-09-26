@@ -59,8 +59,8 @@ function BookingContent() {
       if (prev.length >= passengers) {
         toast.error(
           passengers === 1
-            ? 'You searched for 1 passenger. Tap your seat again to change it.'
-            : `You searched for ${passengers} passengers. Unpick a seat to choose another.`
+            ? 'You searched for 1 Adult. Tap your seat again to change it.'
+            : `You searched for ${passengers} Adults. Unpick a seat to choose another.`
         )
         return prev
       }

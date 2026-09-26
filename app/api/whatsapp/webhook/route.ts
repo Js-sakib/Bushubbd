@@ -3,12 +3,11 @@ import { connectToDatabase } from '@/lib/db'
 import { sendWhatsAppMessage } from '@/lib/whatsapp'
 import { isExpired, getVerifyUrl, ticketExpiry } from '@/lib/tickets'
 import { seatsLeft as calcSeatsLeft } from '@/lib/seats'
+import { getPlaces } from '@/lib/places'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 export const fetchCache = 'force-no-store'
-
-const CITIES = ['Dhaka', 'Chittagong', 'Sylhet', 'Rajshahi', 'Khulna', "Cox's Bazar", 'Barishal', 'Rangpur']
 
 const GREETINGS = ['hi', 'hello', 'hey', 'start', 'menu', 'help', 'salam', 'assalamu alaikum', 'হাই', 'হ্যালো', 'সালাম', 'আসসালামু আলাইকুম']
 
@@ -18,23 +17,23 @@ function getBaseUrl() {
   return process.env.NEXT_PUBLIC_BASE_URL || 'https://bushubbd.vercel.app'
 }
 
-function findCityInText(text: string): string | undefined {
+function findCityInText(text: string, cities: string[]): string | undefined {
   const lower = text.toLowerCase()
-  return CITIES.find((city) => lower.includes(city.toLowerCase()))
+  return cities.find((city) => lower.includes(city.toLowerCase()))
 }
 
-function parseRoute(text: string): { from?: string; to?: string } {
+function parseRoute(text: string, cities: string[]): { from?: string; to?: string } {
   const lower = text.toLowerCase()
   const separators = [' to ', ' theke ', '->', '>', '-']
   for (const sep of separators) {
     if (lower.includes(sep)) {
       const [rawFrom, rawTo] = lower.split(sep)
-      const from = findCityInText(rawFrom)
-      const to = findCityInText(rawTo)
+      const from = findCityInText(rawFrom, cities)
+      const to = findCityInText(rawTo, cities)
       if (from && to && from !== to) return { from, to }
     }
   }
-  const found = CITIES.filter((city) => lower.includes(city.toLowerCase()))
+  const found = cities.filter((city) => lower.includes(city.toLowerCase()))
   if (found.length >= 2) return { from: found[0], to: found[1] }
   return {}
 }
@@ -78,6 +77,7 @@ export async function POST(req: NextRequest) {
     const lowerText = text.toLowerCase()
 
     const { db } = await connectToDatabase()
+    const CITIES = (await getPlaces(db)).cities
     const sessions = db.collection('sessions')
 
     if (GREETINGS.includes(lowerText)) {
@@ -119,7 +119,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ status: 'ok' })
     }
 
-    const { from: fromCity, to: toCity } = parseRoute(text)
+    const { from: fromCity, to: toCity } = parseRoute(text, CITIES)
 
     if (fromCity && toCity) {
       const { date, label } = parseDate(text)

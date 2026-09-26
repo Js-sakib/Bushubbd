@@ -4,6 +4,7 @@ import { connectToDatabase, isDuplicateKeyError } from '@/lib/db'
 import { getAdminFromCookies } from '@/lib/auth'
 import { Bus } from '@/lib/models'
 import { DEFAULT_COMMISSION_RATE } from '@/lib/tickets'
+import { getPlaces } from '@/lib/places'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -69,6 +70,10 @@ export async function POST(req: NextRequest) {
     }
 
     const { db } = await connectToDatabase()
+    const { cities } = await getPlaces(db)
+    if (!cities.includes(from) || !cities.includes(to)) {
+      return NextResponse.json({ error: 'Choose both cities from your city list' }, { status: 400 })
+    }
     const fleetBus = await db.collection('fleet').findOne({ _id: new ObjectId(fleetId) })
     if (!fleetBus) {
       return NextResponse.json({ error: 'That bus is not on your bus list' }, { status: 400 })

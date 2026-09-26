@@ -7,6 +7,7 @@ import { adminPath } from '@/lib/panelNav'
 import { formatTripDate } from '@/lib/dates'
 import { dhakaDate } from '@/lib/scan'
 import type { SalesSummary } from '@/lib/stats'
+import { DEFAULT_PLACES, type Places } from '@/lib/places'
 import Overview from './Overview'
 import BookingsSection from './BookingsSection'
 import BusesSection from './BusesSection'
@@ -99,6 +100,7 @@ export default function AdminDashboard() {
   const [companies, setCompanies] = useState<CompanyRow[]>([])
   const [fleet, setFleet] = useState<FleetBus[]>([])
   const [leads, setLeads] = useState<LeadRow[]>([])
+  const [places, setPlaces] = useState<Places>(DEFAULT_PLACES)
   const [companyPrefill, setCompanyPrefill] = useState<CompanyPrefill | null>(null)
 
   const clearPrefill = useCallback(() => setCompanyPrefill(null), [])
@@ -110,6 +112,7 @@ export default function AdminDashboard() {
     fetch('/api/companies').then((r) => r.json()).then((d) => setCompanies(d.companies || [])).catch(() => undefined)
     fetch('/api/fleet').then((r) => r.json()).then((d) => setFleet(d.fleet || [])).catch(() => undefined)
     fetch('/api/leads').then((r) => r.json()).then((d) => setLeads(d.leads || [])).catch(() => undefined)
+    fetch('/api/places').then((r) => r.json()).then((d) => d?.cities && setPlaces(d)).catch(() => undefined)
   }, [])
 
   useEffect(() => {
@@ -261,7 +264,7 @@ export default function AdminDashboard() {
             <Overview stats={stats} bookings={bookings} buses={buses} onRefund={handleRefund} onSeeAllBookings={() => go('bookings')} />
           )}
           {section === 'bookings' && <BookingsSection bookings={bookings} query={query} onQuery={setQuery} onRefund={handleRefund} />}
-          {section === 'buses' && <BusesSection buses={buses} bookings={bookings} companies={companies} fleet={fleet} onChanged={loadAll} />}
+          {section === 'buses' && <BusesSection buses={buses} bookings={bookings} companies={companies} fleet={fleet} places={places} onChanged={loadAll} />}
           {section === 'companies' && (
             <CompaniesSection companies={companies} onChanged={loadAll} prefill={companyPrefill} onPrefillUsed={clearPrefill} />
           )}

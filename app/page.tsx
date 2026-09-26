@@ -1,23 +1,24 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import toast from 'react-hot-toast'
-
-const CITIES = ['Dhaka', 'Chittagong', 'Sylhet', 'Rajshahi', 'Khulna', "Cox's Bazar", 'Barishal', 'Rangpur']
-
-const POPULAR_ROUTES = [
-  { from: 'Dhaka', to: 'Sylhet' },
-  { from: 'Dhaka', to: "Cox's Bazar" },
-  { from: 'Dhaka', to: 'Chittagong' },
-  { from: 'Dhaka', to: 'Rajshahi' },
-]
+import { DEFAULT_PLACES, Places } from '@/lib/places'
 
 export default function Home() {
   const router = useRouter()
   const today = new Date().toISOString().split('T')[0]
   const [trip, setTrip] = useState<'oneway' | 'round'>('oneway')
   const [formData, setFormData] = useState({ from: '', to: '', date: today, returnDate: '', passengers: '1' })
+  // The admin manages the city list; the usual cities show until it loads.
+  const [places, setPlaces] = useState<Places>(DEFAULT_PLACES)
+
+  useEffect(() => {
+    fetch('/api/places')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => d?.cities && setPlaces(d))
+      .catch(() => undefined)
+  }, [])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const next = { ...formData, [e.target.name]: e.target.value }
@@ -131,7 +132,7 @@ export default function Home() {
               </label>
               <select id="from" name="from" value={formData.from} onChange={handleChange} className="input-dark">
                 <option value="">Select city</option>
-                {CITIES.map((city) => (
+                {places.cities.map((city) => (
                   <option key={city} value={city}>
                     {city}
                   </option>
@@ -144,7 +145,7 @@ export default function Home() {
               </label>
               <select id="to" name="to" value={formData.to} onChange={handleChange} className="input-dark">
                 <option value="">Select city</option>
-                {CITIES.map((city) => (
+                {places.cities.map((city) => (
                   <option key={city} value={city}>
                     {city}
                   </option>
@@ -177,7 +178,7 @@ export default function Home() {
           {trip === 'round' && (
             <div className="flex flex-col gap-1.5">
               <label htmlFor="returnDate" className="label-xs">
-                Coming back
+                Return
               </label>
               <input
                 id="returnDate"
@@ -192,12 +193,12 @@ export default function Home() {
           )}
           <div className={`flex flex-col gap-1.5 ${trip === 'round' ? 'col-span-2' : ''}`}>
             <label htmlFor="passengers" className="label-xs">
-              Passengers
+              Adult
             </label>
             <select id="passengers" name="passengers" value={formData.passengers} onChange={handleChange} className="input-dark">
               {[1, 2, 3, 4, 5, 6].map((num) => (
                 <option key={num} value={num}>
-                  {num} {num === 1 ? 'passenger' : 'passengers'}
+                  {num} {num === 1 ? 'Adult' : 'Adults'}
                 </option>
               ))}
             </select>
@@ -215,24 +216,26 @@ export default function Home() {
         </button>
       </form>
 
-      <section className="mt-8 flex flex-col gap-3">
-        <h2 className="text-[17px] font-bold">Popular routes</h2>
-        <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-4">
-          {POPULAR_ROUTES.map((route) => (
-            <button
-              key={`${route.from}-${route.to}`}
-              type="button"
-              onClick={() => goToRoute(route.from, route.to)}
-              className="flex flex-col gap-1.5 glass-lite p-3.5 text-left transition hover:border-[#f5a524]"
-            >
-              <span className="text-sm font-bold">
-                {route.from} → {route.to}
-              </span>
-              <span className="text-xs text-[#9ba7aa]">See today&apos;s buses</span>
-            </button>
-          ))}
-        </div>
-      </section>
+      {places.popularRoutes.length > 0 && (
+        <section className="mt-8 flex flex-col gap-3">
+          <h2 className="text-[17px] font-bold">Popular routes</h2>
+          <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-4">
+            {places.popularRoutes.map((route) => (
+              <button
+                key={`${route.from}-${route.to}`}
+                type="button"
+                onClick={() => goToRoute(route.from, route.to)}
+                className="flex flex-col gap-1.5 glass-lite p-3.5 text-left transition hover:border-[#f5a524]"
+              >
+                <span className="text-sm font-bold">
+                  {route.from} → {route.to}
+                </span>
+                <span className="text-xs text-[#9ba7aa]">See today&apos;s buses</span>
+              </button>
+            ))}
+          </div>
+        </section>
+      )}
 
       <section className="mt-8 flex flex-col gap-3">
         <h2 className="text-[17px] font-bold">Why book here</h2>

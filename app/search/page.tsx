@@ -134,7 +134,7 @@ function SearchResults() {
           <span className="text-xs text-[#8e9a9d]">
             {formatTripDate(legHeader.date)}
             {isRoundTrip ? ' · Round trip' : ''}
-            {passengers > 1 ? ` · ${passengers} passengers` : ''}
+            {passengers > 1 ? ` · ${passengers} Adults` : ''}
           </span>
         </div>
       </div>
@@ -144,7 +144,7 @@ function SearchResults() {
           {(
             [
               { key: 'outbound' as const, label: 'Going', city: `${from} → ${to}`, day: date, pick: outboundPick },
-              { key: 'return' as const, label: 'Coming back', city: `${to} → ${from}`, day: returnDate, pick: returnPick },
+              { key: 'return' as const, label: 'Return', city: `${to} → ${from}`, day: returnDate, pick: returnPick },
             ]
           ).map((tab) => (
             <button

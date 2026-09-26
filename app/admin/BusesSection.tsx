@@ -6,9 +6,9 @@ import { formatTripDate } from '@/lib/dates'
 import { seatsLeft } from '@/lib/seats'
 import SeatManager from '../SeatManager'
 import { taka } from './charts'
+import type { Places } from '@/lib/places'
+import PlacesPanel from './PlacesPanel'
 import type { Booking, Bus, CompanyRow, FleetBus } from './types'
-
-const CITIES = ['Dhaka', 'Chittagong', 'Sylhet', 'Rajshahi', 'Khulna', "Cox's Bazar", 'Barishal', 'Rangpur']
 const EMPTY_FLEET_FORM = { name: '', companyId: '', busType: 'AC', totalSeats: '40', logoUrl: '' }
 const EMPTY_TRIP_FORM = {
   fleetId: '', from: '', to: '', date: '', departureTime: '', arrivalTime: '', price: '', commissionRate: '10',
@@ -66,14 +66,17 @@ export default function BusesSection({
   bookings,
   companies,
   fleet,
+  places,
   onChanged,
 }: {
   buses: Bus[]
   bookings: Booking[]
   companies: CompanyRow[]
   fleet: FleetBus[]
+  places: Places
   onChanged: () => void
 }) {
+  const CITIES = places.cities
   const [fleetForm, setFleetForm] = useState(EMPTY_FLEET_FORM)
   const [tripForm, setTripForm] = useState(EMPTY_TRIP_FORM)
   const [fleetOpen, setFleetOpen] = useState(false)
@@ -156,6 +159,8 @@ export default function BusesSection({
 
   return (
     <div className="flex flex-col gap-4 sm:gap-5">
+      <PlacesPanel places={places} onChanged={onChanged} />
+
       <section className="glass flex flex-col">
         <PanelHeader
           open={fleetOpen}
