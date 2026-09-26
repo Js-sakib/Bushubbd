@@ -21,8 +21,18 @@ const spaceGrotesk = Space_Grotesk({
 })
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://bushubbd.com'),
   title: 'BusHub - Book Bus Tickets Online',
-  description: 'Fast & secure bus ticket booking in Bangladesh',
+  description: 'Buy bus tickets from home in Bangladesh: pick your seat, pay with bKash or Nagad, get a QR ticket on WhatsApp.',
+  openGraph: {
+    title: 'BusHub - Bus tickets, now online',
+    description: 'Pick your seat, pay with bKash or Nagad, and get a QR ticket on WhatsApp. No line, no serial.',
+    url: 'https://bushubbd.com',
+    siteName: 'BusHub',
+    locale: 'en_BD',
+    type: 'website',
+  },
+  twitter: { card: 'summary_large_image' },
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

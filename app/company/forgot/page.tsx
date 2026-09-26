@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import toast from 'react-hot-toast'
 import { companyPath } from '@/lib/panelNav'
+import { LogoMark } from '../../BrandLogo'
 
 export default function ForgotPassword() {
   const router = useRouter()
@@ -37,8 +38,7 @@ export default function ForgotPassword() {
     <div className="mx-auto mt-12 max-w-sm">
       <div className="card-2 flex flex-col gap-5 p-7">
         <div className="flex flex-col items-center gap-3 text-center">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo.png" alt="" className="h-12 w-12 object-contain" />
+          <LogoMark className="h-12 w-12" />
           <div>
             <h1 className="display text-xl font-bold">Forgot password</h1>
             <p className="mt-1 text-[12.5px] leading-relaxed text-[#8e9a9d]">

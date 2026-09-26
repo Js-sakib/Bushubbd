@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import toast from 'react-hot-toast'
 import { adminPath } from '@/lib/panelNav'
 import PasswordInput from '../../PasswordInput'
+import { LogoMark } from '../../BrandLogo'
 
 export default function AdminLogin() {
   const router = useRouter()
@@ -37,8 +38,7 @@ export default function AdminLogin() {
     <div className="mx-auto mt-12 max-w-sm">
       <div className="card-2 flex flex-col gap-5 p-7">
         <div className="flex flex-col items-center gap-3 text-center">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo.png" alt="" className="h-12 w-12 object-contain" />
+          <LogoMark className="h-12 w-12" />
           <div>
             <h1 className="display text-xl font-bold">Admin login</h1>
             <p className="mt-1 text-[12.5px] text-[#8e9a9d]">BusHub control panel</p>

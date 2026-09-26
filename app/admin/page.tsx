@@ -14,6 +14,7 @@ import BusesSection from './BusesSection'
 import CompaniesSection from './CompaniesSection'
 import LeadsSection, { isDue } from './LeadsSection'
 import type { Booking, Bus, CompanyPrefill, CompanyRow, FleetBus, LeadRow, Section } from './types'
+import { LogoMark } from '../BrandLogo'
 
 const NAV: { key: Section; label: string; icon: React.ReactNode }[] = [
   {
@@ -172,8 +173,7 @@ export default function AdminDashboard() {
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-[256px] p-4 lg:block">
         <div className="glass flex h-full flex-col p-4">
           <div className="flex items-center gap-2.5 px-2 pb-6 pt-2">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logo.png" alt="" className="h-9 w-9 object-contain" />
+            <LogoMark className="h-9 w-9" />
             <div className="flex flex-col leading-tight">
               <span className="display text-[17px] font-bold">BusHub</span>
               <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#f5a524]">Admin</span>
@@ -219,8 +219,7 @@ export default function AdminDashboard() {
         {/* Top bar */}
         <header className="sticky top-0 z-20 px-3 pt-3 sm:px-5 lg:px-6 lg:pt-4">
           <div className="glass flex items-center gap-3 px-4 py-3 sm:px-5">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logo.png" alt="" className="h-8 w-8 object-contain lg:hidden" />
+            <LogoMark className="h-8 w-8 shrink-0 lg:hidden" />
             <div className="flex min-w-0 grow flex-col">
               <span className="display truncate text-[17px] font-bold leading-tight sm:text-[19px]">
                 {section === 'dashboard' ? `${greeting()}!` : title}

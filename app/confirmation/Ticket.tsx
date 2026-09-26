@@ -3,6 +3,7 @@
 import { forwardRef } from 'react'
 import OperatorLogo from '../OperatorLogo'
 import { formatTripDate } from '@/lib/dates'
+import Logo from '../BrandLogo'
 
 export interface TicketBooking {
   bookingCode: string
@@ -141,12 +142,11 @@ const Ticket = forwardRef<HTMLDivElement, { booking: TicketBooking }>(function T
       </div>
 
       <div className="flex items-center justify-between gap-2 border-t border-[#e3e8e9] bg-[#f4f6f6] px-4 py-2.5">
-        <span className="flex items-center gap-1.5">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo.png" alt="" className="h-4 w-4 object-contain" />
-          <span className="text-[10.5px] font-bold text-[#3e4749]">BusHub</span>
+        <Logo tone="light" className="h-5 w-auto" />
+        <span className="text-right text-[10px] leading-snug text-[#7b8689]">
+          bushubbd.com · info@bushubbd.com
+          <br />© {new Date().getFullYear()} BusHub
         </span>
-        <span className="text-[10px] text-[#7b8689]">bushubbd.com · info@bushubbd.com</span>
       </div>
     </div>
   )

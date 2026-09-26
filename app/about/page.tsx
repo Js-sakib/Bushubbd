@@ -164,7 +164,7 @@ export default function About() {
           <a href="mailto:info@bushubbd.com" className="text-sm font-bold text-[#f5a524] hover:underline">
             info@bushubbd.com
           </a>
-          <span className="text-[11.5px] text-[#78868a]">BusHubBD · Bangladesh</span>
+          <span className="text-[11.5px] text-[#78868a]">BusHub · Bangladesh</span>
         </div>
       </section>
     </div>

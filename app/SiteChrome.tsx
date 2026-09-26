@@ -1,6 +1,7 @@
 'use client'
 
 import { usePathname } from 'next/navigation'
+import Logo from './BrandLogo'
 
 const BARE_ROUTES = ['/admin', '/company', '/verify']
 
@@ -41,10 +42,8 @@ export default function SiteChrome({ children }: { children: React.ReactNode }) 
       <Glows />
       <nav className="no-print sticky top-0 z-40 px-3 pt-3">
         <div className="glass mx-auto flex max-w-5xl items-center justify-between px-4 py-2.5">
-          <a href="/" className="flex items-center gap-2">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logo.png" alt="BusHub" className="h-9 w-9 object-contain" />
-            <span className="display text-xl font-bold">BusHub</span>
+          <a href="/" className="flex items-center" aria-label="BusHub home">
+            <Logo className="h-9 w-auto" />
           </a>
           <a
             href="/about"
@@ -94,10 +93,11 @@ export default function SiteChrome({ children }: { children: React.ReactNode }) 
             </a>
           </div>
 
-          <div className="flex items-center justify-between border-t border-white/[0.07] pt-5">
-            <span className="text-[11.5px] text-[#78868a]">© 2026 BusHubBD</span>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logo.png" alt="" className="h-7 w-7 object-contain opacity-75" />
+          <div className="flex flex-col gap-3 border-t border-white/[0.07] pt-5 sm:flex-row sm:items-center sm:justify-between">
+            <Logo className="h-8 w-auto" />
+            <span className="text-[11.5px] leading-relaxed text-[#78868a]">
+              © {new Date().getFullYear()} BusHub · bushubbd.com. All rights reserved.
+            </span>
           </div>
         </div>
       </footer>

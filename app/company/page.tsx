@@ -8,6 +8,7 @@ import { formatTripDate } from '@/lib/dates'
 import type { DayCount, ScanResult } from '@/lib/scan'
 import QrCamera from './QrCamera'
 import ScanResultCard, { ScanResponse } from './ScanResultCard'
+import { LogoMark } from '../BrandLogo'
 
 interface RecentScan {
   id: string
@@ -154,8 +155,7 @@ export default function OperatorScanner() {
   return (
     <div className="mx-auto max-w-xl pb-10">
       <div className="flex items-center gap-3 border-b border-[#1b2325] pb-4">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/logo.png" alt="" className="h-9 w-9 object-contain" />
+        <LogoMark className="h-9 w-9 shrink-0" />
         <div className="flex min-w-0 grow flex-col gap-0.5">
           <h1 className="display text-[19px] font-bold leading-tight">Ticket scanner</h1>
           <span className="truncate text-[11.5px] text-[#78868a]">{companyEmail}</span>
