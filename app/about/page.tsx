@@ -1,9 +1,10 @@
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'About BusHub — online bus tickets in Bangladesh',
+  title: { absolute: 'About BusHub — online bus tickets in Bangladesh' },
   description:
     'BusHub sells bus tickets online across Bangladesh. No account, live seat availability, and a QR ticket the conductor can verify.',
+  alternates: { canonical: '/about' },
 }
 
 const PROMISES = [

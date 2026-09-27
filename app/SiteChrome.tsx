@@ -73,6 +73,9 @@ export default function SiteChrome({ children }: { children: React.ReactNode }) 
           </div>
 
           <div className="grid grid-cols-2 gap-x-6 gap-y-3 sm:grid-cols-3">
+            <a href="/routes" className="text-[13px] text-[#b7c1c3] hover:text-[#f5a524]">
+              Bus routes
+            </a>
             <a href="/company/register" className="text-[13px] text-[#b7c1c3] hover:text-[#f5a524]">
               For bus operators
             </a>

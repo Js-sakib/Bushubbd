@@ -4,6 +4,7 @@ import { sendWhatsAppMessage } from '@/lib/whatsapp'
 import { isExpired, getVerifyUrl, ticketExpiry } from '@/lib/tickets'
 import { seatsLeft as calcSeatsLeft } from '@/lib/seats'
 import { getPlaces } from '@/lib/places'
+import { SITE_URL } from '@/lib/site'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -14,7 +15,7 @@ const GREETINGS = ['hi', 'hello', 'hey', 'start', 'menu', 'help', 'salam', 'assa
 const BOOKING_CODE = /\bBH-\d{8}-[A-Z0-9]{5}\b/i
 
 function getBaseUrl() {
-  return process.env.NEXT_PUBLIC_BASE_URL || 'https://bushubbd.vercel.app'
+  return process.env.NEXT_PUBLIC_BASE_URL || SITE_URL
 }
 
 function findCityInText(text: string, cities: string[]): string | undefined {

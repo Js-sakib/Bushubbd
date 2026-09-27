@@ -1,5 +1,6 @@
 import QRCode from 'qrcode'
 import { randomInt } from 'crypto'
+import { SITE_URL } from './site'
 export { ticketExpiry } from './scan'
 
 const CODE_ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
@@ -35,7 +36,7 @@ export async function generateTicketQRCode(verifyUrl: string): Promise<string> {
 }
 
 export function getBaseUrl(): string {
-  return process.env.NEXT_PUBLIC_BASE_URL || 'https://bushubbd.vercel.app'
+  return process.env.NEXT_PUBLIC_BASE_URL || SITE_URL
 }
 
 export function getVerifyUrl(bookingCode: string): string {
