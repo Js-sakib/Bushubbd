@@ -67,6 +67,7 @@ export async function POST(req: NextRequest) {
                 date: booking.date,
                 departureTime: booking.departureTime,
                 seats: booking.seats || [],
+                bags: typeof booking.bags === 'number' ? booking.bags : null,
                 checkedInAt: checkedInAt || booking.checkedInAt || null,
               }
             : null,

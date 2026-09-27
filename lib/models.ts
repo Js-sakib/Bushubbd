@@ -55,6 +55,12 @@ export interface Booking {
   date: string
   departureTime: string
   seats: string[]
+  /** Copied from the trip at booking time for the ticket; older bookings have none. */
+  arrivalTime?: string
+  busType?: string
+  pricePerSeat?: number
+  /** Bags the passenger said they are bringing (0 when none). Older bookings have none. */
+  bags?: number
   totalPrice: number
   commissionRate: number
   commissionAmount: number

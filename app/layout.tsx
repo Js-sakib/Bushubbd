@@ -98,6 +98,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <SiteChrome>{children}</SiteChrome>
         <Toaster
           position="top-center"
+          containerClassName="no-print"
           toastOptions={{
             style: { background: '#151b1d', color: '#f6f4ef', border: '1px solid #2a3437' },
           }}

@@ -13,6 +13,8 @@ export interface ScannedTicket {
   date: string
   departureTime: string
   seats: string[]
+  /** Bags declared at booking; null on tickets from before bags were asked. */
+  bags?: number | null
   checkedInAt: string | null
 }
 
@@ -117,6 +119,9 @@ export default function ScanResultCard({ scan }: { scan: ScanResponse }) {
           <Row label="Seats">
             {ticket.seats.join(', ')} <span className="text-[#8e9a9d]">({passengers})</span>
           </Row>
+          {typeof ticket.bags === 'number' && (
+            <Row label="Bags">{ticket.bags === 0 ? 'None' : `${ticket.bags} bag${ticket.bags === 1 ? '' : 's'}`}</Row>
+          )}
           <div className="border-t border-[#1f2729] pt-2.5">
             <Row label="Booking code">
               <span className="display">{ticket.bookingCode}</span>
