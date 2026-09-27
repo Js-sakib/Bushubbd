@@ -253,4 +253,18 @@ input[type='date']::-webkit-calendar-picker-indicator {
   .no-print {
     display: none !important;
   }
+  /* Browsers drop background colours when printing unless told otherwise, which would leave
+     the ticket's white bus name on white paper. Print it as designed, minus the screen-only
+     shadow, and turn the notches into paper-coloured cut-outs. */
+  .ticket-print {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    box-shadow: none !important;
+    border: 1px solid #d5dbdc;
+    break-inside: avoid;
+  }
+  .ticket-notch {
+    background: #ffffff !important;
+    border: 1px solid #d5dbdc;
+  }
 }

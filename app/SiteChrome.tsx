@@ -11,7 +11,7 @@ const BARE_ROUTES = ['/admin', '/company', '/verify']
  */
 function Glows() {
   return (
-    <div aria-hidden className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
+    <div aria-hidden className="no-print pointer-events-none fixed inset-0 -z-10 overflow-hidden">
       <div className="absolute -left-40 -top-40 h-[460px] w-[460px] rounded-full bg-[#f2661d] opacity-[0.15] blur-[120px]" />
       <div className="absolute -right-40 top-[35%] h-[400px] w-[400px] rounded-full bg-[#12a594] opacity-[0.11] blur-[120px]" />
       <div className="absolute -bottom-32 left-[20%] h-[340px] w-[340px] rounded-full bg-[#6d4aff] opacity-[0.07] blur-[120px]" />

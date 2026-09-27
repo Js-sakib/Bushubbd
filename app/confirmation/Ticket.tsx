@@ -56,7 +56,7 @@ const Ticket = forwardRef<HTMLDivElement, { booking: TicketBooking }>(function T
       // The background is inline rather than a utility class so it survives being cloned
       // into an image; a missing white card would leave every dark label unreadable.
       style={{ backgroundColor: '#ffffff' }}
-      className="overflow-hidden rounded-[24px] text-[#16191a] shadow-[0_26px_50px_rgba(0,0,0,0.5)]"
+      className="ticket-print overflow-hidden rounded-[24px] text-[#16191a] shadow-[0_26px_50px_rgba(0,0,0,0.5)]"
     >
       <div className="flex items-center gap-3 bg-gradient-to-br from-[#0e3f43] to-[#16585d] px-4 py-4">
         <OperatorLogo
@@ -108,8 +108,8 @@ const Ticket = forwardRef<HTMLDivElement, { booking: TicketBooking }>(function T
       </div>
 
       <div className="relative h-5" style={{ backgroundColor: '#ffffff' }}>
-        <span className="absolute -left-2.5 top-0 h-5 w-5 rounded-full bg-[#0b0e0f]" />
-        <span className="absolute -right-2.5 top-0 h-5 w-5 rounded-full bg-[#0b0e0f]" />
+        <span className="ticket-notch absolute -left-2.5 top-0 h-5 w-5 rounded-full bg-[#0b0e0f]" />
+        <span className="ticket-notch absolute -right-2.5 top-0 h-5 w-5 rounded-full bg-[#0b0e0f]" />
         <span className="absolute left-4 right-4 top-2.5 h-0.5 bg-[repeating-linear-gradient(90deg,#d6dcde_0_6px,transparent_6px_12px)]" />
       </div>
 
