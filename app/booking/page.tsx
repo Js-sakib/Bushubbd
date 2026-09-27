@@ -157,7 +157,7 @@ function BookingContent() {
   }
 
   return (
-    <div className="px-5 pb-8 pt-5">
+    <div className="mx-auto w-full max-w-xl px-5 pb-8 pt-5">
       <div className="flex items-center gap-3">
         <button
           type="button"

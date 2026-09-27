@@ -135,7 +135,7 @@ function ConfirmationContent() {
   const paid = booking.paymentStatus === 'paid'
 
   return (
-    <div className="px-5 pb-10 pt-5">
+    <div className="mx-auto w-full max-w-xl px-5 pb-10 pt-5">
       <div className="no-print flex items-center gap-3">
         <a href="/" aria-label="Back to home" className="icon-btn">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round" className="h-[18px] w-[18px]">
