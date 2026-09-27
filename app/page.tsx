@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import toast from 'react-hot-toast'
 import { DEFAULT_PLACES, Places } from '@/lib/places'
+import { MAX_SEATS_PER_BOOKING } from '@/lib/seats'
 
 export default function Home() {
   const router = useRouter()
@@ -193,12 +194,12 @@ export default function Home() {
           )}
           <div className={`flex flex-col gap-1.5 ${trip === 'round' ? 'col-span-2' : ''}`}>
             <label htmlFor="passengers" className="label-xs">
-              Adult
+              Seats
             </label>
             <select id="passengers" name="passengers" value={formData.passengers} onChange={handleChange} className="input-dark">
-              {[1, 2, 3, 4, 5, 6].map((num) => (
+              {Array.from({ length: MAX_SEATS_PER_BOOKING }, (_, i) => i + 1).map((num) => (
                 <option key={num} value={num}>
-                  {num} {num === 1 ? 'Adult' : 'Adults'}
+                  {num} {num === 1 ? 'Seat' : 'Seats'}
                 </option>
               ))}
             </select>

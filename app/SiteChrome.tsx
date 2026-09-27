@@ -41,7 +41,7 @@ export default function SiteChrome({ children }: { children: React.ReactNode }) 
     <>
       <Glows />
       <nav className="no-print sticky top-0 z-40 px-3 pt-3">
-        <div className="glass mx-auto flex max-w-5xl items-center justify-between px-4 py-2.5">
+        <div className="glass nav-glow mx-auto flex max-w-5xl items-center justify-between px-4 py-2.5">
           <a href="/" className="flex items-center" aria-label="BusHub home">
             <Logo className="h-9 w-auto" />
           </a>

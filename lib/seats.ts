@@ -16,8 +16,8 @@ export function seatsLeft(bus: SeatState & { totalSeats: number }): number {
   return Math.max(0, bus.totalSeats - takenSeats(bus).length)
 }
 
-/** The most seats one booking can hold; the search form offers up to 6 passengers. */
-export const MAX_SEATS_PER_BOOKING = 6
+/** The most seats one booking can hold, so a family or group books together in one go. */
+export const MAX_SEATS_PER_BOOKING = 10
 
 /**
  * Checks a seat list sent by a customer or the admin: every seat must exist on this bus and

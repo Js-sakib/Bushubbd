@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { formatTripDate } from '@/lib/dates'
-import { seatsLeft as calcSeatsLeft } from '@/lib/seats'
+import { MAX_SEATS_PER_BOOKING, seatsLeft as calcSeatsLeft } from '@/lib/seats'
 import {
   BusFilters,
   EMPTY_FILTERS,
@@ -56,7 +56,7 @@ function SearchResults() {
   const date = searchParams.get('date') || ''
   const isRoundTrip = searchParams.get('trip') === 'round'
   const returnDate = searchParams.get('returnDate') || ''
-  const passengers = Math.min(6, Math.max(1, Number(searchParams.get('passengers')) || 1))
+  const passengers = Math.min(MAX_SEATS_PER_BOOKING, Math.max(1, Number(searchParams.get('passengers')) || 1))
 
   const [leg, setLeg] = useState<Leg>('outbound')
   const [outboundPick, setOutboundPick] = useState<SearchBus | null>(null)
@@ -134,7 +134,7 @@ function SearchResults() {
           <span className="text-xs text-[#8e9a9d]">
             {formatTripDate(legHeader.date)}
             {isRoundTrip ? ' · Round trip' : ''}
-            {passengers > 1 ? ` · ${passengers} Adults` : ''}
+            {passengers > 1 ? ` · ${passengers} seats` : ''}
           </span>
         </div>
       </div>

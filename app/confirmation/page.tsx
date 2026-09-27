@@ -4,6 +4,7 @@ import { Suspense, useCallback, useEffect, useRef, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import toast from 'react-hot-toast'
 import Ticket, { TicketBooking } from './Ticket'
+import { MAX_SEATS_PER_BOOKING } from '@/lib/seats'
 
 function timeLeft(validUntil: string) {
   const ms = new Date(validUntil).getTime() - Date.now()
@@ -21,7 +22,7 @@ function ConfirmationContent() {
   const searchParams = useSearchParams()
   const bookingId = searchParams.get('bookingId')
   const returnBusId = searchParams.get('returnBusId')
-  const passengers = Math.min(6, Math.max(1, Number(searchParams.get('passengers')) || 1))
+  const passengers = Math.min(MAX_SEATS_PER_BOOKING, Math.max(1, Number(searchParams.get('passengers')) || 1))
 
   const ticketRef = useRef<HTMLDivElement>(null)
   const [booking, setBooking] = useState<TicketBooking | null>(null)

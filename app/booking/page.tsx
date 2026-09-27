@@ -3,7 +3,7 @@
 import { Suspense, useEffect, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import toast from 'react-hot-toast'
-import { generateSeatLabels, takenSeats } from '@/lib/seats'
+import { MAX_SEATS_PER_BOOKING, generateSeatLabels, takenSeats } from '@/lib/seats'
 
 interface Bus {
   _id: string
@@ -25,7 +25,7 @@ function BookingContent() {
   const router = useRouter()
   const busId = searchParams.get('busId')
   const returnBusId = searchParams.get('returnBusId')
-  const passengers = Math.min(6, Math.max(1, Number(searchParams.get('passengers')) || 1))
+  const passengers = Math.min(MAX_SEATS_PER_BOOKING, Math.max(1, Number(searchParams.get('passengers')) || 1))
 
   const [bus, setBus] = useState<Bus | null>(null)
   const [loading, setLoading] = useState(true)
@@ -59,8 +59,8 @@ function BookingContent() {
       if (prev.length >= passengers) {
         toast.error(
           passengers === 1
-            ? 'You searched for 1 Adult. Tap your seat again to change it.'
-            : `You searched for ${passengers} Adults. Unpick a seat to choose another.`
+            ? 'You searched for 1 seat. Tap your seat again to change it.'
+            : `You searched for ${passengers} seats. Unpick a seat to choose another.`
         )
         return prev
       }

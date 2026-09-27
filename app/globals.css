@@ -65,6 +65,18 @@ h1, h2, h3, .display {
   -webkit-backdrop-filter: blur(22px) saturate(140%);
 }
 
+/* The site header: frosted glass lit by a warm orange glow behind the logo, fading through gold
+   into the dark, with a hint of teal at the far end. */
+.nav-glow {
+  background:
+    radial-gradient(140% 220% at 0% 50%, rgba(242, 102, 29, 0.72) 0%, rgba(245, 165, 36, 0.26) 34%, rgba(245, 165, 36, 0) 58%),
+    radial-gradient(90% 200% at 100% 50%, rgba(18, 165, 148, 0.22) 0%, rgba(18, 165, 148, 0) 60%),
+    linear-gradient(150deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.02) 60%),
+    rgba(14, 18, 20, 0.9);
+  border-color: rgba(255, 196, 140, 0.16);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.38), 0 8px 30px rgba(242, 102, 29, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
 /* Frosted pill button, from the design system */
 .glass-btn {
   display: flex;
