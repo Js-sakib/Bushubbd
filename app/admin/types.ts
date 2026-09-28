@@ -7,6 +7,7 @@ export interface FleetBus {
   busType: string
   totalSeats: number
   logoUrl?: string
+  commissionRate?: number
   tripCount: number
 }
 
@@ -21,7 +22,9 @@ export interface Bus {
   to: string
   date: string
   departureTime: string
+  arrivalTime?: string
   price: number
+  commissionRate?: number
   totalSeats: number
   bookedSeats: string[]
   blockedSeats?: string[]

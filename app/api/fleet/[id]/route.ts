@@ -3,12 +3,14 @@ import { ObjectId } from 'mongodb'
 import { connectToDatabase } from '@/lib/db'
 import { getAdminFromCookies } from '@/lib/auth'
 import { cleanLogoUrl } from '@/lib/names'
+import { dhakaDate } from '@/lib/scan'
+import { tripDeparted } from '@/lib/trips'
 
 export const dynamic = 'force-dynamic'
 
 /**
- * Only the logo can change once a bus is listed. Its name, owner and seats are what tickets
- * were sold under, so changing them would make old tickets disagree with the bus.
+ * Only the logo and BusHub's commission can change once a bus is listed. Its name, owner and
+ * seats are what tickets were sold under, so changing them would make old tickets disagree with the bus.
  */
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
   try {
@@ -19,6 +21,25 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
       return NextResponse.json({ error: 'Invalid bus id' }, { status: 400 })
     }
     const body = await req.json().catch(() => ({}))
+
+    if (body.commissionRate !== undefined) {
+      const commissionRate = Number(body.commissionRate)
+      if (body.commissionRate === '' || !Number.isFinite(commissionRate) || commissionRate < 0 || commissionRate > 50) {
+        return NextResponse.json({ error: 'Commission must be between 0 and 50%' }, { status: 400 })
+      }
+      const { db } = await connectToDatabase()
+      const result = await db.collection('fleet').updateOne({ _id: new ObjectId(params.id) }, { $set: { commissionRate } })
+      if (result.matchedCount === 0) {
+        return NextResponse.json({ error: 'Bus not found' }, { status: 404 })
+      }
+      // Trips still to come use the new rate from their next sale. Tickets already sold keep
+      // the split they were sold with, and finished trips keep theirs.
+      await db
+        .collection('buses')
+        .updateMany({ fleetId: params.id, date: { $gte: dhakaDate() } }, { $set: { commissionRate } })
+      return NextResponse.json({ success: true })
+    }
+
     const logoUrl = cleanLogoUrl(body.logoUrl)
     if (logoUrl === null) {
       return NextResponse.json({ error: 'The logo must be a web link starting with https://' }, { status: 400 })
@@ -44,7 +65,10 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   }
 }
 
-/** A listed bus can be removed only while no trip uses it. */
+/**
+ * A listed bus can be removed once none of its trips is still to come. Its finished trips and
+ * their tickets stay, with the bus name written on them.
+ */
 export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
   try {
     if (!getAdminFromCookies()) {
@@ -54,10 +78,15 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
       return NextResponse.json({ error: 'Invalid bus id' }, { status: 400 })
     }
     const { db } = await connectToDatabase()
-    const trips = await db.collection('buses').countDocuments({ fleetId: params.id })
-    if (trips > 0) {
+    const trips = await db
+      .collection('buses')
+      .find({ fleetId: params.id, status: 'active', date: { $gte: dhakaDate() } })
+      .project({ date: 1, departureTime: 1 })
+      .toArray()
+    const upcoming = trips.filter((t) => !tripDeparted(t.date, t.departureTime)).length
+    if (upcoming > 0) {
       return NextResponse.json(
-        { error: `This bus has ${trips} trip${trips === 1 ? '' : 's'}, so it stays on the list` },
+        { error: `This bus has ${upcoming} upcoming trip${upcoming === 1 ? '' : 's'}. Delete ${upcoming === 1 ? 'it' : 'them'} first.` },
         { status: 409 }
       )
     }

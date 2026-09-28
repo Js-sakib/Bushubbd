@@ -1,7 +1,7 @@
 'use client'
 
 import { formatTripDate } from '@/lib/dates'
-import { dhakaDate } from '@/lib/scan'
+import { tripDeparted } from '@/lib/trips'
 import { seatsLeft } from '@/lib/seats'
 import type { Delta, SalesSummary } from '@/lib/stats'
 import BookingList from './BookingList'
@@ -149,9 +149,8 @@ export default function Overview({
 
   const { totals, series, deltas, byCompany, boardingToday, channels } = stats
   const labels = series.map((d) => formatTripDate(d.date))
-  const today = dhakaDate()
   const upcoming = buses
-    .filter((b) => b.date >= today && b.status === 'active')
+    .filter((b) => b.status === 'active' && !tripDeparted(b.date, b.departureTime))
     .sort((a, b) => (a.date + a.departureTime).localeCompare(b.date + b.departureTime))
     .slice(0, 5)
   const channelTotal = channels.web + channels.whatsapp

@@ -5,6 +5,7 @@ import { getAdminFromCookies } from '@/lib/auth'
 import { releaseExpiredHolds } from '@/lib/seatHold'
 import { generateSeatLabels } from '@/lib/seats'
 import { ticketExpiry } from '@/lib/tickets'
+import { tripDeparted } from '@/lib/trips'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -129,7 +130,10 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   }
 }
 
-/** A trip with live tickets can't be deleted: refund them first, or those passengers could not board. */
+/**
+ * A trip still to come can't be deleted while it has live tickets: refund them first, or those
+ * passengers could not board. A finished trip can always go; its tickets stay in Bookings.
+ */
 export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
   try {
     if (!getAdminFromCookies()) {
@@ -139,7 +143,13 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
       return NextResponse.json({ error: 'Invalid bus id' }, { status: 400 })
     }
     const { db } = await connectToDatabase()
-    const live = await db.collection('bookings').countDocuments({ busId: params.id, status: { $in: ['pending', 'confirmed'] } })
+    const bus = await db.collection('buses').findOne({ _id: new ObjectId(params.id) }, { projection: { date: 1, departureTime: 1 } })
+    if (!bus) {
+      return NextResponse.json({ error: 'Trip not found' }, { status: 404 })
+    }
+    const live = tripDeparted(bus.date, bus.departureTime)
+      ? 0
+      : await db.collection('bookings').countDocuments({ busId: params.id, status: { $in: ['pending', 'confirmed'] } })
     if (live > 0) {
       return NextResponse.json({ error: `This trip has ${live} live ticket${live === 1 ? '' : 's'}. Refund them first.` }, { status: 409 })
     }

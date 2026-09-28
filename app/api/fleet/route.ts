@@ -4,6 +4,7 @@ import { connectToDatabase, isDuplicateKeyError } from '@/lib/db'
 import { getAdminFromCookies } from '@/lib/auth'
 import { FleetBus } from '@/lib/models'
 import { BUS_TYPES, MAX_BUS_SEATS, cleanLogoUrl, cleanName, nameKey } from '@/lib/names'
+import { DEFAULT_COMMISSION_RATE } from '@/lib/tickets'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -47,6 +48,8 @@ export async function POST(req: NextRequest) {
     const totalSeats = Number(body.totalSeats)
     const busType = BUS_TYPES.includes(body.busType) ? body.busType : null
     const logoUrl = cleanLogoUrl(body.logoUrl)
+    const commissionRate =
+      body.commissionRate === undefined || body.commissionRate === '' ? DEFAULT_COMMISSION_RATE : Number(body.commissionRate)
 
     if (name.length < 2 || name.length > 60) {
       return NextResponse.json({ error: 'Give the bus a name (2 to 60 letters)' }, { status: 400 })
@@ -59,6 +62,9 @@ export async function POST(req: NextRequest) {
     }
     if (logoUrl === null) {
       return NextResponse.json({ error: 'The logo must be a web link starting with https://' }, { status: 400 })
+    }
+    if (!Number.isFinite(commissionRate) || commissionRate < 0 || commissionRate > 50) {
+      return NextResponse.json({ error: 'Commission must be between 0 and 50%' }, { status: 400 })
     }
 
     const { db } = await connectToDatabase()
@@ -78,6 +84,7 @@ export async function POST(req: NextRequest) {
       busType,
       totalSeats,
       logoUrl,
+      commissionRate,
       createdAt: new Date().toISOString(),
     }
     try {
