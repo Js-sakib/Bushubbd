@@ -57,9 +57,9 @@ function salesByTrip(bookings: Booking[]): Map<string, TripSales> {
 }
 
 /**
- * A date or time box with its name above it. On iPhone and iPad (the only browsers with
- * -webkit-touch-callout) an empty time box is a plain dark box with nothing in it, so there it
- * says what to tap until a time is chosen. Other browsers show their own --:-- hint.
+ * A date or time box with its name above it. On phones and tablets (Android and iPhone alike)
+ * an empty time box is a plain dark box with nothing in it, so there it says what to tap until
+ * a time is chosen. Computers show their own --:-- hint.
  */
 function PickField({
   label,
@@ -80,10 +80,10 @@ function PickField({
         {label}
         {note && <span className="text-[11px] font-semibold text-[#8e9a9d]">{note}</span>}
       </span>
-      <span className={`relative block rounded-[13px] ${invalid ? 'ring-1 ring-[#f87171]' : ''}`}>
+      <span className={`relative block rounded-[13px] ${empty ? 'pick-empty' : ''} ${invalid ? 'ring-1 ring-[#f87171]' : ''}`}>
         {children}
         {empty && (
-          <span className="pointer-events-none absolute inset-y-0 left-[14px] hidden items-center text-[14px] font-medium text-[#6e7b7e] [@supports(-webkit-touch-callout:none)]:flex">
+          <span className="pointer-events-none absolute inset-y-0 left-[14px] hidden items-center text-[14px] font-medium text-[#6e7b7e] [@media(pointer:coarse)]:flex">
             Tap to choose
           </span>
         )}
