@@ -108,7 +108,7 @@ export default function AdminDashboard() {
 
   const loadAll = useCallback(() => {
     fetch('/api/admin/stats').then((r) => r.json()).then((d) => !d.error && setStats(d)).catch(() => undefined)
-    fetch('/api/buses').then((r) => r.json()).then((d) => setBuses(d.buses || [])).catch(() => undefined)
+    fetch('/api/buses?all=1').then((r) => r.json()).then((d) => setBuses(d.buses || [])).catch(() => undefined)
     fetch('/api/bookings').then((r) => r.json()).then((d) => setBookings(d.bookings || [])).catch(() => undefined)
     fetch('/api/companies').then((r) => r.json()).then((d) => setCompanies(d.companies || [])).catch(() => undefined)
     fetch('/api/fleet').then((r) => r.json()).then((d) => setFleet(d.fleet || [])).catch(() => undefined)

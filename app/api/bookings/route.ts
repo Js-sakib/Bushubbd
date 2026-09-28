@@ -11,6 +11,7 @@ import {
   getVerifyUrl,
 } from '@/lib/tickets'
 import { releaseExpiredHolds, repairWronglyExpiredTickets } from '@/lib/seatHold'
+import { tripDeparted } from '@/lib/trips'
 import { seatSelectionError, takenSeats } from '@/lib/seats'
 import { getCompanyFromCookies, getAdminFromCookies } from '@/lib/auth'
 import { Booking } from '@/lib/models'
@@ -38,6 +39,9 @@ export async function POST(req: NextRequest) {
     const bus = await db.collection('buses').findOne({ _id: new ObjectId(busId) })
     if (!bus || bus.status !== 'active') {
       return NextResponse.json({ error: 'Bus not available' }, { status: 404 })
+    }
+    if (tripDeparted(bus.date, bus.departureTime)) {
+      return NextResponse.json({ error: 'This bus has already left' }, { status: 410 })
     }
 
     const seatProblem = seatSelectionError(seats, bus.totalSeats)

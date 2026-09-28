@@ -5,6 +5,8 @@ import { getAdminFromCookies } from '@/lib/auth'
 import { Bus } from '@/lib/models'
 import { DEFAULT_COMMISSION_RATE } from '@/lib/tickets'
 import { getPlaces } from '@/lib/places'
+import { dhakaDate } from '@/lib/scan'
+import { dhakaClock, tripDeparted } from '@/lib/trips'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -18,6 +20,9 @@ export async function GET(req: NextRequest) {
     const to = searchParams.get('to')
     const date = searchParams.get('date')
     const companyId = searchParams.get('companyId')
+    // The admin sees finished trips too, for their sales history. Everyone else sees only
+    // trips that have not left yet.
+    const all = searchParams.get('all') === '1' && Boolean(getAdminFromCookies())
 
     const query: Record<string, any> = { status: 'active' }
     if (from) query.from = from
@@ -25,7 +30,13 @@ export async function GET(req: NextRequest) {
     if (date) query.date = date
     if (companyId) query.companyId = companyId
 
-    const buses = await db.collection('buses').find(query).sort({ departureTime: 1 }).toArray()
+    if (!all) {
+      const today = dhakaDate()
+      if (date && date < today) return NextResponse.json({ buses: [] }, { headers: { 'Cache-Control': 'no-store, max-age=0, must-revalidate' } })
+      if (!date) query.date = { $gte: today }
+    }
+    const found = await db.collection('buses').find(query).sort({ departureTime: 1 }).toArray()
+    const buses = all ? found : found.filter((bus) => !tripDeparted(bus.date, bus.departureTime))
     return NextResponse.json({ buses }, { headers: { 'Cache-Control': 'no-store, max-age=0, must-revalidate' } })
   } catch (err) {
     console.error(err)
@@ -51,7 +62,6 @@ export async function POST(req: NextRequest) {
     const { fleetId, from, to, date, departureTime } = body
     const arrivalTime = body.arrivalTime ? String(body.arrivalTime) : ''
     const price = Number(body.price)
-    const commissionRate = body.commissionRate === undefined || body.commissionRate === '' ? DEFAULT_COMMISSION_RATE : Number(body.commissionRate)
 
     if (typeof fleetId !== 'string' || !ObjectId.isValid(fleetId)) {
       return NextResponse.json({ error: 'Choose the bus from your bus list' }, { status: 400 })
@@ -65,8 +75,11 @@ export async function POST(req: NextRequest) {
     if (!Number.isFinite(price) || price <= 0) {
       return NextResponse.json({ error: 'Enter the fare' }, { status: 400 })
     }
-    if (!Number.isFinite(commissionRate) || commissionRate < 0 || commissionRate > 50) {
-      return NextResponse.json({ error: 'Commission must be between 0 and 50%' }, { status: 400 })
+    if (date < dhakaDate()) {
+      return NextResponse.json({ error: 'That date has already passed' }, { status: 400 })
+    }
+    if (tripDeparted(date, departureTime)) {
+      return NextResponse.json({ error: `That time has already passed today (it is ${dhakaClock()} now)` }, { status: 400 })
     }
 
     const { db } = await connectToDatabase()
@@ -78,6 +91,8 @@ export async function POST(req: NextRequest) {
     if (!fleetBus) {
       return NextResponse.json({ error: 'That bus is not on your bus list' }, { status: 400 })
     }
+    // BusHub's commission is set once on the bus, not typed for every trip.
+    const commissionRate = Number.isFinite(fleetBus.commissionRate) ? Number(fleetBus.commissionRate) : DEFAULT_COMMISSION_RATE
     const company = ObjectId.isValid(fleetBus.companyId)
       ? await db.collection('companies').findOne({ _id: new ObjectId(fleetBus.companyId) })
       : null

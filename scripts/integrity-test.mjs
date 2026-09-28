@@ -5,6 +5,8 @@
 //   ADMIN_EMAIL=... ADMIN_PASSWORD=... node scripts/integrity-test.mjs
 //
 // It creates its own test companies, buses and bookings. Never point it at the live database.
+// Its trips leave late tonight (Dhaka time) and a trip that has left can't be sold, so run it
+// before 23:00 in Dhaka.
 import { MongoClient, ObjectId } from 'mongodb'
 
 const BASE = process.env.BASE_URL || 'http://localhost:3000'
@@ -110,6 +112,22 @@ const nonAdminTrip = await call('/api/buses', {
 })
 check('a bus company cannot add trips', nonAdminTrip.status === 403, `status ${nonAdminTrip.status}`)
 
+const pastTrip = await call('/api/buses', {
+  method: 'POST',
+  cookie: admin,
+  body: { fleetId: fleetBus?._id, from: 'Dhaka', to: 'Sylhet', date: dhakaToday, departureTime: '00:00', price: 900 },
+})
+check('a trip cannot be added for a time that has already passed', pastTrip.status === 400, `status ${pastTrip.status}`)
+const leftTrip = await db.collection('buses').insertOne({
+  fleetId: fleetBus._id, companyId: green.id, companyName: green.name, busName: fleetBus.name, busType: 'AC',
+  from: 'Dhaka', to: 'Sylhet', date: dhakaToday, departureTime: '00:00', arrivalTime: '', price: 900,
+  totalSeats: 36, bookedSeats: [], blockedSeats: [], commissionRate: 10, status: 'active', createdAt: new Date().toISOString(),
+})
+const lateBooking = await call('/api/bookings', { method: 'POST', body: { busId: leftTrip.insertedId.toString(), seats: ['1A'], passengerName: 'Late', passengerPhone: '01811111112' } })
+check('a trip that has already left cannot be booked', lateBooking.status === 410, `status ${lateBooking.status}`)
+const leftSearch = await call(`/api/buses?from=Dhaka&to=Sylhet&date=${dhakaToday}`)
+check('a trip that has already left is not in search', !leftSearch.data.buses.some((b) => b._id === leftTrip.insertedId.toString()))
+
 const rename = await call(`/api/buses/${trip._id}`, { method: 'PATCH', cookie: admin, body: { busName: 'Renamed', companyName: 'Other' } })
 const afterRename = await db.collection('buses').findOne({ _id: new ObjectId(trip._id) })
 check('a trip\'s bus name cannot be edited by hand', rename.status < 500 && afterRename.busName === fleetBus.name, afterRename.busName)
@@ -212,7 +230,7 @@ check('a counter-sold seat cannot be bought online', counterSeat.status === 409,
 // ---- Older trips (from before the bus list) can be linked so their tickets match ----
 const legacy = await db.collection('buses').insertOne({
   companyId: 'admin', companyName: 'green line typed', busName: 'GL typed by hand', busType: 'AC',
-  from: 'Dhaka', to: 'Khulna', date: dhakaToday, departureTime: '22:15', arrivalTime: '', price: 800,
+  from: 'Dhaka', to: 'Khulna', date: dhakaToday, departureTime: '23:50', arrivalTime: '', price: 800,
   totalSeats: 36, bookedSeats: [], blockedSeats: [], commissionRate: 10, status: 'active', createdAt: new Date().toISOString(),
 })
 const legacyId = legacy.insertedId.toString()

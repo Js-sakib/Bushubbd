@@ -4,6 +4,7 @@ import { sendWhatsAppMessage } from '@/lib/whatsapp'
 import { isExpired, getVerifyUrl, ticketExpiry } from '@/lib/tickets'
 import { seatsLeft as calcSeatsLeft } from '@/lib/seats'
 import { getPlaces } from '@/lib/places'
+import { tripDeparted } from '@/lib/trips'
 import { SITE_URL } from '@/lib/site'
 
 export const dynamic = 'force-dynamic'
@@ -124,12 +125,16 @@ export async function POST(req: NextRequest) {
 
     if (fromCity && toCity) {
       const { date, label } = parseDate(text)
-      const buses = await db
-        .collection('buses')
-        .find({ from: fromCity, to: toCity, date, status: 'active' })
-        .sort({ departureTime: 1 })
-        .limit(5)
-        .toArray()
+      // Buses that have already left today are not offered.
+      const buses = (
+        await db
+          .collection('buses')
+          .find({ from: fromCity, to: toCity, date, status: 'active' })
+          .sort({ departureTime: 1 })
+          .toArray()
+      )
+        .filter((b) => !tripDeparted(b.date, b.departureTime))
+        .slice(0, 5)
 
       const searchLink = `${getBaseUrl()}/search?from=${encodeURIComponent(fromCity)}&to=${encodeURIComponent(
         toCity

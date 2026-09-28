@@ -2,6 +2,7 @@ import type { Db } from 'mongodb'
 import { connectToDatabase } from './db'
 import { DEFAULT_PLACES, getPlaces, type Places, type PopularRoute } from './places'
 import { dhakaDate } from './scan'
+import { tripDeparted } from './trips'
 
 /** One upcoming trip as a public route page shows it: no seat lists, no commission. */
 export interface RouteTrip {
@@ -35,14 +36,9 @@ export async function loadPublicPlaces(): Promise<{ db: Db | null; places: Place
   }
 }
 
-function dhakaClock(at: Date = new Date()): string {
-  return new Date(at.getTime() + 6 * 60 * 60 * 1000).toISOString().slice(11, 16)
-}
-
 /** Trips on this route that have not left yet, soonest first. */
 export async function upcomingTrips(db: Db, from: string, to: string, limit = 12): Promise<RouteTrip[]> {
   const today = dhakaDate()
-  const now = dhakaClock()
   const buses = await db
     .collection('buses')
     .find({ from, to, status: 'active', date: { $gte: today } })
@@ -51,7 +47,7 @@ export async function upcomingTrips(db: Db, from: string, to: string, limit = 12
     .toArray()
 
   return buses
-    .filter((bus) => bus.date > today || String(bus.departureTime) > now)
+    .filter((bus) => !tripDeparted(bus.date, bus.departureTime))
     .slice(0, limit)
     .map((bus) => {
       const taken = new Set<string>([...(bus.bookedSeats || []), ...(bus.blockedSeats || [])])

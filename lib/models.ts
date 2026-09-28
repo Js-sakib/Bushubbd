@@ -12,6 +12,8 @@ export interface FleetBus {
   busType: 'AC' | 'Non-AC' | 'Sleeper'
   totalSeats: number
   logoUrl?: string
+  /** BusHub's commission on this bus's tickets, in percent. Every new trip takes it from here. */
+  commissionRate?: number
   createdAt: string
 }
 
