@@ -8,6 +8,7 @@ import { formatTripDate } from '@/lib/dates'
 import type { DayCount, ScanResult } from '@/lib/scan'
 import QrCamera from './QrCamera'
 import ScanResultCard, { ScanResponse } from './ScanResultCard'
+import SalesBreakdown from './SalesBreakdown'
 import { LogoMark } from '../BrandLogo'
 
 interface RecentScan {
@@ -341,28 +342,7 @@ export default function OperatorScanner() {
             </span>
           </div>
 
-          <div className="card-2 overflow-hidden">
-            {bookings.map((b) => (
-              <div key={b._id} className="flex items-start gap-3 border-b border-[#1a2123] px-4 py-3 last:border-b-0">
-                <div className="flex min-w-0 grow flex-col gap-0.5">
-                  <span className="text-[13px] font-semibold">
-                    {b.from} → {b.to}
-                  </span>
-                  <span className="text-[11.5px] text-[#78868a]">
-                    {formatTripDate(b.date)} · {b.departureTime} · seats {b.seats.join(', ')}
-                  </span>
-                  <span className="text-[11.5px] text-[#78868a]">{b.passengerName}</span>
-                </div>
-                <div className="flex shrink-0 flex-col items-end gap-0.5">
-                  <span className="text-[13px] font-bold text-[#34d399]">৳{b.companyPayout ?? b.totalPrice}</span>
-                  <span className="text-[11px] text-[#78868a]">
-                    {b.status === 'refunded' ? 'Refunded' : b.paymentStatus === 'paid' ? 'Paid' : 'Unpaid'}
-                  </span>
-                </div>
-              </div>
-            ))}
-            {bookings.length === 0 && <div className="px-4 py-8 text-center text-sm text-[#8e9a9d]">No tickets sold yet.</div>}
-          </div>
+          <SalesBreakdown bookings={bookings} />
         </div>
       )}
     </div>
