@@ -133,9 +133,12 @@ async function releaseSeats(db: Db, busId: string, seats: string[]) {
 
 export async function GET(req: NextRequest) {
   try {
-    const company = getCompanyFromCookies()
+    // A browser signed in to both panels: each panel says which one it is (?as=admin or
+    // ?as=company), so the admin sees every ticket and the operator only their own.
+    const as = new URL(req.url).searchParams.get('as')
     const admin = getAdminFromCookies()
-    if (!company && !admin) {
+    const company = as === 'admin' && admin ? null : getCompanyFromCookies()
+    if ((!company && !admin) || (as === 'company' && !company)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 

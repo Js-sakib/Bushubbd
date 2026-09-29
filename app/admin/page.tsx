@@ -109,7 +109,7 @@ export default function AdminDashboard() {
   const loadAll = useCallback(() => {
     fetch('/api/admin/stats').then((r) => r.json()).then((d) => !d.error && setStats(d)).catch(() => undefined)
     fetch('/api/buses?all=1').then((r) => r.json()).then((d) => setBuses(d.buses || [])).catch(() => undefined)
-    fetch('/api/bookings').then((r) => r.json()).then((d) => setBookings(d.bookings || [])).catch(() => undefined)
+    fetch('/api/bookings?as=admin').then((r) => r.json()).then((d) => setBookings(d.bookings || [])).catch(() => undefined)
     fetch('/api/companies').then((r) => r.json()).then((d) => setCompanies(d.companies || [])).catch(() => undefined)
     fetch('/api/fleet').then((r) => r.json()).then((d) => setFleet(d.fleet || [])).catch(() => undefined)
     fetch('/api/leads').then((r) => r.json()).then((d) => setLeads(d.leads || [])).catch(() => undefined)
@@ -120,7 +120,7 @@ export default function AdminDashboard() {
     fetch('/api/auth/me')
       .then((res) => res.json())
       .then((data) => {
-        if (data.role !== 'admin') {
+        if (!data.admin) {
           router.push(adminPath('/admin/login'))
           return
         }
