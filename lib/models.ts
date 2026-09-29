@@ -33,6 +33,9 @@ export interface Bus {
   date: string // YYYY-MM-DD
   departureTime: string // HH:MM
   arrivalTime: string // HH:MM
+  /** The counter or stand the bus leaves from, and an optional map link (lib/boarding). */
+  boardingPoint?: string
+  boardingMapUrl?: string
   price: number
   totalSeats: number
   /** Seats taken by a BusHub booking (a live hold or a paid ticket). Never edited by hand. */
@@ -59,6 +62,9 @@ export interface Booking {
   seats: string[]
   /** Copied from the trip at booking time for the ticket; older bookings have none. */
   arrivalTime?: string
+  /** Where to board, copied from the trip; older tickets have none. */
+  boardingPoint?: string
+  boardingMapUrl?: string
   busType?: string
   pricePerSeat?: number
   /** Bags the passenger said they are bringing (0 when none). Older bookings have none. */

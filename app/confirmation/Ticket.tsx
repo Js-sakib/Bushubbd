@@ -18,6 +18,8 @@ export interface TicketBooking {
   departureTime: string
   /** Trip details copied at booking time; tickets from before they were stored have none. */
   arrivalTime?: string
+  boardingPoint?: string
+  boardingMapUrl?: string
   busType?: string
   pricePerSeat?: number
   bags?: number
@@ -33,6 +35,7 @@ export interface TicketBooking {
 }
 
 const INK = '#16191a'
+const REPORT_MINUTES = 30
 const MUTED = '#7b8689'
 const PAYMENT_NAMES: Record<string, string> = { bkash: 'বিকাশ', nagad: 'নগদ', card: 'কার্ড' }
 const BUS_TYPES: Record<string, string> = { AC: 'এসি', 'Non-AC': 'নন-এসি', Sleeper: 'স্লিপার' }
@@ -111,7 +114,8 @@ const Ticket = forwardRef<HTMLDivElement, { booking: TicketBooking }>(function T
   const perSeat = booking.pricePerSeat ?? (seatCount ? Math.round(booking.totalPrice / seatCount) : booking.totalPrice)
   const dep = toMinutes(booking.departureTime)
   const arr = toMinutes(booking.arrivalTime)
-  const reportBy = dep === null ? '—' : bnClock(dep - 15)
+  // Passengers are asked to be at the counter half an hour before the bus leaves.
+  const reportBy = dep === null ? '—' : bnClock(dep - REPORT_MINUTES)
   const trip = tripMinutes(booking.departureTime, booking.arrivalTime)
   const method = booking.paymentMethod ? PAYMENT_NAMES[booking.paymentMethod] || booking.paymentMethod : ''
   const busType = booking.busType ? BUS_TYPES[booking.busType] || booking.busType : ''
@@ -204,6 +208,35 @@ const Ticket = forwardRef<HTMLDivElement, { booking: TicketBooking }>(function T
           </div>
         </div>
 
+        {/* Where to board: typed once per trip by the admin and copied onto every ticket */}
+        {booking.boardingPoint && (
+          <div className="relative mx-5 mb-3.5 flex items-start gap-3 rounded-2xl border px-3.5 py-3" style={{ zIndex: 1, borderColor: '#cfe3e1', backgroundColor: 'rgba(233,244,243,0.92)' }}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="#0e3f43" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="mt-0.5 h-5 w-5 shrink-0">
+              <path d="M12 21s-6.5-5.6-6.5-11A6.5 6.5 0 0 1 18.5 10c0 5.4-6.5 11-6.5 11z" />
+              <circle cx="12" cy="10" r="2.3" />
+            </svg>
+            <div className="flex min-w-0 grow flex-col gap-0.5">
+              <span className="text-[10.5px] font-semibold leading-tight" style={{ color: MUTED }}>
+                বাস ছাড়বে যেখান থেকে
+              </span>
+              <span className="break-words text-[13.5px] font-bold leading-snug" style={{ color: INK }}>
+                {booking.boardingPoint}
+              </span>
+            </div>
+            {booking.boardingMapUrl && (
+              <a
+                href={booking.boardingMapUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="no-print shrink-0 self-center rounded-full px-3 py-1.5 text-[11.5px] font-bold text-white"
+                style={{ backgroundColor: '#0e3f43' }}
+              >
+                ম্যাপ ↗
+              </a>
+            )}
+          </div>
+        )}
+
         {/* Journey details */}
         <div className="relative grid grid-cols-2 gap-x-3 gap-y-3 border-t border-dashed border-[#dfe4e5] px-5 py-3.5" style={{ zIndex: 1 }}>
           <Field label="যাত্রীর নাম" value={booking.passengerName} />
@@ -211,7 +244,7 @@ const Ticket = forwardRef<HTMLDivElement, { booking: TicketBooking }>(function T
           <Field label="ভ্রমণের তারিখ" value={bnDate(booking.date)} className="col-span-2" />
           <Field label="আসন নম্বর" value={booking.seats.join(', ')} />
           <Field label="মোট আসন" value={`${bnDigits(seatCount)}টি`} align="right" />
-          <Field label="কাউন্টারে উপস্থিতি" value={`${reportBy}-এর মধ্যে`} className="col-span-2" />
+          <Field label="কাউন্টারে উপস্থিতি" value={`${reportBy}-এর মধ্যে (ছাড়ার ${bnDigits(REPORT_MINUTES)} মিনিট আগে)`} className="col-span-2" />
           {/* Its own row: a ticket code is long, and the conductor may type it in. */}
           <Field label="টিকেট নম্বর" value={booking.bookingCode} className="col-span-2" nowrap />
         </div>

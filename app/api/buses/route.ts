@@ -7,6 +7,7 @@ import { DEFAULT_COMMISSION_RATE } from '@/lib/tickets'
 import { getPlaces } from '@/lib/places'
 import { dhakaDate } from '@/lib/scan'
 import { dhakaClock, tripDeparted } from '@/lib/trips'
+import { cleanBoardingPoint, cleanMapUrl } from '@/lib/boarding'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -62,6 +63,8 @@ export async function POST(req: NextRequest) {
     const { fleetId, from, to, date, departureTime } = body
     const arrivalTime = body.arrivalTime ? String(body.arrivalTime) : ''
     const price = Number(body.price)
+    const boardingPoint = cleanBoardingPoint(body.boardingPoint)
+    const boardingMapUrl = cleanMapUrl(body.boardingMapUrl)
 
     if (typeof fleetId !== 'string' || !ObjectId.isValid(fleetId)) {
       return NextResponse.json({ error: 'Choose the bus from your bus list' }, { status: 400 })
@@ -74,6 +77,9 @@ export async function POST(req: NextRequest) {
     }
     if (!Number.isFinite(price) || price <= 0) {
       return NextResponse.json({ error: 'Enter the fare' }, { status: 400 })
+    }
+    if (boardingMapUrl === null) {
+      return NextResponse.json({ error: 'The map link must start with https://' }, { status: 400 })
     }
     if (date < dhakaDate()) {
       return NextResponse.json({ error: 'That date has already passed' }, { status: 400 })
@@ -123,6 +129,8 @@ export async function POST(req: NextRequest) {
       date,
       departureTime,
       arrivalTime,
+      ...(boardingPoint ? { boardingPoint } : {}),
+      ...(boardingMapUrl ? { boardingMapUrl } : {}),
       price,
       totalSeats: fleetBus.totalSeats,
       bookedSeats: [],
