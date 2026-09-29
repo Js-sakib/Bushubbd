@@ -94,14 +94,14 @@ export default function OperatorScanner() {
     fetch('/api/auth/me')
       .then((res) => res.json())
       .then((data) => {
-        if (data.role !== 'company') {
+        if (!data.company) {
           router.push(companyPath('/company/login'))
           return
         }
-        setCompanyEmail(data.email)
+        setCompanyEmail(data.company.email)
         setChecking(false)
         loadStats()
-        fetch('/api/bookings')
+        fetch('/api/bookings?as=company')
           .then((r) => r.json())
           .then((d) => setBookings(d.bookings || []))
       })
