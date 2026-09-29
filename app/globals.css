@@ -181,6 +181,16 @@ select.input-dark option {
   color: var(--ink);
 }
 
+/* The ticket as captured for its PDF: printed on white, so the notches become white holes. */
+.pdf-capture .ticket-print {
+  box-shadow: none !important;
+  border: 1px solid #d5dbdc;
+}
+.pdf-capture .ticket-notch {
+  background: #ffffff !important;
+  border: 1px solid #d5dbdc;
+}
+
 /* On phones and tablets an empty time box gets a "Tap to choose" hint (see PickField in the
    admin Buses page); hide any --:-- the browser draws so the two don't overlap. Times are picked
    from the phone's own picker there, so nothing is typed into the hidden text. */

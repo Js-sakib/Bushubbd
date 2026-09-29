@@ -6,6 +6,7 @@ import toast from 'react-hot-toast'
 import Ticket, { TicketBooking } from './Ticket'
 import StoryCard from './StoryCard'
 import { MAX_SEATS_PER_BOOKING } from '@/lib/seats'
+import { jpegToPdf } from '@/lib/pdf'
 
 function timeLeft(validUntil: string) {
   const ms = new Date(validUntil).getTime() - Date.now()
@@ -16,6 +17,9 @@ function timeLeft(validUntil: string) {
 }
 
 /** A 1x1 transparent PNG, used so one unreachable operator logo cannot fail the whole capture. */
+/** Leaves out on-screen-only controls (such as the map button) from saved images and PDFs. */
+const onScreenOnly = (node: HTMLElement) => !(node instanceof HTMLElement && node.classList.contains('no-print'))
+
 const BLANK_PIXEL =
   'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII='
 
@@ -30,7 +34,7 @@ function ConfirmationContent() {
   const [booking, setBooking] = useState<TicketBooking | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const [busy, setBusy] = useState<'download' | 'share' | 'story' | null>(null)
+  const [busy, setBusy] = useState<'download' | 'pdf' | 'share' | 'story' | null>(null)
   const [canShareFiles, setCanShareFiles] = useState(false)
 
   useEffect(() => {
@@ -70,8 +74,50 @@ function ConfirmationContent() {
       backgroundColor: '#0b0e0f',
       cacheBust: true,
       imagePlaceholder: BLANK_PIXEL,
+      filter: onScreenOnly,
     })
   }, [])
+
+  /** Hands a finished file to the browser as a download. */
+  const saveFile = (blob: Blob, name: string) => {
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = name
+    document.body.appendChild(link)
+    link.click()
+    link.remove()
+    // Revoking straight away can cancel the download on some mobile browsers.
+    setTimeout(() => URL.revokeObjectURL(url), 30000)
+  }
+
+  // The ticket as an A4 PDF, drawn on white like the printout, saved straight to the phone.
+  const handlePdf = async () => {
+    if (!booking || !ticketRef.current) return
+    setBusy('pdf')
+    const node = ticketRef.current
+    node.classList.add('pdf-capture')
+    try {
+      const { toCanvas } = await import('html-to-image')
+      const canvas = await toCanvas(node, {
+        pixelRatio: 2.5,
+        backgroundColor: '#ffffff',
+        cacheBust: true,
+        imagePlaceholder: BLANK_PIXEL,
+        filter: onScreenOnly,
+      })
+      const jpeg = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, 'image/jpeg', 0.92))
+      if (!jpeg) throw new Error('empty')
+      const pdf = jpegToPdf(new Uint8Array(await jpeg.arrayBuffer()), canvas.width, canvas.height, `BusHub ticket ${booking.bookingCode}`)
+      saveFile(pdf, `BusHub-ticket-${booking.bookingCode}.pdf`)
+      toast.success('Ticket PDF downloaded')
+    } catch {
+      toast.error('Could not make the PDF. Try Download image instead.')
+    } finally {
+      node.classList.remove('pdf-capture')
+      setBusy(null)
+    }
+  }
 
   const handleDownload = async () => {
     if (!booking) return
@@ -79,18 +125,10 @@ function ConfirmationContent() {
     try {
       const blob = await renderTicket()
       if (!blob) throw new Error('empty')
-      const url = URL.createObjectURL(blob)
-      const link = document.createElement('a')
-      link.href = url
-      link.download = `BusHub-ticket-${booking.bookingCode}.png`
-      document.body.appendChild(link)
-      link.click()
-      link.remove()
-      // Revoking straight away can cancel the download on some mobile browsers.
-      setTimeout(() => URL.revokeObjectURL(url), 30000)
-      toast.success('Ticket saved to your device')
+      saveFile(blob, `BusHub-ticket-${booking.bookingCode}.png`)
+      toast.success('Ticket image downloaded')
     } catch {
-      toast.error('Could not save the image — use Print instead')
+      toast.error('Could not save the image. Try Download PDF instead.')
     } finally {
       setBusy(null)
     }
@@ -218,7 +256,24 @@ function ConfirmationContent() {
       </div>
 
       <div className="no-print mt-5 flex flex-col gap-2.5 sm:max-w-lg">
+        <span className="label-xs">Download your ticket · টিকেট ডাউনলোড</span>
         <div className="grid grid-cols-2 gap-2.5">
+          <button type="button" onClick={handlePdf} disabled={busy !== null} className="glass-btn h-12 whitespace-nowrap px-3 text-sm">
+            <span className="icon-disc h-6 w-6">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5">
+                <path d="M12 4v11" />
+                <path d="m7.5 11 4.5 4.5 4.5-4.5" />
+                <path d="M5 19.5h14" />
+              </svg>
+            </span>
+            {busy === 'pdf' ? (
+              'Making PDF...'
+            ) : (
+              <span>
+                <span className="hidden min-[380px]:inline">Download </span>PDF
+              </span>
+            )}
+          </button>
           <button type="button" onClick={handleDownload} disabled={busy !== null} className="glass-btn h-12 whitespace-nowrap px-3 text-sm">
             <span className="icon-disc h-6 w-6">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5">
@@ -227,10 +282,20 @@ function ConfirmationContent() {
                 <path d="M5 19.5h14" />
               </svg>
             </span>
-            {busy === 'download' ? 'Saving...' : 'Save image'}
+            {busy === 'download' ? (
+              'Saving...'
+            ) : (
+              <span>
+                <span className="hidden min-[380px]:inline">Download </span>
+                <span className="min-[380px]:hidden">Image</span>
+                <span className="hidden min-[380px]:inline">image</span>
+              </span>
+            )}
           </button>
+        </div>
 
-          {canShareFiles ? (
+        <div className={`grid gap-2.5 ${canShareFiles ? 'grid-cols-2' : 'grid-cols-1'}`}>
+          {canShareFiles && (
             <button type="button" onClick={handleShare} disabled={busy !== null} className="glass-btn glass-btn-teal h-12 whitespace-nowrap px-3 text-sm">
               <span className="icon-disc icon-disc-teal h-6 w-6">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5">
@@ -242,21 +307,14 @@ function ConfirmationContent() {
               </span>
               {busy === 'share' ? 'Sharing...' : 'Share'}
             </button>
-          ) : (
-            <button type="button" onClick={() => window.print()} className="glass-btn glass-btn-plain h-12 whitespace-nowrap px-3 text-sm">
-              Print / PDF
-            </button>
           )}
+          <button type="button" onClick={() => window.print()} className="glass-btn glass-btn-plain h-12 whitespace-nowrap px-3 text-sm">
+            Print
+          </button>
         </div>
 
-        {canShareFiles && (
-          <button type="button" onClick={() => window.print()} className="glass-btn glass-btn-plain h-12 w-full text-sm">
-            Print or save as PDF
-          </button>
-        )}
-
         <p className="text-center text-[11.5px] leading-snug text-[#78868a]">
-          Save the image to your gallery so you can board without internet.
+          Keep the PDF or image on your phone so you can board without internet.
         </p>
 
         {paid && booking.status !== 'refunded' && (
