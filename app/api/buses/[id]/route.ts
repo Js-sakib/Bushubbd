@@ -6,6 +6,7 @@ import { releaseExpiredHolds } from '@/lib/seatHold'
 import { generateSeatLabels } from '@/lib/seats'
 import { ticketExpiry } from '@/lib/tickets'
 import { tripDeparted } from '@/lib/trips'
+import { cleanBoardingPoint, cleanMapUrl } from '@/lib/boarding'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -26,6 +27,14 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
   } catch (err) {
     console.error(err)
     return NextResponse.json({ error: 'Failed to fetch bus' }, { status: 500 })
+  }
+}
+
+/** A $set and an $unset together, leaving out whichever is empty (the database refuses an empty one). */
+function withUnset(set: Record<string, any>, unset: Record<string, ''>) {
+  return {
+    ...(Object.keys(set).length ? { $set: set } : {}),
+    ...(Object.keys(unset).length ? { $unset: unset } : {}),
   }
 }
 
@@ -69,6 +78,20 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     if (update.status !== undefined && !['active', 'cancelled'].includes(update.status)) {
       return NextResponse.json({ error: 'Invalid status' }, { status: 400 })
     }
+    const unset: Record<string, ''> = {}
+    if (body.boardingPoint !== undefined) {
+      const point = cleanBoardingPoint(body.boardingPoint)
+      if (point) update.boardingPoint = point
+      else unset.boardingPoint = ''
+    }
+    if (body.boardingMapUrl !== undefined) {
+      const url = cleanMapUrl(body.boardingMapUrl)
+      if (url === null) {
+        return NextResponse.json({ error: 'The map link must start with https://' }, { status: 400 })
+      }
+      if (url) update.boardingMapUrl = url
+      else unset.boardingMapUrl = ''
+    }
 
     const { db } = await connectToDatabase()
     const bus = await db.collection('buses').findOne({ _id: new ObjectId(params.id) })
@@ -109,19 +132,23 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     }
 
     // Tickets already sold show the trip's new route and time.
-    for (const key of ['from', 'to', 'date', 'departureTime']) {
+    for (const key of ['from', 'to', 'date', 'departureTime', 'boardingPoint', 'boardingMapUrl']) {
       if (update[key] !== undefined) ticketChanges[key] = update[key]
     }
     if (ticketChanges.date) ticketChanges.validUntil = ticketExpiry(ticketChanges.date)
 
     try {
-      await db.collection('buses').updateOne({ _id: bus._id }, { $set: update })
+      if (Object.keys(update).length || Object.keys(unset).length) {
+        await db.collection('buses').updateOne({ _id: bus._id }, withUnset(update, unset))
+      }
     } catch (err) {
       if (!isDuplicateKeyError(err)) throw err
       return NextResponse.json({ error: 'That bus already has a trip at this date and time' }, { status: 409 })
     }
-    if (Object.keys(ticketChanges).length > 0) {
-      await db.collection('bookings').updateMany({ busId: params.id }, { $set: ticketChanges })
+    if (Object.keys(ticketChanges).length > 0 || Object.keys(unset).length > 0) {
+      await db
+        .collection('bookings')
+        .updateMany({ busId: params.id }, withUnset(ticketChanges, unset))
     }
     return NextResponse.json({ success: true })
   } catch (err) {

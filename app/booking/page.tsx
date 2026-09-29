@@ -15,6 +15,7 @@ interface Bus {
   to: string
   date: string
   departureTime: string
+  boardingPoint?: string
   price: number
   totalSeats: number
   bookedSeats: string[]
@@ -178,6 +179,7 @@ function BookingContent() {
           <span className="text-xs text-[#8e9a9d]">
             {bus.from} → {bus.to} · {bus.departureTime} · {bus.date}
           </span>
+          {bus.boardingPoint && <span className="text-xs text-[#b7c1c3]">📍 Boarding: {bus.boardingPoint}</span>}
         </div>
       </div>
 

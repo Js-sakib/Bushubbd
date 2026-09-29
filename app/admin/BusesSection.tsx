@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import toast from 'react-hot-toast'
 import { formatTripDate } from '@/lib/dates'
 import { seatsLeft } from '@/lib/seats'
@@ -13,7 +13,9 @@ import { dhakaDate } from '@/lib/scan'
 import { dhakaClock, tripDeparted } from '@/lib/trips'
 
 const EMPTY_FLEET_FORM = { name: '', companyId: '', busType: 'AC', totalSeats: '40', logoUrl: '', commissionRate: '10' }
-const EMPTY_TRIP_FORM = { fleetId: '', from: '', to: '', date: '', departureTime: '', arrivalTime: '', price: '' }
+const EMPTY_TRIP_FORM = {
+  fleetId: '', from: '', to: '', date: '', departureTime: '', arrivalTime: '', price: '', boardingPoint: '', boardingMapUrl: '',
+}
 const DEFAULT_RATE = 10
 const HISTORY_PAGE = 20
 
@@ -181,6 +183,36 @@ export default function BusesSection({
   const [manageSeatsBusId, setManageSeatsBusId] = useState<string | null>(null)
   const approved = companies.filter((c) => c.status === 'approved')
   const chosen = fleet.find((f) => f._id === tripForm.fleetId)
+  // The boarding point last copied in by itself, so a typed one is never overwritten.
+  const autoBoarding = useRef({ point: '', map: '' })
+
+  /** The boarding point this bus (or, failing that, this company) last used from this city. */
+  const lastBoarding = (fleetId: string, from: string) => {
+    if (!fleetId || !from) return null
+    const bus = fleet.find((f) => f._id === fleetId)
+    const newestFirst = [...buses].filter((b) => b.from === from && b.boardingPoint).sort((a, b) => byTime(b, a))
+    return (
+      newestFirst.find((b) => b.fleetId === fleetId) ||
+      (bus ? newestFirst.find((b) => b.companyId === bus.companyId) : undefined) ||
+      null
+    )
+  }
+
+  /** Change the bus or the From city, bringing along the boarding point used there before. */
+  const pickBusOrCity = (change: { fleetId?: string; from?: string }) => {
+    const next = { ...tripForm, ...change }
+    const untouched =
+      (!tripForm.boardingPoint || tripForm.boardingPoint === autoBoarding.current.point) &&
+      (!tripForm.boardingMapUrl || tripForm.boardingMapUrl === autoBoarding.current.map)
+    if (untouched) {
+      const last = lastBoarding(next.fleetId, next.from)
+      next.boardingPoint = last?.boardingPoint || ''
+      next.boardingMapUrl = last?.boardingMapUrl || ''
+      autoBoarding.current = { point: next.boardingPoint, map: next.boardingMapUrl }
+    }
+    setTripForm(next)
+  }
+  const boardingCopied = Boolean(tripForm.boardingPoint) && tripForm.boardingPoint === autoBoarding.current.point
   const rateOf = (f: FleetBus) => f.commissionRate ?? DEFAULT_RATE
 
   const upcoming = useMemo(() => buses.filter((b) => !tripDeparted(b.date, b.departureTime, now)).sort(byTime), [buses, now])
@@ -296,6 +328,20 @@ export default function BusesSection({
     toast.success('Trip added')
     // Keep the bus, route and fare: the next trip is usually the same bus at another time.
     setTripForm({ ...tripForm, date: dhakaDate(), departureTime: '', arrivalTime: '' })
+    onChanged()
+  }
+
+  const handleBoarding = async (bus: Bus) => {
+    const point = prompt(`Where does ${bus.busName} leave from? (counter or stand, e.g. Kalabagan counter, Dhaka)`, bus.boardingPoint || '')
+    if (point === null) return
+    const map = prompt('Google Maps link to it (optional, leave empty for none)', bus.boardingMapUrl || '')
+    if (map === null) return
+    const { ok, error } = await send(`/api/buses/${bus._id}`, 'PATCH', { boardingPoint: point, boardingMapUrl: map })
+    if (!ok) {
+      toast.error(error || 'Could not save the boarding point')
+      return
+    }
+    toast.success('Saved. Tickets already sold show it too.')
     onChanged()
   }
 
@@ -418,7 +464,7 @@ export default function BusesSection({
               </div>
             ) : (
               <form onSubmit={handleAddTrip} className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                <select required value={tripForm.fleetId} onChange={(e) => setTripForm({ ...tripForm, fleetId: e.target.value })} className="input-dark sm:col-span-2 lg:col-span-3" aria-label="Bus">
+                <select required value={tripForm.fleetId} onChange={(e) => pickBusOrCity({ fleetId: e.target.value })} className="input-dark sm:col-span-2 lg:col-span-3" aria-label="Bus">
                   <option value="" disabled>
                     Choose bus…
                   </option>
@@ -445,7 +491,7 @@ export default function BusesSection({
                   </div>
                 )}
                 <PickField label="From" empty={false}>
-                  <select required value={tripForm.from} onChange={(e) => setTripForm({ ...tripForm, from: e.target.value })} className="input-dark" aria-label="From">
+                  <select required value={tripForm.from} onChange={(e) => pickBusOrCity({ from: e.target.value })} className="input-dark" aria-label="From">
                     <option value="">Choose city…</option>
                     {CITIES.map((c) => <option key={c} value={c}>{c}</option>)}
                   </select>
@@ -455,6 +501,28 @@ export default function BusesSection({
                     <option value="">Choose city…</option>
                     {CITIES.filter((c) => c !== tripForm.from).map((c) => <option key={c} value={c}>{c}</option>)}
                   </select>
+                </PickField>
+                <PickField label="Boarding point" note={boardingCopied ? '(copied from the last trip)' : '(where the bus leaves from)'} empty={false}>
+                  <input
+                    required
+                    maxLength={120}
+                    placeholder="e.g. Kalabagan counter, Dhaka"
+                    value={tripForm.boardingPoint}
+                    onChange={(e) => setTripForm({ ...tripForm, boardingPoint: e.target.value })}
+                    className="input-dark"
+                    aria-label="Boarding point"
+                  />
+                </PickField>
+                <PickField label="Google Maps link" note="(optional)" empty={false}>
+                  <input
+                    type="url"
+                    inputMode="url"
+                    placeholder="Paste the share link"
+                    value={tripForm.boardingMapUrl}
+                    onChange={(e) => setTripForm({ ...tripForm, boardingMapUrl: e.target.value })}
+                    className="input-dark"
+                    aria-label="Google Maps link"
+                  />
                 </PickField>
                 <PickField label="Travel date" note={tripForm.date === today ? '(today)' : undefined} empty={!tripForm.date} invalid={pastDate}>
                   <input required type="date" min={today} value={tripForm.date} onChange={(e) => setTripForm({ ...tripForm, date: e.target.value })} className="input-dark" aria-label="Travel date" />
@@ -502,6 +570,11 @@ export default function BusesSection({
                       {b.from} → {b.to} · {formatTripDate(b.date)}
                     </span>
                     <span className="truncate text-[12px] font-semibold text-[#e7e2da]">{tripTimes(b)}</span>
+                    {b.boardingPoint ? (
+                      <span className="truncate text-[11.5px] text-[#9ba7aa]">📍 {b.boardingPoint}{b.boardingMapUrl ? ' · map ✓' : ''}</span>
+                    ) : (
+                      <span className="text-[11.5px] font-bold text-[#f5a524]">📍 No boarding point yet</span>
+                    )}
                     {linked ? (
                       <span className="truncate text-[11.5px] text-[#6e7b7e]">
                         {b.companyName}
@@ -541,6 +614,13 @@ export default function BusesSection({
                     className="h-9 rounded-full border border-white/10 bg-white/[0.05] px-3.5 text-[12px] font-bold text-[#f5a524] transition hover:bg-white/[0.09]"
                   >
                     {manageSeatsBusId === b._id ? 'Close seats' : 'Manage seats'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleBoarding(b)}
+                    className="h-9 rounded-full border border-white/10 bg-white/[0.05] px-3.5 text-[12px] font-bold text-[#c4cdcf] transition hover:bg-white/[0.09]"
+                  >
+                    Boarding point
                   </button>
                   <button
                     type="button"

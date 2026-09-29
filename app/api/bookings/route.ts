@@ -81,6 +81,8 @@ export async function POST(req: NextRequest) {
       date: bus.date,
       departureTime: bus.departureTime,
       arrivalTime: bus.arrivalTime ? String(bus.arrivalTime) : '',
+      ...(bus.boardingPoint ? { boardingPoint: String(bus.boardingPoint) } : {}),
+      ...(bus.boardingMapUrl ? { boardingMapUrl: String(bus.boardingMapUrl) } : {}),
       busType: bus.busType ? String(bus.busType) : '',
       pricePerSeat: bus.price,
       seats,

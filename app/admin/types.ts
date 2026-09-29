@@ -23,6 +23,8 @@ export interface Bus {
   date: string
   departureTime: string
   arrivalTime?: string
+  boardingPoint?: string
+  boardingMapUrl?: string
   price: number
   commissionRate?: number
   totalSeats: number

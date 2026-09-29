@@ -14,6 +14,7 @@ export interface SearchBus {
   date: string
   departureTime: string
   arrivalTime: string
+  boardingPoint?: string
   price: number
   totalSeats: number
   bookedSeats: string[]
@@ -80,6 +81,18 @@ export default function BusCard({
           <span className="text-[11px] text-[#8e9a9d]">{bus.to}</span>
         </div>
       </div>
+
+      {bus.boardingPoint && (
+        <div className="flex items-center gap-1.5 text-[12px] text-[#b7c1c3]">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#f5a524" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5 shrink-0">
+            <path d="M12 21s-6.5-5.6-6.5-11A6.5 6.5 0 0 1 18.5 10c0 5.4-6.5 11-6.5 11z" />
+            <circle cx="12" cy="10" r="2.3" />
+          </svg>
+          <span className="truncate">
+            Boarding: <b className="font-semibold text-[#e7e2da]">{bus.boardingPoint}</b>
+          </span>
+        </div>
+      )}
 
       <div className="flex flex-wrap items-center gap-2">
         {soldOut ? (
