@@ -2,6 +2,7 @@
 
 import { usePathname } from 'next/navigation'
 import Logo from './BrandLogo'
+import LivePurchases from './LivePurchases'
 
 const BARE_ROUTES = ['/admin', '/company', '/verify']
 
@@ -55,6 +56,7 @@ export default function SiteChrome({ children }: { children: React.ReactNode }) 
       </nav>
 
       <main className="mx-auto w-full max-w-5xl">{children}</main>
+      <LivePurchases />
 
       <footer className="no-print mt-12 border-t border-white/[0.07] bg-black/30">
         <div className="mx-auto flex max-w-5xl flex-col gap-7 px-5 py-8">
