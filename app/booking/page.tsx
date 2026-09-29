@@ -4,6 +4,7 @@ import { Suspense, useEffect, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import toast from 'react-hot-toast'
 import { MAX_SEATS_PER_BOOKING, generateSeatLabels, takenSeats } from '@/lib/seats'
+import { MAX_BAGS } from '@/lib/luggage'
 
 interface Bus {
   _id: string
@@ -34,6 +35,7 @@ function BookingContent() {
   const [paymentMethod, setPaymentMethod] = useState<'bkash' | 'nagad'>('bkash')
   const [submitting, setSubmitting] = useState(false)
   const [passenger, setPassenger] = useState({ name: '', phone: '', email: '' })
+  const [bags, setBags] = useState(0)
 
   useEffect(() => {
     if (!busId) {
@@ -97,6 +99,7 @@ function BookingContent() {
           passengerName: passenger.name,
           passengerPhone: passenger.phone,
           passengerEmail: passenger.email || undefined,
+          bags,
           source: 'web',
         }),
       })
@@ -353,6 +356,35 @@ function BookingContent() {
                 placeholder="you@example.com"
               />
             </div>
+            <div className="flex items-center justify-between gap-3 rounded-2xl border border-white/[0.08] bg-black/25 p-3.5">
+              <div className="flex flex-col gap-0.5">
+                <span className="label-xs">Bags (optional)</span>
+                <span className="text-[12px] leading-snug text-[#8e9a9d]">How many bags you are bringing. Shown on your ticket.</span>
+              </div>
+              <div className="flex shrink-0 items-center gap-2">
+                <button
+                  type="button"
+                  aria-label="One bag fewer"
+                  onClick={() => setBags((n) => Math.max(0, n - 1))}
+                  disabled={bags === 0}
+                  className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/[0.06] text-lg font-bold disabled:opacity-40"
+                >
+                  −
+                </button>
+                <span className="w-7 text-center text-lg font-bold" aria-live="polite">
+                  {bags}
+                </span>
+                <button
+                  type="button"
+                  aria-label="One bag more"
+                  onClick={() => setBags((n) => Math.min(MAX_BAGS, n + 1))}
+                  disabled={bags === MAX_BAGS}
+                  className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/[0.06] text-lg font-bold text-[#f5a524] disabled:opacity-40"
+                >
+                  +
+                </button>
+              </div>
+            </div>
             <button type="button" onClick={handleConfirmDetails} className="glass-btn w-full">
               <span className="icon-disc">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
@@ -374,7 +406,10 @@ function BookingContent() {
             <div className="rounded-2xl border border-white/[0.08] bg-black/25 p-4">
               <p className="text-[12.5px] text-[#8e9a9d]">Total amount</p>
               <p className="display mt-1 text-[32px] font-bold leading-none text-[#f5a524]">৳{totalPrice}</p>
-              <p className="mt-2 text-xs text-[#8e9a9d]">Seats: {selectedSeats.join(', ')}</p>
+              <p className="mt-2 text-xs text-[#8e9a9d]">
+                Seats: {selectedSeats.join(', ')}
+                {bags > 0 && ` · ${bags} bag${bags === 1 ? '' : 's'}`}
+              </p>
             </div>
 
             <div className="flex flex-col gap-2.5">

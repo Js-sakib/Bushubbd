@@ -4,6 +4,7 @@ import { Suspense, useCallback, useEffect, useRef, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import toast from 'react-hot-toast'
 import Ticket, { TicketBooking } from './Ticket'
+import StoryCard from './StoryCard'
 import { MAX_SEATS_PER_BOOKING } from '@/lib/seats'
 
 function timeLeft(validUntil: string) {
@@ -25,10 +26,11 @@ function ConfirmationContent() {
   const passengers = Math.min(MAX_SEATS_PER_BOOKING, Math.max(1, Number(searchParams.get('passengers')) || 1))
 
   const ticketRef = useRef<HTMLDivElement>(null)
+  const storyRef = useRef<HTMLDivElement>(null)
   const [booking, setBooking] = useState<TicketBooking | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const [busy, setBusy] = useState<'download' | 'share' | null>(null)
+  const [busy, setBusy] = useState<'download' | 'share' | 'story' | null>(null)
   const [canShareFiles, setCanShareFiles] = useState(false)
 
   useEffect(() => {
@@ -114,6 +116,33 @@ function ConfirmationContent() {
     }
   }
 
+  // A story picture of the trip, without the QR code, ticket number or phone number.
+  const handleStory = async () => {
+    if (!booking || !storyRef.current) return
+    setBusy('story')
+    try {
+      const { toBlob } = await import('html-to-image')
+      const blob = await toBlob(storyRef.current, { pixelRatio: 3, cacheBust: true, imagePlaceholder: BLANK_PIXEL })
+      if (!blob) throw new Error('empty')
+      const file = new File([blob], `BusHub-story-${booking.from}-${booking.to}.png`, { type: 'image/png' })
+      if (canShareFiles) {
+        await navigator.share({ files: [file], title: 'BusHub' })
+      } else {
+        const url = URL.createObjectURL(blob)
+        const link = document.createElement('a')
+        link.href = url
+        link.download = file.name
+        link.click()
+        setTimeout(() => URL.revokeObjectURL(url), 4000)
+        toast.success('Story picture saved. Add it to your Facebook story.')
+      }
+    } catch (err) {
+      if ((err as Error)?.name !== 'AbortError') toast.error('Could not make the story picture')
+    } finally {
+      setBusy(null)
+    }
+  }
+
   if (loading) {
     return <div className="py-16 text-center text-sm text-[#8e9a9d]">Loading your ticket...</div>
   }
@@ -183,6 +212,11 @@ function ConfirmationContent() {
         </div>
       </div>
 
+      {/* Drawn off screen; only captured when the story button is used. */}
+      <div aria-hidden className="no-print" style={{ position: 'fixed', left: -10000, top: 0 }}>
+        <StoryCard ref={storyRef} booking={booking} />
+      </div>
+
       <div className="no-print mt-5 flex flex-col gap-2.5 sm:max-w-lg">
         <div className="grid grid-cols-2 gap-2.5">
           <button type="button" onClick={handleDownload} disabled={busy !== null} className="glass-btn h-12 whitespace-nowrap px-3 text-sm">
@@ -224,6 +258,27 @@ function ConfirmationContent() {
         <p className="text-center text-[11.5px] leading-snug text-[#78868a]">
           Save the image to your gallery so you can board without internet.
         </p>
+
+        {paid && booking.status !== 'refunded' && (
+          <button
+            type="button"
+            onClick={handleStory}
+            disabled={busy !== null}
+            className="mt-1 flex h-14 w-full items-center justify-center gap-3 rounded-full text-sm font-bold text-white disabled:opacity-60"
+            style={{ background: 'linear-gradient(135deg,#1877f2,#7b3fe4 55%,#e1306c)', boxShadow: '0 14px 30px rgba(123,63,228,0.35)' }}
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
+              <circle cx="12" cy="12" r="9" strokeDasharray="4 2.5" />
+              <path d="M12 8v8M8 12h8" />
+            </svg>
+            {busy === 'story' ? 'Making your story...' : 'Share to Facebook story · স্টোরিতে দিন'}
+          </button>
+        )}
+        {paid && booking.status !== 'refunded' && (
+          <p className="text-center text-[11px] leading-snug text-[#78868a]">
+            The story picture shows your trip only. The QR code and ticket number stay private.
+          </p>
+        )}
       </div>
 
       {returnBusId && (

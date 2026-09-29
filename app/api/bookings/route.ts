@@ -15,6 +15,7 @@ import { tripDeparted } from '@/lib/trips'
 import { seatSelectionError, takenSeats } from '@/lib/seats'
 import { getCompanyFromCookies, getAdminFromCookies } from '@/lib/auth'
 import { Booking } from '@/lib/models'
+import { cleanBags } from '@/lib/luggage'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -79,7 +80,11 @@ export async function POST(req: NextRequest) {
       to: bus.to,
       date: bus.date,
       departureTime: bus.departureTime,
+      arrivalTime: bus.arrivalTime ? String(bus.arrivalTime) : '',
+      busType: bus.busType ? String(bus.busType) : '',
+      pricePerSeat: bus.price,
       seats,
+      bags: cleanBags(body.bags),
       totalPrice,
       commissionRate,
       commissionAmount,

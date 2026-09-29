@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { Manrope, Space_Grotesk } from 'next/font/google'
+import { Hind_Siliguri, Manrope, Space_Grotesk } from 'next/font/google'
 import { Toaster } from 'react-hot-toast'
 import SiteChrome from './SiteChrome'
 import JsonLd from './routes/JsonLd'
@@ -20,6 +20,15 @@ const spaceGrotesk = Space_Grotesk({
   weight: ['500', '600', '700'],
   variable: '--font-display',
   display: 'swap',
+})
+
+// Bangla on the ticket. Not preloaded: the files only download on pages that show Bangla text.
+const hindSiliguri = Hind_Siliguri({
+  subsets: ['bengali', 'latin'],
+  weight: ['400', '500', '600', '700'],
+  variable: '--font-bangla',
+  display: 'swap',
+  preload: false,
 })
 
 const DESCRIPTION =
@@ -92,12 +101,13 @@ const ORGANIZATION = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${manrope.variable} ${spaceGrotesk.variable}`}>
+    <html lang="en" className={`${manrope.variable} ${spaceGrotesk.variable} ${hindSiliguri.variable}`}>
       <body>
         <JsonLd data={ORGANIZATION} />
         <SiteChrome>{children}</SiteChrome>
         <Toaster
           position="top-center"
+          containerClassName="no-print"
           toastOptions={{
             style: { background: '#151b1d', color: '#f6f4ef', border: '1px solid #2a3437' },
           }}
