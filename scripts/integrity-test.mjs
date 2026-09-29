@@ -133,19 +133,21 @@ const afterRename = await db.collection('buses').findOne({ _id: new ObjectId(tri
 check('a trip\'s bus name cannot be edited by hand', rename.status < 500 && afterRename.busName === fleetBus.name, afterRename.busName)
 
 // ---- Booking: one seat, one passenger ----
-const passenger = { passengerName: 'Test Passenger', passengerPhone: '01811111111' }
+// A new phone number each time, so the per-number limits (tested on their own below) stay out of the way.
+let phoneSeq = 0
+const passenger = () => ({ passengerName: 'Test Passenger', passengerPhone: `0181${String(Date.now() % 1e4).padStart(4, '0')}${String(++phoneSeq).padStart(3, '0')}` })
 const race = await Promise.all(
-  Array.from({ length: 25 }, () => call('/api/bookings', { method: 'POST', body: { busId: trip._id, seats: ['1A'], ...passenger } }))
+  Array.from({ length: 25 }, () => call('/api/bookings', { method: 'POST', body: { busId: trip._id, seats: ['1A'], ...passenger() } }))
 )
 const winners = race.filter((r) => r.status === 201)
 check('25 people grab seat 1A at the same moment: exactly one gets it', winners.length === 1, `${winners.length} succeeded`)
 check('everyone else is told the seat is taken', race.filter((r) => r.status === 409).length === 24)
 
-const dupSeats = await call('/api/bookings', { method: 'POST', body: { busId: trip._id, seats: ['2A', '2A'], ...passenger } })
+const dupSeats = await call('/api/bookings', { method: 'POST', body: { busId: trip._id, seats: ['2A', '2A'], ...passenger() } })
 check('the same seat twice in one booking is refused', dupSeats.status === 400, `status ${dupSeats.status}`)
-const ghostSeat = await call('/api/bookings', { method: 'POST', body: { busId: trip._id, seats: ['99Z'], ...passenger } })
+const ghostSeat = await call('/api/bookings', { method: 'POST', body: { busId: trip._id, seats: ['99Z'], ...passenger() } })
 check('a seat that does not exist on the bus is refused', ghostSeat.status === 400, `status ${ghostSeat.status}`)
-const outOfRange = await call('/api/bookings', { method: 'POST', body: { busId: trip._id, seats: ['10A'], ...passenger } })
+const outOfRange = await call('/api/bookings', { method: 'POST', body: { busId: trip._id, seats: ['10A'], ...passenger() } })
 check('a seat beyond the bus\'s seat count is refused', outOfRange.status === 400, `status ${outOfRange.status}`)
 
 const booking = winners[0].data.booking
@@ -186,7 +188,7 @@ const publicCheckin = await call(`/api/verify/${booking.bookingCode}`, { method:
 check('the public ticket page cannot check a ticket in', publicCheckin.status === 405 || publicCheckin.status === 404, `status ${publicCheckin.status}`)
 
 // ---- Refunds ----
-const b2 = await call('/api/bookings', { method: 'POST', body: { busId: trip._id, seats: ['3A', '3B'], ...passenger } })
+const b2 = await call('/api/bookings', { method: 'POST', body: { busId: trip._id, seats: ['3A', '3B'], ...passenger() } })
 await call(`/api/bookings/${b2.data.booking._id}`, { method: 'PATCH', body: { paymentStatus: 'paid', paymentMethod: 'nagad' } })
 const companyRefund = await call(`/api/bookings/${b2.data.booking._id}/refund`, { method: 'PATCH', cookie: green.cookie })
 check('a bus company cannot refund (admin only)', companyRefund.status === 403, `status ${companyRefund.status}`)
@@ -199,11 +201,11 @@ const boardedRefund = await call(`/api/bookings/${booking._id}/refund`, { method
 check('a ticket that already boarded cannot be refunded (its seat is in use)', boardedRefund.status === 409, `status ${boardedRefund.status}`)
 
 // ---- Expired holds ----
-const hold = await call('/api/bookings', { method: 'POST', body: { busId: trip._id, seats: ['4A'], ...passenger } })
+const hold = await call('/api/bookings', { method: 'POST', body: { busId: trip._id, seats: ['4A'], ...passenger() } })
 await db.collection('bookings').updateOne({ _id: new ObjectId(hold.data.booking._id) }, { $set: { holdExpiresAt: new Date(Date.now() - 1000).toISOString() } })
 const latePay = await call(`/api/bookings/${hold.data.booking._id}`, { method: 'PATCH', body: { paymentStatus: 'paid', paymentMethod: 'bkash' } })
 check('paying after the 10-minute hold ran out is refused', latePay.status === 410, `status ${latePay.status}`)
-const rebook = await call('/api/bookings', { method: 'POST', body: { busId: trip._id, seats: ['4A'], ...passenger } })
+const rebook = await call('/api/bookings', { method: 'POST', body: { busId: trip._id, seats: ['4A'], ...passenger() } })
 check('the released seat can be bought by someone else', rebook.status === 201, `status ${rebook.status}`)
 const oldPayAgain = await call(`/api/bookings/${hold.data.booking._id}`, { method: 'PATCH', body: { paymentStatus: 'paid' } })
 check('the expired hold still cannot be paid once the seat is resold', oldPayAgain.status === 410, `status ${oldPayAgain.status}`)
@@ -211,11 +213,11 @@ check('the expired hold still cannot be paid once the seat is resold', oldPayAga
 // Expired holds released by many requests at once must not free a seat someone just bought.
 for (let round = 0; round < 5; round++) {
   const seat = `${5 + round}C`
-  const h = await call('/api/bookings', { method: 'POST', body: { busId: trip._id, seats: [seat], ...passenger } })
+  const h = await call('/api/bookings', { method: 'POST', body: { busId: trip._id, seats: [seat], ...passenger() } })
   await db.collection('bookings').updateOne({ _id: new ObjectId(h.data.booking._id) }, { $set: { holdExpiresAt: new Date(Date.now() - 1000).toISOString() } })
   await Promise.all([
     ...Array.from({ length: 6 }, () => call(`/api/buses/${trip._id}`)),
-    ...Array.from({ length: 6 }, () => call('/api/bookings', { method: 'POST', body: { busId: trip._id, seats: [seat], ...passenger } })),
+    ...Array.from({ length: 6 }, () => call('/api/bookings', { method: 'POST', body: { busId: trip._id, seats: [seat], ...passenger() } })),
     ...Array.from({ length: 6 }, () => call(`/api/buses/${trip._id}`)),
   ])
 }
@@ -224,7 +226,7 @@ for (let round = 0; round < 5; round++) {
 const blockSold = await call(`/api/buses/${trip._id}/seats`, { method: 'PATCH', cookie: admin, body: { seats: ['1A'], action: 'block' } })
 check('admin cannot mark a BusHub-sold seat as counter-sold', blockSold.status === 409, `status ${blockSold.status}`)
 await call(`/api/buses/${trip._id}/seats`, { method: 'PATCH', cookie: admin, body: { seats: ['9D'], action: 'block' } })
-const counterSeat = await call('/api/bookings', { method: 'POST', body: { busId: trip._id, seats: ['9D'], ...passenger } })
+const counterSeat = await call('/api/bookings', { method: 'POST', body: { busId: trip._id, seats: ['9D'], ...passenger() } })
 check('a counter-sold seat cannot be bought online', counterSeat.status === 409, `status ${counterSeat.status}`)
 
 // ---- Older trips (from before the bus list) can be linked so their tickets match ----
@@ -234,7 +236,7 @@ const legacy = await db.collection('buses').insertOne({
   totalSeats: 36, bookedSeats: [], blockedSeats: [], commissionRate: 10, status: 'active', createdAt: new Date().toISOString(),
 })
 const legacyId = legacy.insertedId.toString()
-const lb = await call('/api/bookings', { method: 'POST', body: { busId: legacyId, seats: ['2B'], ...passenger } })
+const lb = await call('/api/bookings', { method: 'POST', body: { busId: legacyId, seats: ['2B'], ...passenger() } })
 await call(`/api/bookings/${lb.data.booking._id}`, { method: 'PATCH', body: { paymentStatus: 'paid' } })
 const beforeLink = await call('/api/scan', { method: 'POST', cookie: green.cookie, body: { text: lb.data.booking.bookingCode } })
 check('an unlinked old trip is refused by the company scanner', beforeLink.data?.result === 'other_operator', beforeLink.data?.result)
@@ -257,6 +259,55 @@ const delTrip = await call(`/api/buses/${trip._id}`, { method: 'DELETE', cookie:
 check('a trip with live tickets cannot be deleted', delTrip.status === 409, `status ${delTrip.status}`)
 const delFleet = await call(`/api/fleet/${fleetBus._id}`, { method: 'DELETE', cookie: admin })
 check('a listed bus with trips cannot be removed', delFleet.status === 409, `status ${delFleet.status}`)
+
+// ---- Ticket codes: long and hard to guess; tickets with the old short codes still scan ----
+const newest = await db.collection('bookings').findOne({ busId: trip._id }, { sort: { createdAt: -1 } })
+check('new ticket codes have 10 random characters, no 0/O or 1/I', /^BH-\d{8}-[A-HJ-NP-Z2-9]{10}$/.test(newest.bookingCode), newest.bookingCode)
+const oldStyle = await call('/api/bookings', { method: 'POST', body: { busId: trip._id, seats: ['8A'], ...passenger() } })
+await call(`/api/bookings/${oldStyle.data.booking._id}`, { method: 'PATCH', body: { paymentStatus: 'paid' } })
+const shortCode = `BH-${dhakaToday.replace(/-/g, '')}-${run.slice(-5).padStart(5, 'Q')}`
+await db.collection('bookings').updateOne({ _id: new ObjectId(oldStyle.data.booking._id) }, { $set: { bookingCode: shortCode } })
+const oldScan = await call('/api/scan', { method: 'POST', cookie: green.cookie, body: { text: `https://www.bushubbd.com/verify/${shortCode}` } })
+check('a ticket with an old 5-character code still scans as valid', oldScan.data?.result === 'valid', oldScan.data?.result)
+
+// ---- One phone number can't buy up a bus or keep seats locked without paying ----
+const tomorrow = new Date(Date.now() + 30 * 3600e3).toISOString().slice(0, 10)
+const limitTrip = (await call('/api/buses', { method: 'POST', cookie: admin, body: { fleetId: fleetBus._id, from: 'Dhaka', to: 'Sylhet', date: tomorrow, departureTime: '08:15', price: 900 } })).data.bus
+const book = (seats, phone) => call('/api/bookings', { method: 'POST', body: { busId: limitTrip._id, seats, passengerName: 'Limit Test', passengerPhone: phone } })
+const num = `0171${String(Date.now() % 1e7).padStart(7, '0')}`
+const first = await book(['1A', '1B', '1C', '1D'], num)
+check('one number books 4 seats', first.status === 201, JSON.stringify(first.data))
+const over = await book(['2A', '2B', '2C'], `+880 ${num.slice(1, 5)}-${num.slice(5)}`)
+check('the same number typed as +880 can\'t go past 6 seats on one bus', over.status === 429 && /at most 6 seats/.test(over.data.error), JSON.stringify(over.data))
+const fits = await book(['2A', '2B'], `88${num}`)
+check('it can still take the 2 seats left of its 6', fits.status === 201, JSON.stringify(fits.data))
+const thirdHold = await book(['5A'], num)
+check('a third unpaid booking from one number is refused', thirdHold.status === 429 && /unpaid/.test(thirdHold.data.error), JSON.stringify(thirdHold.data))
+await call(`/api/bookings/${first.data.booking._id}`, { method: 'PATCH', body: { paymentStatus: 'paid' } })
+await call(`/api/bookings/${fits.data.booking._id}`, { method: 'PATCH', body: { paymentStatus: 'paid' } })
+const seventh = await book(['7A'], num)
+check('after paying, the number still can\'t buy a 7th seat on that bus', seventh.status === 429 && /at most 6 seats/.test(seventh.data.error), JSON.stringify(seventh.data))
+const racer = `0172${String(Date.now() % 1e7).padStart(7, '0')}`
+const rush = await Promise.all(['A', 'B', 'C', 'D'].flatMap((col) => [book([`8${col}`, `9${col}`], racer)]))
+const won = rush.filter((r) => r.status === 201)
+check('4 bookings from one number at the same moment: at most 2 unpaid go through', won.length >= 1 && won.length <= 2, `${won.length} went through`)
+check('any leftover seats from refused bookings are back on sale', await (async () => {
+  const t = await db.collection('buses').findOne({ _id: new ObjectId(limitTrip._id) })
+  const held = (await db.collection('bookings').find({ busId: limitTrip._id, status: { $in: ['pending', 'confirmed'] } }).toArray()).flatMap((b) => b.seats)
+  return t.bookedSeats.length === held.length && t.bookedSeats.every((x) => held.includes(x))
+})())
+
+// ---- Nobody can try code after code until a real ticket turns up ----
+for (let i = 0; i < 20; i++) {
+  await call('/api/scan', { method: 'POST', cookie: hanif.cookie, body: { text: `BH-${dhakaToday.replace(/-/g, '')}-ZZ${String(i).padStart(3, '0')}` } })
+}
+const blocked = await call('/api/scan', { method: 'POST', cookie: hanif.cookie, body: { text: `BH-${dhakaToday.replace(/-/g, '')}-ZZZZY` } })
+check('after 20 wrong codes the scanner login has to wait', blocked.status === 429, `status ${blocked.status}`)
+const verifyAs = (ip, code) => fetch(`${BASE}/api/verify/${code}`, { headers: { 'x-forwarded-for': ip } })
+const ip = `203.0.113.${Math.floor(Math.random() * 200) + 1}`
+for (let i = 0; i < 60; i++) await verifyAs(ip, `BH-20260101-QQ${String(i).padStart(3, '0')}`)
+check('after 60 wrong codes the public ticket check makes that connection wait', (await verifyAs(ip, 'BH-20260101-QQQQQ')).status === 429)
+check('other connections can still check tickets', (await verifyAs('198.51.100.7', 'BH-20260101-QQQQQ')).status === 404)
 
 // ---- Ticket codes are unique ----
 const codes = await db.collection('bookings').aggregate([{ $group: { _id: '$bookingCode', n: { $sum: 1 } } }, { $match: { n: { $gt: 1 } } }]).toArray()

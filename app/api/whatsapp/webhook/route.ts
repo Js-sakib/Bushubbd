@@ -5,6 +5,7 @@ import { isExpired, getVerifyUrl, ticketExpiry } from '@/lib/tickets'
 import { seatsLeft as calcSeatsLeft } from '@/lib/seats'
 import { getPlaces } from '@/lib/places'
 import { tripDeparted } from '@/lib/trips'
+import { recordMiss, tooManyMisses } from '@/lib/rateLimit'
 import { SITE_URL } from '@/lib/site'
 
 export const dynamic = 'force-dynamic'
@@ -13,7 +14,7 @@ export const fetchCache = 'force-no-store'
 
 const GREETINGS = ['hi', 'hello', 'hey', 'start', 'menu', 'help', 'salam', 'assalamu alaikum', 'হাই', 'হ্যালো', 'সালাম', 'আসসালামু আলাইকুম']
 
-const BOOKING_CODE = /\bBH-\d{8}-[A-Z0-9]{5}\b/i
+const BOOKING_CODE = /\bBH-\d{8}-(?:[A-Z0-9]{10}|[A-Z0-9]{5})\b/i
 
 function getBaseUrl() {
   return process.env.NEXT_PUBLIC_BASE_URL || SITE_URL
@@ -98,9 +99,15 @@ export async function POST(req: NextRequest) {
     const codeMatch = text.match(BOOKING_CODE)
     if (codeMatch) {
       const bookingCode = codeMatch[0].toUpperCase()
+      const missKey = `whatsapp:${from}`
+      if (await tooManyMisses(db, missKey, 10)) {
+        await sendWhatsAppMessage(from, 'Too many wrong codes. Please wait 10 minutes and try again.')
+        return NextResponse.json({ status: 'ok' })
+      }
       const booking = await db.collection('bookings').findOne({ bookingCode })
 
       if (!booking) {
+        await recordMiss(db, missKey)
         await sendWhatsAppMessage(from, `No ticket found with the code ${bookingCode}. Please check the code and try again.`)
       } else {
         const expired = isExpired(ticketExpiry(booking.date))

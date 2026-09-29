@@ -3,16 +3,19 @@ import { randomInt } from 'crypto'
 import { SITE_URL } from './site'
 export { ticketExpiry } from './scan'
 
-const CODE_ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+// No 0/O or 1/I, so a code read out or typed by hand can't be mixed up.
+const CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
+const CODE_LENGTH = 10
 
 /**
- * A ticket code like BH-20260925-7QK2M. The random part comes from the system's secure random
- * source, so codes can't be guessed from one another. The database's unique index is what
+ * A ticket code like BH-20260925-7QK2MX4PHN. The random part comes from the system's secure
+ * random source, so codes can't be guessed from one another: ten characters from 32 give about
+ * a thousand million million codes a day. Tickets from before have five characters and still work. The database's unique index is what
  * finally guarantees no two tickets share a code; callers retry on the rare clash.
  */
 export function generateBookingCode(now = new Date()): string {
   const datePart = now.toISOString().slice(0, 10).replace(/-/g, '')
-  const randomPart = Array.from({ length: 5 }, () => CODE_ALPHABET[randomInt(CODE_ALPHABET.length)]).join('')
+  const randomPart = Array.from({ length: CODE_LENGTH }, () => CODE_ALPHABET[randomInt(CODE_ALPHABET.length)]).join('')
   return `BH-${datePart}-${randomPart}`
 }
 

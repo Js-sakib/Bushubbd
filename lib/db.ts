@@ -10,6 +10,9 @@ let cachedDb: Db | null = null
  */
 async function ensureIndexes(db: Db) {
   const indexes: [string, Record<string, 1>, { name: string } & Record<string, unknown>][] = [
+    ['bookings', { phoneKey: 1, busId: 1 }, { name: 'phone_bookings' }],
+    // Wrong-code counters (lib/rateLimit) are deleted once their window is over.
+    ['rate_limits', { expiresAt: 1 }, { expireAfterSeconds: 0, name: 'rate_limit_expiry' }],
     ['bookings', { bookingCode: 1 }, { unique: true, name: 'bookingCode_unique' }],
     ['fleet', { nameKey: 1 }, { unique: true, name: 'fleet_name_unique' }],
     [

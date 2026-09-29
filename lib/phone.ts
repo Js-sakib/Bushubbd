@@ -17,3 +17,12 @@ export function phoneDigits(phone: string): string {
   const digits = (phone || '').replace(/\D/g, '')
   return digits.startsWith('880') ? digits.slice(2) : digits
 }
+
+/**
+ * One key per buyer's number for the per-number ticket limits, however it was typed:
+ * "+880 1712-345678", "008801712345678", "1712345678" and "01712345678" are one buyer.
+ */
+export function phoneKey(phone: unknown): string {
+  const digits = phoneDigits(String(phone ?? '').trim().replace(/^00/, ''))
+  return /^1\d{9}$/.test(digits) ? `0${digits}` : digits
+}

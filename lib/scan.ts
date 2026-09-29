@@ -18,7 +18,9 @@ export function lastDhakaDays(days: number, at: Date = new Date()): string[] {
   return Array.from({ length: days }, (_, i) => dhakaDate(new Date(today + (i - days + 1) * DAY_MS)))
 }
 
-const BOOKING_CODE = /BH-\d{8}-[A-Z0-9]{5}/i
+// New codes have 10 characters after the date, older ones 5; the longer form is tried first so
+// a new code is never cut short.
+const BOOKING_CODE = /BH-\d{8}-(?:[A-Z0-9]{10}|[A-Z0-9]{5})(?![A-Z0-9])/i
 
 /**
  * Pull a booking code out of whatever the scanner read. The QR holds the verify URL

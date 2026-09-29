@@ -105,7 +105,8 @@ function BookingContent() {
       })
       const data = await res.json()
       if (!res.ok) {
-        toast.error(data.error || 'Booking failed')
+        // The per-number limits explain themselves at some length; leave time to read them.
+        toast.error(data.error || 'Booking failed', { duration: res.status === 429 ? 8000 : 4000 })
         setSubmitting(false)
         return
       }

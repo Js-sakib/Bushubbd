@@ -211,8 +211,9 @@ const Ticket = forwardRef<HTMLDivElement, { booking: TicketBooking }>(function T
           <Field label="ভ্রমণের তারিখ" value={bnDate(booking.date)} className="col-span-2" />
           <Field label="আসন নম্বর" value={booking.seats.join(', ')} />
           <Field label="মোট আসন" value={`${bnDigits(seatCount)}টি`} align="right" />
-          <Field label="কাউন্টারে উপস্থিতি" value={`${reportBy}-এর মধ্যে`} />
-          <Field label="টিকেট নম্বর" value={booking.bookingCode} align="right" nowrap />
+          <Field label="কাউন্টারে উপস্থিতি" value={`${reportBy}-এর মধ্যে`} className="col-span-2" />
+          {/* Its own row: a ticket code is long, and the conductor may type it in. */}
+          <Field label="টিকেট নম্বর" value={booking.bookingCode} className="col-span-2" nowrap />
         </div>
 
         {/* Fare */}

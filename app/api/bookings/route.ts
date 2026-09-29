@@ -16,6 +16,8 @@ import { seatSelectionError, takenSeats } from '@/lib/seats'
 import { getCompanyFromCookies, getAdminFromCookies } from '@/lib/auth'
 import { Booking } from '@/lib/models'
 import { cleanBags } from '@/lib/luggage'
+import { phoneKey } from '@/lib/phone'
+import { purchaseLimitError } from '@/lib/purchaseLimits'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -47,6 +49,13 @@ export async function POST(req: NextRequest) {
     const seatProblem = seatSelectionError(seats, bus.totalSeats)
     if (seatProblem) {
       return NextResponse.json({ error: seatProblem }, { status: 400 })
+    }
+
+    // One number can't buy up the bus or keep seats locked without paying.
+    const buyer = phoneKey(passengerPhone)
+    const limitProblem = await purchaseLimitError(db, buyer, busId, seats.length)
+    if (limitProblem) {
+      return NextResponse.json({ error: limitProblem }, { status: 429 })
     }
 
     const unavailable = takenSeats(bus as { bookedSeats?: string[]; blockedSeats?: string[] })
@@ -91,6 +100,7 @@ export async function POST(req: NextRequest) {
       companyPayout,
       passengerName: String(passengerName).trim(),
       passengerPhone: String(passengerPhone).trim(),
+      phoneKey: buyer,
       passengerEmail: passengerEmail ? String(passengerEmail).trim() : undefined,
       paymentStatus: 'pending',
       status: 'pending',
@@ -109,6 +119,14 @@ export async function POST(req: NextRequest) {
       booking.qrCode = await generateTicketQRCode(getVerifyUrl(booking.bookingCode))
       try {
         const result = await db.collection('bookings').insertOne({ ...booking } as any)
+        // Two bookings from one number at the same moment could both pass the check above;
+        // counted again now that this one is saved, the one that went over is undone.
+        const lateProblem = await purchaseLimitError(db, buyer, busId, seats.length, true)
+        if (lateProblem) {
+          await db.collection('bookings').deleteOne({ _id: result.insertedId })
+          await releaseSeats(db, busId, seats)
+          return NextResponse.json({ error: lateProblem }, { status: 429 })
+        }
         return NextResponse.json({ booking: { ...booking, _id: result.insertedId } }, { status: 201 })
       } catch (err) {
         if (!isDuplicateKeyError(err)) {

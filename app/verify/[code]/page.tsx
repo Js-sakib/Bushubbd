@@ -36,12 +36,17 @@ export default function VerifyTicket() {
   const [result, setResult] = useState<VerifyResult | null>(null)
   const [loading, setLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
+  const [tooMany, setTooMany] = useState(false)
 
   const load = () => {
     setLoading(true)
     fetch(`/api/verify/${code}`)
       .then(async (res) => {
         const data = await res.json().catch(() => null)
+        if (res.status === 429) {
+          setTooMany(true)
+          return
+        }
         // Anything that isn't a real ticket payload (404, server error) is treated as not found,
         // so a partial response can never render as a half-valid ticket.
         if (!res.ok || !data || !Array.isArray(data.seats)) {
@@ -60,6 +65,19 @@ export default function VerifyTicket() {
 
   if (loading) {
     return <div className="py-16 text-center text-sm text-[#8e9a9d]">Checking ticket...</div>
+  }
+
+  if (tooMany) {
+    return (
+      <div className="mx-auto mt-6 max-w-md px-1">
+        <div className="flex flex-col items-center gap-3 rounded-[22px] border-2 border-[#f5a524] bg-[#f5a524]/[0.08] p-8 text-center">
+          <h1 className="text-2xl font-bold text-[#f5a524]">Too many checks</h1>
+          <p className="text-[13px] leading-relaxed text-[#9ba7aa]">
+            Too many wrong ticket codes were checked from this connection. Please wait 10 minutes and scan the QR again.
+          </p>
+        </div>
+      </div>
+    )
   }
 
   if (notFound || !result) {
