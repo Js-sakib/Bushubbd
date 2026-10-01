@@ -5,7 +5,6 @@ export type PayoutStatus = 'unpaid' | 'paid' | 'confirmed' | 'disputed' | 'cance
 export const PAY_METHODS = ['bkash', 'nagad', 'rocket', 'bank', 'cash'] as const
 export type PayMethod = (typeof PAY_METHODS)[number]
 export const PAY_METHOD_LABELS: Record<PayMethod, string> = { bkash: 'bKash', nagad: 'Nagad', rocket: 'Rocket', bank: 'Bank transfer', cash: 'Cash' }
-export const ACCOUNT_LABELS: Record<'bkash' | 'nagad' | 'rocket' | 'bank', string> = { bkash: 'bKash', nagad: 'Nagad', rocket: 'Rocket', bank: 'Bank account' }
 
 export const STATUS_TEXT: Record<PayoutStatus, { label: string; dark: string; light: string }> = {
   unpaid: { label: 'Waiting for BusHub to pay', dark: 'bg-[#f5a524]/[0.15] text-[#fbbf24]', light: 'bg-amber-100 text-amber-800' },

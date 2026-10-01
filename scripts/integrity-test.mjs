@@ -644,20 +644,6 @@ check(
 await admPatch(invC.data.invoice._id, { action: 'cancel' })
 check('cancelling that invoice puts the refund back to take later', !(await db.collection('payoutRefunds').findOne({ bookingId: aTicket._id.toString() })).payoutId)
 
-const setAccount = (cookie, body) => call('/api/company/payout-account', { method: 'PATCH', cookie, body })
-check('only the manager sets where to be paid', (await setAccount(counter1, { method: 'bkash', number: '01712345678', name: 'X', password: 'x' })).status === 403)
-check('setting where to be paid needs the company password', (await setAccount(green.cookie, { method: 'bkash', number: '01712345678', name: 'Green Line', password: 'wrong' })).status === 401)
-check('a wrong mobile number is refused', (await setAccount(green.cookie, { method: 'bkash', number: '12345', name: 'Green Line', password: green.password })).status === 400)
-const savedAccount = await setAccount(green.cookie, { method: 'bkash', number: '+880 1712-345678', name: 'Green Line Paribahan', password: green.password })
-await setAccount(green.cookie, { method: 'bank', number: '1234567890123', name: 'Green Line Paribahan', bank: 'DBBL, Motijheel', password: green.password })
-const greenDoc = await db.collection('companies').findOne({ _id: new ObjectId(green.id) })
-const payToShown = (await call(`/api/payouts/${tripInvoiceId}?as=admin`, { cookie: admin })).data.payTo
-const payToCompany = (await call(`/api/payouts/${tripInvoiceId}`, { cookie: green.cookie })).data.payTo
-check(
-  'the manager sets where to be paid; the old details are kept; the admin sees it on the invoice',
-  savedAccount.status === 200 && savedAccount.data.account.number === '01712345678' && greenDoc.payoutAccount.method === 'bank' && greenDoc.payoutAccountHistory?.[0]?.number === '01712345678' && payToShown?.bank === 'DBBL, Motijheel' && payToCompany === null,
-  JSON.stringify(savedAccount.data)
-)
 
 // ---- Ticket codes are unique ----
 const codes = await db.collection('bookings').aggregate([{ $group: { _id: '$bookingCode', n: { $sum: 1 } } }, { $match: { n: { $gt: 1 } } }]).toArray()

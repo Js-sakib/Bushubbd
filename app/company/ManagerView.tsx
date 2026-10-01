@@ -266,7 +266,7 @@ export default function ManagerView() {
       )}
 
       {tab === 'sales' && <MoneyView trips={trips} fleet={data.fleet} me={data.me} bookings={bookings} onChanged={reload} />}
-      {tab === 'payments' && <PaymentsPanel data={payments} onChanged={loadPayments} />}
+      {tab === 'payments' && <PaymentsPanel data={payments} />}
       {tab === 'scans' && <ScanHistory stats={stats} showScanner />}
       {tab === 'staff' && <StaffPanel />}
     </div>
