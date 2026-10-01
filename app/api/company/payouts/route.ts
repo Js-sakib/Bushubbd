@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server'
 import { connectToDatabase } from '@/lib/db'
 import { getCompanyUser } from '@/lib/staff'
-import { invoiceSummary, owedLines, totalsOf, upcomingTotals } from '@/lib/payouts'
+import { ObjectId } from 'mongodb'
+import { invoiceSummary, openDeductions, owedLines, totalsOf, upcomingTotals } from '@/lib/payouts'
 
 export const dynamic = 'force-dynamic'
 
@@ -11,9 +12,11 @@ export async function GET() {
     const { db } = await connectToDatabase()
     const user = await getCompanyUser(db)
     if (!user || user.role !== 'manager') return NextResponse.json({ error: 'Only the company manager sees payments' }, { status: 403 })
-    const [owed, later, invoices] = await Promise.all([
+    const [owed, later, refunds, company, invoices] = await Promise.all([
       owedLines(db, user.companyId),
       upcomingTotals(db, user.companyId),
+      openDeductions(db, user.companyId),
+      db.collection('companies').findOne({ _id: new ObjectId(user.companyId) }, { projection: { payoutAccount: 1 } }),
       db.collection('payouts').find({ companyId: user.companyId, status: { $ne: 'cancelled' } }).project({ lines: 0 }).sort({ createdAt: -1 }).toArray(),
     ])
     return NextResponse.json(
@@ -23,6 +26,9 @@ export async function GET() {
         // Invoices made but not paid yet are still owed.
         invoiced: invoices.filter((i) => i.status === 'unpaid' || i.status === 'disputed').reduce((n, i) => n + i.totals.payout, 0),
         invoices: invoices.map(invoiceSummary),
+        // Refunded tickets BusHub had already paid for, taken from the next payment.
+        refunds,
+        account: company?.payoutAccount || null,
       },
       { headers: { 'Cache-Control': 'no-store, max-age=0, must-revalidate' } }
     )

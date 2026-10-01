@@ -6,8 +6,9 @@ import toast from 'react-hot-toast'
 import { LogoMark } from '../../BrandLogo'
 import PasswordInput from '../../PasswordInput'
 import { formatTripDate } from '@/lib/dates'
-import { PAY_METHODS, PAY_METHOD_LABELS, STATUS_TEXT, type InvoiceSummaryView, type PayMethod } from '@/lib/payoutText'
+import { ACCOUNT_LABELS, PAY_METHODS, PAY_METHOD_LABELS, STATUS_TEXT, type InvoiceSummaryView, type PayMethod } from '@/lib/payoutText'
 import { taka } from '@/lib/tripMoney'
+import { recentlyChanged, type PayoutAccount } from '@/lib/payoutAccount'
 
 interface Line {
   bookingId: string
@@ -25,8 +26,23 @@ interface Line {
   payout: number
 }
 
+interface Deduction {
+  _id: string
+  code: string
+  date: string
+  departureTime: string
+  from: string
+  to: string
+  busName: string
+  seats: string[]
+  ticketPrice: number
+  amount: number
+  paidIn: string
+}
+
 interface Invoice extends InvoiceSummaryView {
   lines: Line[]
+  deductions: Deduction[]
   contentHash: string
   history: { at: string; by: string; event: string }[]
   check: { contentOk: boolean; signatureOk: boolean | null }
@@ -64,26 +80,53 @@ function Row({ label, value, strong = false }: { label: string; value: string; s
   )
 }
 
-/** Admin: record the payment (method and reference) or cancel an invoice nobody has paid. */
-function AdminActions({ inv, onDone }: { inv: Invoice; onDone: () => void }) {
-  const [method, setMethod] = useState<PayMethod>('bkash')
-  const [reference, setReference] = useState('')
-  const [note, setNote] = useState('')
-  const [busy, setBusy] = useState(false)
-  const send = async (body: object, ok: string) => {
-    setBusy(true)
-    const res = await fetch(`/api/admin/payouts/${inv._id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }).catch(() => null)
-    const data = await res?.json().catch(() => null)
-    setBusy(false)
-    if (!res?.ok) return toast.error(data?.error || 'No internet connection. Try again.')
-    toast.success(ok)
-    onDone()
+/** Where the company asked to be paid, so the admin sends it to the right place. */
+function PayToBox({ payTo }: { payTo: PayoutAccount | null }) {
+  if (!payTo) {
+    return (
+      <p className="rounded-xl border border-[#f5a524]/40 bg-[#f5a524]/[0.08] px-3.5 py-2.5 text-[12.5px] text-[#fbbf24]">
+        This company has not added where to pay them yet. They add it in Management → Payments. Until then, confirm by phone.
+      </p>
+    )
   }
-  if (inv.status !== 'unpaid' && inv.status !== 'disputed') return null
+  const fresh = recentlyChanged(payTo)
   return (
-    <div className="no-print glass flex flex-col gap-3 p-4">
-      <span className="display text-[16px] font-bold">Pay {taka(inv.totals.payout)} to {inv.companyName}</span>
-      <p className="text-[12.5px] text-[#9ba7aa]">Send the money first, then write down how you sent it and the reference (bKash TrxID, bank reference). The company then checks it and signs.</p>
+    <div className={`flex flex-col gap-0.5 rounded-xl border px-3.5 py-2.5 ${fresh ? 'border-[#f87171]/50 bg-[#f87171]/[0.08]' : 'border-white/10 bg-black/20'}`}>
+      <span className="label-xs">Pay to</span>
+      <span className="text-[14px] font-bold">
+        {ACCOUNT_LABELS[payTo.method]} · <span className="font-mono">{payTo.number}</span>
+      </span>
+      <span className="text-[12.5px] text-[#c4cdcf]">
+        {payTo.name}
+        {payTo.bank ? ` · ${payTo.bank}` : ''}
+      </span>
+      <span className={`text-[11px] ${fresh ? 'font-bold text-[#fca5a5]' : 'text-[#6e7b7e]'}`}>
+        {fresh ? '⚠ Changed in the last 3 days, ' : 'Set '}
+        {dhakaDateTime(payTo.updatedAt)} by {payTo.updatedBy}
+        {fresh ? '. Call the company to confirm before sending money.' : ''}
+      </span>
+    </div>
+  )
+}
+
+/** Method, reference and note: used to record a payment and to correct one. */
+function PaymentFields({
+  method,
+  setMethod,
+  reference,
+  setReference,
+  note,
+  setNote,
+}: {
+  method: PayMethod
+  setMethod: (m: PayMethod) => void
+  reference: string
+  setReference: (v: string) => void
+  note: string
+  setNote: (v: string) => void
+}) {
+  return (
+    <>
       <div className="grid grid-cols-3 gap-1.5 sm:grid-cols-5">
         {PAY_METHODS.map((m) => (
           <button
@@ -96,25 +139,125 @@ function AdminActions({ inv, onDone }: { inv: Invoice; onDone: () => void }) {
           </button>
         ))}
       </div>
-      <input value={reference} onChange={(e) => setReference(e.target.value.slice(0, 60))} placeholder="Reference / TrxID, e.g. 9JK4M2PQ7X" className="input-dark font-mono" aria-label="Payment reference" />
+      {method === 'cash' ? (
+        <input value={reference} onChange={(e) => setReference(e.target.value.slice(0, 60))} placeholder="Who received the cash? (optional)" className="input-dark" aria-label="Who received the cash" />
+      ) : (
+        <input value={reference} onChange={(e) => setReference(e.target.value.slice(0, 60))} placeholder="Reference / TrxID, e.g. 9JK4M2PQ7X" className="input-dark font-mono" aria-label="Payment reference" />
+      )}
       <input value={note} onChange={(e) => setNote(e.target.value.slice(0, 200))} placeholder="Note (optional), e.g. sent to 017… merchant number" className="input-dark" aria-label="Payment note" />
-      <button
-        type="button"
-        disabled={busy || reference.trim().length < 4}
-        onClick={() => confirm(`Record ${taka(inv.totals.payout)} paid to ${inv.companyName} by ${PAY_METHOD_LABELS[method]}, ref ${reference.trim()}?`) && send({ action: 'paid', method, reference, note }, 'Payment recorded')}
-        className="glass-btn h-12"
-      >
-        {busy ? 'Saving…' : `I paid ${taka(inv.totals.payout)}`}
-      </button>
-      {inv.status === 'unpaid' && (
-        <button
-          type="button"
-          disabled={busy}
-          onClick={() => confirm('Cancel this invoice? Its tickets go back to "owed" for the next invoice.') && send({ action: 'cancel' }, 'Invoice cancelled')}
-          className="text-[12.5px] font-semibold text-[#f87171]"
-        >
-          Cancel this invoice
-        </button>
+    </>
+  )
+}
+
+/**
+ * Admin: record the payment, correct it later (a signed invoice then needs the company's
+ * signature again), take back a payment recorded by mistake, or cancel an unpaid invoice.
+ */
+function AdminActions({ inv, payTo, onDone }: { inv: Invoice; payTo: PayoutAccount | null; onDone: () => void }) {
+  const toPay = inv.status === 'unpaid' || inv.status === 'disputed'
+  const canEdit = Boolean(inv.payment) && ['paid', 'disputed', 'confirmed'].includes(inv.status)
+  const [editing, setEditing] = useState(false)
+  const start = inv.payment && editing ? inv.payment : null
+  const [method, setMethod] = useState<PayMethod>((payTo?.method as PayMethod) || 'bkash')
+  const [reference, setReference] = useState('')
+  const [note, setNote] = useState('')
+  const [busy, setBusy] = useState(false)
+  useEffect(() => {
+    if (start) {
+      setMethod(start.method)
+      setReference(start.reference)
+      setNote(start.note || '')
+    }
+  }, [start])
+  const send = async (body: object, ok: string) => {
+    setBusy(true)
+    const res = await fetch(`/api/admin/payouts/${inv._id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }).catch(() => null)
+    const data = await res?.json().catch(() => null)
+    setBusy(false)
+    if (!res?.ok) return toast.error(data?.error || 'No internet connection. Try again.')
+    toast.success(ok)
+    setEditing(false)
+    onDone()
+  }
+  const ready = method === 'cash' || reference.trim().length >= 4
+  const says = `${method === 'cash' ? 'in cash' : `by ${PAY_METHOD_LABELS[method]}, ref ${reference.trim()}`}`
+
+  if (!toPay && !canEdit) return null
+  return (
+    <div className="no-print glass flex flex-col gap-3 p-4">
+      {toPay && !editing ? (
+        <>
+          <span className="display text-[16px] font-bold">Pay {taka(inv.totals.payout)} to {inv.companyName}</span>
+          <PayToBox payTo={payTo} />
+          <p className="text-[12.5px] text-[#9ba7aa]">
+            Send the money first, then write down how you sent it and the reference (bKash TrxID, bank reference). Cash needs no reference. The company then
+            checks it and signs.
+          </p>
+          <PaymentFields method={method} setMethod={setMethod} reference={reference} setReference={setReference} note={note} setNote={setNote} />
+          <button
+            type="button"
+            disabled={busy || !ready}
+            onClick={() => confirm(`Record ${taka(inv.totals.payout)} paid to ${inv.companyName} ${says}?`) && send({ action: 'paid', method, reference: reference.trim(), note }, 'Payment recorded')}
+            className="glass-btn h-12"
+          >
+            {busy ? 'Saving…' : `I paid ${taka(inv.totals.payout)}`}
+          </button>
+          {inv.status === 'unpaid' && (
+            <button
+              type="button"
+              disabled={busy}
+              onClick={() => confirm('Cancel this invoice? Its tickets go back to "owed" for the next invoice.') && send({ action: 'cancel' }, 'Invoice cancelled')}
+              className="text-[12.5px] font-semibold text-[#f87171]"
+            >
+              Cancel this invoice
+            </button>
+          )}
+          {inv.status === 'disputed' && canEdit && (
+            <button type="button" onClick={() => setEditing(true)} className="text-[12.5px] font-semibold text-[#f5a524]">
+              Correct the recorded payment instead
+            </button>
+          )}
+        </>
+      ) : editing ? (
+        <>
+          <span className="display text-[16px] font-bold">Correct the payment</span>
+          {inv.status === 'confirmed' && (
+            <p className="rounded-xl border border-[#f5a524]/40 bg-[#f5a524]/[0.08] px-3.5 py-2.5 text-[12.5px] text-[#fbbf24]">
+              The company already signed this. After a change it has to check and sign again.
+            </p>
+          )}
+          <PaymentFields method={method} setMethod={setMethod} reference={reference} setReference={setReference} note={note} setNote={setNote} />
+          <button
+            type="button"
+            disabled={busy || !ready}
+            onClick={() => confirm(`Change the payment to ${taka(inv.totals.payout)} ${says}?`) && send({ action: 'edit', method, reference: reference.trim(), note }, 'Payment corrected')}
+            className="glass-btn h-12"
+          >
+            {busy ? 'Saving…' : 'Save the correction'}
+          </button>
+          <button type="button" onClick={() => setEditing(false)} className="text-[12.5px] font-semibold text-[#9ba7aa]">
+            Back
+          </button>
+        </>
+      ) : (
+        <div className="flex flex-col gap-2.5">
+          <span className="text-[13px] font-bold">Payment recorded</span>
+          <div className="flex flex-wrap gap-2">
+            <button type="button" onClick={() => setEditing(true)} className="glass-btn glass-btn-plain h-10 px-4 text-[13px]">
+              Edit payment details
+            </button>
+            {inv.status === 'paid' && (
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() => confirm('Remove this payment? Use this only if the money was not actually sent. The invoice goes back to unpaid.') && send({ action: 'unpay' }, 'Payment removed')}
+                className="h-10 rounded-full border border-[#f87171]/30 px-4 text-[13px] font-semibold text-[#fca5a5]"
+              >
+                Money was not sent: remove payment
+              </button>
+            )}
+          </div>
+        </div>
       )}
     </div>
   )
@@ -142,9 +285,18 @@ function CompanyActions({ inv, onDone }: { inv: Invoice; onDone: () => void }) {
     <div className="no-print glass flex flex-col gap-3 p-4">
       <span className="display text-[16px] font-bold">Check and sign</span>
       <p className="text-[12.5px] leading-relaxed text-[#9ba7aa]">
-        BusHub says it sent <b className="text-white">{taka(inv.payment.amount)}</b> by {PAY_METHOD_LABELS[inv.payment.method]} (ref{' '}
-        <span className="font-mono text-white">{inv.payment.reference}</span>). Check your {PAY_METHOD_LABELS[inv.payment.method]} or bank first. Sign only if the money has
-        arrived.
+        {inv.payment.method === 'cash' ? (
+          <>
+            BusHub says it paid <b className="text-white">{taka(inv.payment.amount)}</b> in cash{inv.payment.reference ? ` to ${inv.payment.reference}` : ''}. Count the
+            cash first. Sign only if you received all of it.
+          </>
+        ) : (
+          <>
+            BusHub says it sent <b className="text-white">{taka(inv.payment.amount)}</b> by {PAY_METHOD_LABELS[inv.payment.method]} (ref{' '}
+            <span className="font-mono text-white">{inv.payment.reference}</span>). Check your {PAY_METHOD_LABELS[inv.payment.method]} or bank first. Sign only if the
+            money has arrived.
+          </>
+        )}
       </p>
       {problem === null ? (
         <>
@@ -186,6 +338,7 @@ function InvoiceView() {
   const as = useSearchParams().get('as')
   const [inv, setInv] = useState<Invoice | null>(null)
   const [viewer, setViewer] = useState<'admin' | 'company' | null>(null)
+  const [payTo, setPayTo] = useState<PayoutAccount | null>(null)
   const [error, setError] = useState('')
 
   const load = useCallback(() => {
@@ -195,6 +348,7 @@ function InvoiceView() {
         if (!ok) return setError(d?.error || 'Could not open the invoice')
         setInv(d.invoice)
         setViewer(d.viewer)
+        setPayTo(d.payTo || null)
       })
       .catch(() => setError('No internet connection'))
   }, [id, as])
@@ -219,7 +373,7 @@ function InvoiceView() {
         </button>
       </div>
 
-      {viewer === 'admin' && <AdminActions inv={inv} onDone={load} />}
+      {viewer === 'admin' && <AdminActions key={`${inv.status}-${inv.payment?.reference ?? ''}`} inv={inv} payTo={payTo} onDone={load} />}
       {viewer === 'company' && <CompanyActions inv={inv} onDone={load} />}
 
       <article className="invoice-paper rounded-[20px] bg-white p-5 text-[13px] text-[#16191a] shadow-[0_20px_60px_rgba(0,0,0,0.45)] sm:p-8">
@@ -253,6 +407,9 @@ function InvoiceView() {
         <section className="flex flex-col gap-2 border-b border-[#e3e8e9] py-5">
           <Row label={`Tickets sold on BusHub (${inv.totals.tickets} tickets, ${inv.totals.seats} seats), original price`} value={taka(inv.totals.ticketTotal)} />
           <Row label="BusHub commission" value={`−${taka(inv.totals.commission)}`} />
+          {(inv.totals.refunds || 0) > 0 && (
+            <Row label={`Refunded tickets BusHub had already paid for (${inv.deductions.length})`} value={`−${taka(inv.totals.refunds || 0)}`} />
+          )}
           <div className="mt-1 rounded-xl bg-[#f3f6f6] px-3.5 py-3">
             <Row label="BusHub pays the company" value={taka(inv.totals.payout)} strong />
           </div>
@@ -271,7 +428,7 @@ function InvoiceView() {
                 </span>
               </div>
               <div className="hidden grid-cols-[1.6fr_0.8fr_0.9fr_0.9fr_0.9fr] gap-2 border-b border-[#e3e8e9] px-3.5 py-1.5 text-[10.5px] font-bold uppercase tracking-wide text-[#7a8587] sm:grid">
-                <span>Ticket · passenger</span>
+                <span>{viewer === 'admin' ? 'Ticket · passenger' : 'Ticket'}</span>
                 <span>Seats</span>
                 <span className="text-right">Price</span>
                 <span className="text-right">Commission</span>
@@ -281,7 +438,7 @@ function InvoiceView() {
                 <div key={l.bookingId} className="grid grid-cols-2 gap-x-2 gap-y-0.5 border-b border-[#eef1f1] px-3.5 py-2 last:border-b-0 sm:grid-cols-[1.6fr_0.8fr_0.9fr_0.9fr_0.9fr] sm:items-baseline">
                   <span className="col-span-2 flex flex-col sm:col-span-1">
                     <span className="font-mono text-[11.5px] font-semibold">{l.code}</span>
-                    <span className="text-[11.5px] text-[#5b6668]">{l.passengerName}</span>
+                    {l.passengerName && <span className="text-[11.5px] text-[#5b6668]">{l.passengerName}</span>}
                   </span>
                   <span className="text-[12px]">
                     <span className="text-[#7a8587] sm:hidden">Seats </span>
@@ -311,17 +468,40 @@ function InvoiceView() {
           ))}
         </section>
 
+        {inv.deductions.length > 0 && (
+          <section className="invoice-trip flex flex-col gap-2 pb-5">
+            <span className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#5b6668]">Refunds taken back</span>
+            <p className="text-[11.5px] text-[#5b6668]">These tickets were refunded to the passenger after BusHub had already paid for them, so their payout comes off this payment.</p>
+            <div className="overflow-hidden rounded-xl border border-[#e3e8e9]">
+              {inv.deductions.map((d) => (
+                <div key={d._id} className="flex items-start justify-between gap-3 border-b border-[#eef1f1] px-3.5 py-2 last:border-b-0">
+                  <span className="flex min-w-0 flex-col">
+                    <span className="font-mono text-[11.5px] font-semibold">{d.code}</span>
+                    <span className="text-[11.5px] text-[#5b6668]">
+                      {d.from} → {d.to} · {formatTripDate(d.date)} {d.departureTime} · seats {d.seats.join(', ')} · paid in {d.paidIn}
+                    </span>
+                  </span>
+                  <span className="shrink-0 font-bold text-red-700">−{taka(d.amount)}</span>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
         <section className="grid gap-4 border-t border-[#e3e8e9] pt-5 sm:grid-cols-2">
           <div className="flex flex-col gap-1">
             <span className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#5b6668]">Payment</span>
             {inv.payment ? (
               <>
                 <span className="font-bold">
-                  {taka(inv.payment.amount)} by {PAY_METHOD_LABELS[inv.payment.method]}
+                  {taka(inv.payment.amount)} {inv.payment.method === 'cash' ? 'in cash' : `by ${PAY_METHOD_LABELS[inv.payment.method]}`}
                 </span>
-                <span>
-                  Reference <span className="font-mono font-semibold">{inv.payment.reference}</span>
-                </span>
+                {inv.payment.reference && (
+                  <span>
+                    {inv.payment.method === 'cash' ? 'Received by ' : 'Reference '}
+                    <span className={inv.payment.method === 'cash' ? 'font-semibold' : 'font-mono font-semibold'}>{inv.payment.reference}</span>
+                  </span>
+                )}
                 <span className="text-[11.5px] text-[#5b6668]">{dhakaDateTime(inv.payment.at)}</span>
                 {inv.payment.note && <span className="text-[11.5px] text-[#5b6668]">{inv.payment.note}</span>}
               </>

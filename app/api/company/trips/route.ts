@@ -16,7 +16,7 @@ const HISTORY_DAYS = 30
 /**
  * The company's trips with every seat accounted for: sold on BusHub, being bought on BusHub right
  * now (a 10-minute hold), or sold at the counter and by whom. The manager also gets the BusHub
- * passengers, payout and costs per trip, and trips from the last month; the counter only trips to come.
+ * tickets (code and seats; never the passenger's name or phone), payout and costs per trip, and trips from the last month; the counter only trips to come.
  */
 export async function GET() {
   try {
@@ -44,7 +44,7 @@ export async function GET() {
       db
         .collection('bookings')
         .find({ busId: { $in: ids }, status: { $in: ['pending', 'confirmed'] } })
-        .project({ busId: 1, seats: 1, status: 1, paymentStatus: 1, passengerName: 1, bookingCode: 1, totalPrice: 1, companyPayout: 1, holdExpiresAt: 1, checkedIn: 1 })
+        .project({ busId: 1, seats: 1, status: 1, paymentStatus: 1, bookingCode: 1, totalPrice: 1, companyPayout: 1, holdExpiresAt: 1, checkedIn: 1, paidAt: 1, createdAt: 1 })
         .toArray(),
       db.collection('counterSales').find({ busId: { $in: ids } }).toArray(),
     ])
@@ -86,7 +86,7 @@ export async function GET() {
               ? {
                   onlineTickets: paid.map((b) => ({
                     code: b.bookingCode,
-                    passengerName: b.passengerName,
+                    bookedAt: b.paidAt || b.createdAt || null,
                     seats: b.seats || [],
                     total: b.totalPrice || 0,
                     payout: b.companyPayout || 0,

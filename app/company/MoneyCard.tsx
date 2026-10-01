@@ -20,7 +20,7 @@ const costsText = (m: TripMoney) =>
     .join(' · ') || 'None entered yet'
 
 /** The money for a set of trips: what tickets brought in, what BusHub keeps, the costs and what is left. */
-export default function MoneyCard({ m, trips, forAdmin = false }: { m: TripMoney; trips: number; forAdmin?: boolean }) {
+export default function MoneyCard({ m, trips }: { m: TripMoney; trips: number }) {
   return (
     <div className="card-2 flex flex-col gap-3 px-4 py-4">
       <div className="flex items-end justify-between gap-3">
@@ -37,11 +37,11 @@ export default function MoneyCard({ m, trips, forAdmin = false }: { m: TripMoney
       <div className="flex flex-col gap-2 border-t border-white/[0.06] pt-3">
         <Line label="Counter tickets" sub={`${m.counter.seats} seats · full price, no BusHub fee`} value={taka(m.counter.total)} tone="text-[#c4b5fd]" />
         <Line label="BusHub tickets" sub={`${m.online.tickets} tickets · ${m.seats.online} seats · what passengers paid`} value={taka(m.online.total)} tone="text-[#f5a524]" />
-        <Line label={forAdmin ? 'BusHub commission' : 'BusHub fee'} value={`${forAdmin ? '' : '−'}${taka(m.online.fee)}`} tone={forAdmin ? 'text-[#34d399]' : 'text-[#9ba7aa]'} />
-        <Line label={forAdmin ? 'BusHub pays the companies' : 'You get from BusHub'} value={taka(m.online.payout)} tone="text-[#f5a524]" />
+        <Line label="BusHub fee" value={`−${taka(m.online.fee)}`} tone="text-[#9ba7aa]" />
+        <Line label="You get from BusHub" value={taka(m.online.payout)} tone="text-[#f5a524]" />
       </div>
       <div className="flex flex-col gap-2 border-t border-white/[0.06] pt-3">
-        <Line label={forAdmin ? 'Companies receive' : 'You receive'} sub={forAdmin ? 'Counter money + BusHub payouts' : 'Counter money + what BusHub pays you'} value={taka(m.companyGets)} strong />
+        <Line label="You receive" sub="Counter money + what BusHub pays you" value={taka(m.companyGets)} strong />
         <Line label="Costs" sub={costsText(m)} value={`−${taka(m.costs.total)}`} tone="text-[#fca5a5]" />
       </div>
       <div className="flex items-center justify-between gap-3 rounded-2xl bg-gradient-to-br from-[#12756c]/50 to-[#0e5a54]/40 px-3.5 py-3">

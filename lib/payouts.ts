@@ -44,7 +44,32 @@ export interface PayoutTotals {
   seats: number
   ticketTotal: number
   commission: number
+  /** What BusHub pays: the tickets' payouts, less any refunds taken back. */
   payout: number
+  /** Refunds taken back from this payment (tickets refunded after BusHub had paid for them). */
+  refunds?: number
+}
+
+/**
+ * A ticket refunded after BusHub had already paid the company for it: the company owes that
+ * payout back, and it comes off the company's next payment.
+ */
+export interface RefundDeduction {
+  _id: string
+  bookingId: string
+  code: string
+  date: string
+  departureTime: string
+  from: string
+  to: string
+  busName: string
+  seats: string[]
+  ticketPrice: number
+  /** What BusHub had paid the company for it, and now takes back. */
+  amount: number
+  /** The invoice that had paid for the ticket. */
+  paidIn: string
+  createdAt: string
 }
 
 function secret(): string {
@@ -103,9 +128,12 @@ async function departedTripIds(db: Db, companyId: string): Promise<string[]> {
 
 const OWED_FILTER = { status: 'confirmed', paymentStatus: 'paid', payoutId: { $exists: false } }
 
-/** Paid BusHub tickets on the company's departed trips that no invoice has taken yet. */
-export async function owedLines(db: Db, companyId: string): Promise<PayoutLine[]> {
-  const ids = await departedTripIds(db, companyId)
+/**
+ * Paid BusHub tickets on the company's departed trips that no invoice has taken yet; with
+ * `tripId`, only that one trip's (still only if it is the company's and has left).
+ */
+export async function owedLines(db: Db, companyId: string, tripId?: string): Promise<PayoutLine[]> {
+  const ids = (await departedTripIds(db, companyId)).filter((id) => !tripId || id === tripId)
   if (ids.length === 0) return []
   const rows = await db.collection('bookings').find({ ...OWED_FILTER, busId: { $in: ids } }).toArray()
   return rows.map(ticketLine).sort(byTrip)
@@ -124,11 +152,73 @@ export async function upcomingTotals(db: Db, companyId: string): Promise<PayoutT
   return totalsOf(rows.map(ticketLine))
 }
 
-/** The fingerprint of an invoice's frozen content. */
-export function contentHash(inv: { number: string; companyId: string; lines: PayoutLine[]; totals: PayoutTotals; createdAt: string }): string {
-  return createHash('sha256')
-    .update(JSON.stringify([inv.number, inv.companyId, inv.createdAt, inv.totals, inv.lines]))
-    .digest('hex')
+/** The fingerprint of an invoice's frozen content (refunds taken back are part of it when there are any). */
+export function contentHash(inv: {
+  number: string
+  companyId: string
+  lines: PayoutLine[]
+  totals: PayoutTotals
+  createdAt: string
+  deductions?: RefundDeduction[]
+}): string {
+  const parts: unknown[] = [inv.number, inv.companyId, inv.createdAt, inv.totals, inv.lines]
+  if (inv.deductions && inv.deductions.length > 0) parts.push(inv.deductions)
+  return createHash('sha256').update(JSON.stringify(parts)).digest('hex')
+}
+
+const refundsOf = (inv: { deductions?: RefundDeduction[] }) => (inv.deductions || []).reduce((n, d) => n + d.amount, 0)
+
+function deductionRow(d: any): RefundDeduction {
+  return {
+    _id: d._id.toString(),
+    bookingId: d.bookingId,
+    code: d.code,
+    date: d.date,
+    departureTime: d.departureTime,
+    from: d.from,
+    to: d.to,
+    busName: d.busName,
+    seats: d.seats || [],
+    ticketPrice: d.ticketPrice,
+    amount: d.amount,
+    paidIn: d.paidIn,
+    createdAt: d.createdAt,
+  }
+}
+
+/** Refunds the company still owes back, not yet taken from a payment. */
+export async function openDeductions(db: Db, companyId: string): Promise<RefundDeduction[]> {
+  const rows = await db.collection('payoutRefunds').find({ companyId, payoutId: { $exists: false } }).sort({ createdAt: 1 }).toArray()
+  return rows.map(deductionRow)
+}
+
+/**
+ * A ticket that BusHub already paid the company for is refunded to the passenger: record that
+ * the company owes its payout back. One record per ticket (the database refuses a second).
+ */
+export async function recordRefundDeduction(db: Db, booking: any, invoice: any) {
+  const line = ticketLine(booking)
+  await db.collection('payoutRefunds').updateOne(
+    { bookingId: line.bookingId },
+    {
+      $setOnInsert: {
+        companyId: invoice.companyId,
+        bookingId: line.bookingId,
+        code: line.code,
+        date: line.date,
+        departureTime: line.departureTime,
+        from: line.from,
+        to: line.to,
+        busName: line.busName,
+        seats: line.seats,
+        ticketPrice: line.ticketPrice,
+        amount: line.payout,
+        paidIn: invoice.number,
+        createdAt: new Date().toISOString(),
+      },
+    },
+    { upsert: true }
+  )
 }
 
 /** The manager's sign-off: the content fingerprint and the payment, sealed with the server secret. */
@@ -139,7 +229,7 @@ export function signOff(hash: string, payment: { method: string; reference: stri
 /** Has anything in the invoice changed since it was made, or since it was signed? */
 export function checkInvoice(inv: any): { contentOk: boolean; signatureOk: boolean | null } {
   const hash = contentHash(inv)
-  const contentOk = hash === inv.contentHash && totalsOf(inv.lines).payout === inv.totals.payout
+  const contentOk = hash === inv.contentHash && totalsOf(inv.lines).payout - refundsOf(inv) === inv.totals.payout
   if (!inv.confirmation) return { contentOk, signatureOk: null }
   const expected = signOff(inv.contentHash, inv.payment || {}, inv.confirmation.signedBy, inv.confirmation.at)
   const a = Buffer.from(expected, 'hex')
@@ -158,11 +248,11 @@ async function nextNumber(db: Db): Promise<string> {
 }
 
 /**
- * Makes an invoice of everything owed to the company right now. Returns null when nothing is
- * owed. The tickets are claimed first, so a ticket can only ever be in one invoice.
+ * Makes an invoice of everything owed to the company right now, or for one trip with `tripId`.
+ * Returns null when nothing is owed. The tickets are claimed first, so a ticket can only ever be in one invoice.
  */
-export async function createInvoice(db: Db, companyId: string, companyName: string) {
-  const owed = await owedLines(db, companyId)
+export async function createInvoice(db: Db, companyId: string, companyName: string, tripId?: string) {
+  const owed = await owedLines(db, companyId, tripId)
   if (owed.length === 0) return null
   const _id = new ObjectId()
   const payoutId = _id.toString()
@@ -171,30 +261,54 @@ export async function createInvoice(db: Db, companyId: string, companyName: stri
     .updateMany({ _id: { $in: owed.map((l) => new ObjectId(l.bookingId)) }, ...OWED_FILTER }, { $set: { payoutId } })
   const claimed = (await db.collection('bookings').find({ payoutId }).toArray()).map(ticketLine).sort(byTrip)
   if (claimed.length === 0) return null
+  // Refunds the company owes back come off this payment, oldest first, as long as they fit.
+  let room = totalsOf(claimed).payout
+  const fitting: string[] = []
+  for (const d of await openDeductions(db, companyId)) {
+    if (d.amount <= room) {
+      fitting.push(d._id)
+      room -= d.amount
+    }
+  }
+  if (fitting.length > 0) {
+    await db
+      .collection('payoutRefunds')
+      .updateMany({ _id: { $in: fitting.map((id) => new ObjectId(id)) }, payoutId: { $exists: false } }, { $set: { payoutId } })
+  }
+  const deductions = (await db.collection('payoutRefunds').find({ payoutId }).sort({ createdAt: 1 }).toArray()).map(deductionRow)
   try {
     const createdAt = new Date().toISOString()
     const number = await nextNumber(db)
-    const totals = totalsOf(claimed)
+    const ticketTotals = totalsOf(claimed)
+    const refunds = deductions.reduce((n, d) => n + d.amount, 0)
+    const totals: PayoutTotals = refunds > 0 ? { ...ticketTotals, refunds, payout: ticketTotals.payout - refunds } : ticketTotals
     const doc = {
       _id,
       number,
       companyId,
       companyName,
       lines: claimed,
+      ...(deductions.length > 0 ? { deductions } : {}),
       totals,
       from: claimed[0].date,
       to: claimed[claimed.length - 1].date,
       status: 'unpaid' as PayoutStatus,
       createdAt,
-      contentHash: contentHash({ number, companyId, lines: claimed, totals, createdAt }),
+      contentHash: contentHash({ number, companyId, lines: claimed, totals, createdAt, deductions }),
       history: [{ at: createdAt, by: 'BusHub admin', event: 'Invoice made' }],
     }
     await db.collection('payouts').insertOne(doc)
     return doc
   } catch (err) {
-    await db.collection('bookings').updateMany({ payoutId }, { $unset: { payoutId: '' } })
+    await releaseInvoice(db, payoutId)
     throw err
   }
+}
+
+/** Frees an invoice's tickets and refunds, so the next invoice can take them. */
+export async function releaseInvoice(db: Db, payoutId: string) {
+  await db.collection('bookings').updateMany({ payoutId }, { $unset: { payoutId: '' } })
+  await db.collection('payoutRefunds').updateMany({ payoutId }, { $unset: { payoutId: '' } })
 }
 
 /** What the lists show: no ticket lines. */
@@ -221,6 +335,7 @@ export function invoiceFull(inv: any) {
   return {
     ...invoiceSummary(inv),
     lines: inv.lines as PayoutLine[],
+    deductions: (inv.deductions || []) as RefundDeduction[],
     contentHash: inv.contentHash,
     history: inv.history || [],
     check,

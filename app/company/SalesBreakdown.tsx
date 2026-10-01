@@ -14,7 +14,8 @@ export interface SaleBooking {
   seats: string[]
   totalPrice: number
   companyPayout: number
-  passengerName: string
+  bookingCode: string
+  checkedIn?: boolean
   paymentStatus: string
   status: string
 }
@@ -65,15 +66,16 @@ function TripRow({ trip, showBus }: { trip: Trip; showBus: boolean }) {
           <span className="text-[11px] text-[#9ba7aa]">
             {trip.seats} seat{trip.seats === 1 ? '' : 's'} · {trip.sold.length} ticket{trip.sold.length === 1 ? '' : 's'}
           </span>
-          <span className="text-[10.5px] text-[#f5a524] group-open:hidden">Show passengers ›</span>
-          <span className="hidden text-[10.5px] text-[#f5a524] group-open:inline">Hide passengers ‹</span>
+          <span className="text-[10.5px] text-[#f5a524] group-open:hidden">Show tickets ›</span>
+          <span className="hidden text-[10.5px] text-[#f5a524] group-open:inline">Hide tickets ‹</span>
         </div>
       </summary>
       <div className="flex flex-col gap-1.5 bg-black/20 px-4 pb-3 pt-1">
         {[...trip.sold, ...trip.refunded].map((b) => (
           <div key={b._id} className="flex items-center justify-between gap-3 text-[12px]">
             <span className="min-w-0 truncate">
-              {b.passengerName} <span className="text-[#78868a]">· seats {b.seats.join(', ')}</span>
+              Seats {b.seats.join(', ')} <span className="font-mono text-[11px] text-[#78868a]">· {b.bookingCode}</span>
+              {b.checkedIn && <span className="text-[#34d399]"> · boarded</span>}
             </span>
             <span className={`shrink-0 font-semibold ${isSold(b) ? 'text-[#c4cdcf]' : 'text-[#f87171]'}`}>
               {isSold(b) ? taka(b.companyPayout ?? b.totalPrice) : 'Refunded'}

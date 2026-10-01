@@ -377,19 +377,25 @@ check('only the admin can see every company\'s trip money', (await call('/api/ad
 const adminMoney = (await call('/api/admin/trip-money', { cookie: admin })).data.trips.find((t) => t._id === ct)
 const tripDoc = await db.collection('buses').findOne({ _id: new ObjectId(ct) })
 const paidHere = await db.collection('bookings').find({ busId: ct, status: 'confirmed', paymentStatus: 'paid' }).toArray()
-const m = adminMoney.money
 const paidTotal = paidHere.reduce((n, b) => n + b.totalPrice, 0)
 const paidPayout = paidHere.reduce((n, b) => n + b.companyPayout, 0)
 check(
-  'trip money adds up: counter at full price, BusHub total = fee + payout, left = counter + payout − costs',
-  m.counter.total === (tripDoc.blockedSeats || []).length * 700 &&
-    m.online.total === paidTotal &&
-    m.online.payout === paidPayout &&
-    m.online.fee === paidTotal - paidPayout &&
-    m.costs.total === 4300 && m.costs.fuel === 3500 && m.costs.road === 800 &&
-    m.left === m.counter.total + paidPayout - 4300 &&
-    m.seats.notSold === tripDoc.totalSeats - (tripDoc.blockedSeats || []).length - paidHere.reduce((n, b) => n + b.seats.length, 0),
-  JSON.stringify(m)
+  'admin trip money adds up (counter at full price, BusHub total = commission + payout) and shows no company costs',
+  adminMoney.counter.total === (tripDoc.blockedSeats || []).length * 700 &&
+    adminMoney.online.total === paidTotal &&
+    adminMoney.online.payout === paidPayout &&
+    adminMoney.online.commission === paidTotal - paidPayout &&
+    adminMoney.pay.owed === paidPayout &&
+    !('costs' in adminMoney) && !('money' in adminMoney),
+  JSON.stringify(adminMoney)
+)
+const companyBookings = (await call('/api/bookings?as=company', { cookie: green.cookie })).data.bookings
+const managerTrips = (await call('/api/company/trips', { cookie: green.cookie })).data.trips
+check(
+  "the company sees its tickets but never the passenger's name, phone or email",
+  companyBookings.length > 0 &&
+    companyBookings.every((b) => !('passengerName' in b) && !('passengerPhone' in b) && !('passengerEmail' in b) && b.bookingCode) &&
+    managerTrips.every((t) => (t.onlineTickets || []).every((x) => !('passengerName' in x) && x.code))
 )
 
 // ---- Paying the bus companies: invoices, payment, the company's signature ----
@@ -433,7 +439,6 @@ check(
     inv1Full.check.contentOk === true
 )
 check('nothing is invoiced twice', (await call('/api/admin/payouts', { method: 'POST', cookie: admin, body: { companyId: green.id } })).status === 409)
-check('a ticket already in an invoice cannot be refunded', (await call(`/api/bookings/${pb2._id}/refund`, { method: 'PATCH', cookie: admin })).status === 409)
 check("another company cannot open this invoice", (await call(`/api/payouts/${inv1.data.invoice._id}`, { cookie: hanif.cookie })).status === 404 && (await call(`/api/payouts/${inv1.data.invoice._id}`, { cookie: counter1 })).status === 401)
 const inv1Id = inv1.data.invoice._id
 const sign = (cookie, password, id = inv1Id) => call(`/api/company/payouts/${id}`, { method: 'PATCH', cookie, body: { action: 'confirm', signedBy: 'Test Manager', password } })
@@ -476,6 +481,132 @@ for (let i = 0; i < 5; i++) await sign(green.cookie, `wrong-${i}`, inv3.data.inv
 check('after 5 wrong passwords, signing waits even with the right one', (await sign(green.cookie, green.password, inv3.data.invoice._id)).status === 429)
 const dispute = await call(`/api/company/payouts/${inv3.data.invoice._id}`, { method: 'PATCH', cookie: green.cookie, body: { action: 'dispute', note: 'Nothing arrived on Nagad yet' } })
 check('the manager can report a problem with a payment', dispute.status === 200 && dispute.data.invoice.status === 'disputed')
+const companyInvoice = (await call(`/api/payouts/${inv1Id}`, { cookie: green.cookie })).data.invoice
+const adminInvoice = (await call(`/api/payouts/${inv1Id}?as=admin`, { cookie: admin })).data.invoice
+check('on the invoice the company sees ticket codes, not passenger names', companyInvoice.lines.every((l) => l.passengerName === '' && l.code) && adminInvoice.lines.some((l) => l.passengerName))
+
+// Paying one trip at a time; cash needs no reference.
+const tripPayDay = new Date(Date.now() + 30 * 3600e3).toISOString().slice(0, 10)
+const mkPayTrip = async (time) => (await call('/api/company/trips', { method: 'POST', cookie: green.cookie, body: { fleetId: fleetBus._id, from: 'Dhaka', to: 'Khulna', date: tripPayDay, departureTime: time, price: 800 } })).data.bus._id
+const tripA = await mkPayTrip('05:35')
+const tripB = await mkPayTrip('13:45')
+for (const [trip, seat] of [[tripA, '1A'], [tripA, '1B'], [tripB, '2A']]) {
+  const b = await call('/api/bookings', { method: 'POST', body: { busId: trip, seats: [seat], passengerName: 'Trip Pay', passengerPhone: payPhone() } })
+  await call(`/api/bookings/${b.data.booking._id}`, { method: 'PATCH', body: { paymentStatus: 'paid' } })
+}
+check('a trip that has not left cannot be paid yet', (await call('/api/admin/payouts', { method: 'POST', cookie: admin, body: { companyId: green.id, tripId: tripA } })).status === 409)
+for (const t of [tripA, tripB]) {
+  await db.collection('buses').updateOne({ _id: new ObjectId(t) }, { $set: { date: yesterday } })
+  await db.collection('bookings').updateMany({ busId: t }, { $set: { date: yesterday } })
+}
+const tripInvoice = await call('/api/admin/payouts', { method: 'POST', cookie: admin, body: { companyId: green.id, tripId: tripA } })
+const tripInvoiceFull = (await call(`/api/payouts/${tripInvoice.data?.invoice?._id}?as=admin`, { cookie: admin })).data?.invoice
+const tripBDoc = await db.collection('bookings').findOne({ busId: tripB })
+check(
+  'Pay this trip: the invoice holds only that trip, other trips stay owed',
+  tripInvoice.status === 201 && tripInvoiceFull.lines.length === 2 && tripInvoiceFull.lines.every((l) => l.departureTime === '05:35') && !tripBDoc.payoutId,
+  JSON.stringify(tripInvoice.data)
+)
+check("another company's trip cannot be paid to this company", (await call('/api/admin/payouts', { method: 'POST', cookie: admin, body: { companyId: hanif.id, tripId: tripB } })).status === 409)
+const tripPayState = (await call('/api/admin/trip-money', { cookie: admin })).data.trips
+const stateA = tripPayState.find((t) => t._id === tripA)
+const stateB = tripPayState.find((t) => t._id === tripB)
+check('the admin sees which trips are invoiced and which are still owed', stateA.pay.invoiced > 0 && stateA.pay.owed === 0 && stateA.pay.invoiceId === tripInvoice.data.invoice._id && stateB.pay.owed > 0)
+const tripInvoiceId = tripInvoice.data.invoice._id
+check('a bKash payment still needs its TrxID', (await call(`/api/admin/payouts/${tripInvoiceId}`, { method: 'PATCH', cookie: admin, body: { action: 'paid', method: 'bkash', reference: '' } })).status === 400)
+const cashPaid = await call(`/api/admin/payouts/${tripInvoiceId}`, { method: 'PATCH', cookie: admin, body: { action: 'paid', method: 'cash', reference: '' } })
+check('a cash payment needs no transaction ID', cashPaid.status === 200 && cashPaid.data.invoice.payment.method === 'cash' && cashPaid.data.invoice.payment.reference === '', JSON.stringify(cashPaid.data))
+const cashSigned = await sign(green.cookie, green.password, tripInvoiceId)
+const cashCheck = (await call(`/api/payouts/${tripInvoiceId}`, { cookie: green.cookie })).data.invoice
+check('the company signs a cash payment and the signature checks out', cashSigned.status === 200 && cashCheck.status === 'confirmed' && cashCheck.check.signatureOk === true)
+const stateAfter = (await call('/api/admin/trip-money', { cookie: admin })).data.trips.find((t) => t._id === tripA)
+check('a paid trip shows as paid', stateAfter.pay.paid > 0 && stateAfter.pay.owed === 0 && stateAfter.pay.invoiced === 0)
+
+// ---- The admin can delete a booking; the record is archived ----
+const removeTrip = await mkPayTrip('19:25')
+const toDelete = await call('/api/bookings', { method: 'POST', body: { busId: removeTrip, seats: ['5C'], passengerName: 'Delete Me', passengerPhone: payPhone() } })
+await call(`/api/bookings/${toDelete.data.booking._id}`, { method: 'PATCH', body: { paymentStatus: 'paid' } })
+check('a company cannot delete bookings', (await call(`/api/bookings/${toDelete.data.booking._id}`, { method: 'DELETE', cookie: green.cookie })).status === 403)
+const deleted = await call(`/api/bookings/${toDelete.data.booking._id}`, { method: 'DELETE', cookie: admin })
+const afterDelete = await db.collection('buses').findOne({ _id: new ObjectId(removeTrip) })
+const archived = await db.collection('deletedBookings').findOne({ _id: new ObjectId(toDelete.data.booking._id) })
+check(
+  'the admin deletes a booking: it is gone, its seat is free again, and a copy is archived',
+  deleted.status === 200 && !(await db.collection('bookings').findOne({ _id: new ObjectId(toDelete.data.booking._id) })) && !(afterDelete.bookedSeats || []).includes('5C') && archived?.passengerName === 'Delete Me'
+)
+const inInvoice = tripInvoiceFull.lines[0].bookingId
+check('a ticket in a payout invoice cannot be deleted', (await call(`/api/bookings/${inInvoice}`, { method: 'DELETE', cookie: admin })).status === 409)
+
+// ---- Correcting a payment; refunds after an invoice; where to pay the company ----
+const admPatch = (id, body) => call(`/api/admin/payouts/${id}`, { method: 'PATCH', cookie: admin, body })
+const edited = await admPatch(tripInvoiceId, { action: 'edit', method: 'bkash', reference: 'BK12345678', note: 'was not cash' })
+const afterEdit = (await call(`/api/payouts/${tripInvoiceId}?as=admin`, { cookie: admin })).data.invoice
+check(
+  'correcting a signed payment sends it back to the company to sign again, with the old details in the history',
+  edited.status === 200 && afterEdit.status === 'paid' && !afterEdit.confirmation && afterEdit.payment.reference === 'BK12345678' && afterEdit.history.some((h) => /Payment changed from Cash/.test(h.event) && /sign again/.test(h.event)),
+  JSON.stringify(edited.data)
+)
+const resigned = await sign(green.cookie, green.password, tripInvoiceId)
+const afterResign = (await call(`/api/payouts/${tripInvoiceId}`, { cookie: green.cookie })).data.invoice
+check('the company signs the corrected payment and it checks out', resigned.status === 200 && afterResign.check.signatureOk === true)
+check('a signed payment cannot just be removed', (await admPatch(tripInvoiceId, { action: 'unpay' })).status === 409)
+check('a correction still needs a proper reference', (await admPatch(tripInvoiceId, { action: 'edit', method: 'nagad', reference: '' })).status === 400)
+const invB = await call('/api/admin/payouts', { method: 'POST', cookie: admin, body: { companyId: green.id, tripId: tripB } })
+await admPatch(invB.data.invoice._id, { action: 'paid', method: 'nagad', reference: 'NG7654321' })
+const unpaid = await admPatch(invB.data.invoice._id, { action: 'unpay' })
+check('a payment recorded by mistake can be removed before the company signs', unpaid.status === 200 && unpaid.data.invoice.status === 'unpaid' && !unpaid.data.invoice.payment)
+const bTicket = await db.collection('bookings').findOne({ busId: tripB, status: 'confirmed' })
+const refundUnpaidInv = await call(`/api/bookings/${bTicket._id}/refund`, { method: 'PATCH', cookie: admin })
+const invBAfter = await db.collection('payouts').findOne({ _id: new ObjectId(invB.data.invoice._id) })
+check(
+  'refunding a ticket in an unpaid invoice cancels that invoice so a new one can be made',
+  refundUnpaidInv.status === 200 && /cancelled/.test(refundUnpaidInv.data.note) && invBAfter.status === 'cancelled',
+  JSON.stringify(refundUnpaidInv.data)
+)
+const aTicket = await db.collection('bookings').findOne({ busId: tripA, status: 'confirmed' })
+const refundPaidInv = await call(`/api/bookings/${aTicket._id}/refund`, { method: 'PATCH', cookie: admin })
+const deduction = await db.collection('payoutRefunds').findOne({ bookingId: aTicket._id.toString() })
+check(
+  'refunding a ticket BusHub already paid for: the company owes its payout back',
+  refundPaidInv.status === 200 && /next payment/.test(refundPaidInv.data.note) && deduction?.amount === aTicket.companyPayout && deduction.companyId === green.id,
+  JSON.stringify(refundPaidInv.data)
+)
+check('the same ticket is not taken back twice', (await call(`/api/bookings/${aTicket._id}/refund`, { method: 'PATCH', cookie: admin })).status === 409 && (await db.collection('payoutRefunds').countDocuments({ bookingId: aTicket._id.toString() })) === 1)
+const greenPay = (await call('/api/company/payouts', { cookie: green.cookie })).data
+const adminPay = (await call('/api/admin/payouts', { cookie: admin })).data.companies.find((c) => c._id === green.id)
+check('the company and the admin both see the refund to take back', greenPay.refunds.some((r) => r.code === aTicket.bookingCode) && adminPay.refunds >= deduction.amount)
+const tripC = await mkPayTrip('16:55')
+for (const seat of ['3A', '3B']) {
+  const b = await call('/api/bookings', { method: 'POST', body: { busId: tripC, seats: [seat], passengerName: 'Next Pay', passengerPhone: payPhone() } })
+  await call(`/api/bookings/${b.data.booking._id}`, { method: 'PATCH', body: { paymentStatus: 'paid' } })
+}
+await db.collection('buses').updateOne({ _id: new ObjectId(tripC) }, { $set: { date: yesterday } })
+await db.collection('bookings').updateMany({ busId: tripC }, { $set: { date: yesterday } })
+const invC = await call('/api/admin/payouts', { method: 'POST', cookie: admin, body: { companyId: green.id, tripId: tripC } })
+const invCFull = (await call(`/api/payouts/${invC.data.invoice._id}?as=admin`, { cookie: admin })).data.invoice
+const linesPayout = invCFull.lines.reduce((n, l) => n + l.payout, 0)
+check(
+  'the next payment takes the refund off: payout = tickets − refunds, and the record checks out',
+  invC.status === 201 && invCFull.deductions.some((d) => d.code === aTicket.bookingCode) && invCFull.totals.refunds >= deduction.amount && invCFull.totals.payout === linesPayout - invCFull.totals.refunds && invCFull.check.contentOk === true,
+  JSON.stringify(invCFull.totals)
+)
+await admPatch(invC.data.invoice._id, { action: 'cancel' })
+check('cancelling that invoice puts the refund back to take later', !(await db.collection('payoutRefunds').findOne({ bookingId: aTicket._id.toString() })).payoutId)
+
+const setAccount = (cookie, body) => call('/api/company/payout-account', { method: 'PATCH', cookie, body })
+check('only the manager sets where to be paid', (await setAccount(counter1, { method: 'bkash', number: '01712345678', name: 'X', password: 'x' })).status === 403)
+check('setting where to be paid needs the company password', (await setAccount(green.cookie, { method: 'bkash', number: '01712345678', name: 'Green Line', password: 'wrong' })).status === 401)
+check('a wrong mobile number is refused', (await setAccount(green.cookie, { method: 'bkash', number: '12345', name: 'Green Line', password: green.password })).status === 400)
+const savedAccount = await setAccount(green.cookie, { method: 'bkash', number: '+880 1712-345678', name: 'Green Line Paribahan', password: green.password })
+await setAccount(green.cookie, { method: 'bank', number: '1234567890123', name: 'Green Line Paribahan', bank: 'DBBL, Motijheel', password: green.password })
+const greenDoc = await db.collection('companies').findOne({ _id: new ObjectId(green.id) })
+const payToShown = (await call(`/api/payouts/${tripInvoiceId}?as=admin`, { cookie: admin })).data.payTo
+const payToCompany = (await call(`/api/payouts/${tripInvoiceId}`, { cookie: green.cookie })).data.payTo
+check(
+  'the manager sets where to be paid; the old details are kept; the admin sees it on the invoice',
+  savedAccount.status === 200 && savedAccount.data.account.number === '01712345678' && greenDoc.payoutAccount.method === 'bank' && greenDoc.payoutAccountHistory?.[0]?.number === '01712345678' && payToShown?.bank === 'DBBL, Motijheel' && payToCompany === null,
+  JSON.stringify(savedAccount.data)
+)
 
 // ---- Ticket codes are unique ----
 const codes = await db.collection('bookings').aggregate([{ $group: { _id: '$bookingCode', n: { $sum: 1 } } }, { $match: { n: { $gt: 1 } } }]).toArray()

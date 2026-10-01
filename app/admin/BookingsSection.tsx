@@ -17,11 +17,13 @@ export default function BookingsSection({
   query,
   onQuery,
   onRefund,
+  onDelete,
 }: {
   bookings: Booking[]
   query: string
   onQuery: (q: string) => void
   onRefund: (id: string) => void
+  onDelete: (b: Booking) => void
 }) {
   const [filter, setFilter] = useState<(typeof FILTERS)[number]['key']>('all')
 
@@ -72,7 +74,7 @@ export default function BookingsSection({
           ))}
         </div>
       </div>
-      <BookingList bookings={visible} onRefund={onRefund} empty={query || filter !== 'all' ? 'No bookings match.' : 'No bookings yet.'} />
+      <BookingList bookings={visible} onRefund={onRefund} onDelete={onDelete} empty={query || filter !== 'all' ? 'No bookings match.' : 'No bookings yet.'} />
     </section>
   )
 }

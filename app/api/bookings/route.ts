@@ -157,7 +157,9 @@ export async function GET(req: NextRequest) {
       const busIds = buses.map((b) => b._id.toString())
       query = { busId: { $in: busIds } }
     }
-    const bookings = await db.collection('bookings').find(query).sort({ createdAt: -1 }).limit(200).toArray()
+    // A bus company sees its tickets, never who bought them: no name, phone or email.
+    const projection = company ? { passengerName: 0, passengerPhone: 0, passengerEmail: 0, phoneKey: 0, qrCode: 0 } : {}
+    const bookings = await db.collection('bookings').find(query, { projection }).sort({ createdAt: -1 }).limit(200).toArray()
     return NextResponse.json({ bookings }, { headers: { 'Cache-Control': 'no-store, max-age=0, must-revalidate' } })
   } catch (err) {
     console.error(err)
