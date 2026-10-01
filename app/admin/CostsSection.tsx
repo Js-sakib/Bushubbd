@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { formatTripDate } from '@/lib/dates'
 import { COST_LABELS, addMoney, taka, type TripCost, type TripMoney } from '@/lib/tripMoney'
 import MoneyCard, { Line } from '../company/MoneyCard'
+import PayoutsPanel from './PayoutsPanel'
 
 interface MoneyTrip {
   _id: string
@@ -34,7 +35,7 @@ function dhakaTime(iso: string) {
  * Every company's trips with their money and costs, for the BusHub admin to watch: ticket money,
  * BusHub's commission, payouts, counter sales, the costs the bus staff entered and what is left.
  */
-export default function CostsSection() {
+function TripsMoney() {
   const [data, setData] = useState<{ companies: { _id: string; name: string }[]; trips: MoneyTrip[] } | null>(null)
   const [companyId, setCompanyId] = useState('')
   const [period, setPeriod] = useState<Period>('all')
@@ -134,6 +135,33 @@ export default function CostsSection() {
         ))}
         {shown.length === 0 && <div className="px-4 py-8 text-center text-sm text-[#8e9a9d]">No trips here.</div>}
       </div>
+    </div>
+  )
+}
+
+/** The admin's Money page: paying the bus companies, and every trip's money and costs. */
+export default function CostsSection() {
+  const [view, setView] = useState<'pay' | 'trips'>('pay')
+  return (
+    <div className="mx-auto flex max-w-3xl flex-col gap-3">
+      <div className="flex gap-1 self-start rounded-full border border-white/10 bg-black/30 p-1">
+        {(
+          [
+            ['pay', 'Pay companies'],
+            ['trips', 'Trips & costs'],
+          ] as const
+        ).map(([id, label]) => (
+          <button
+            key={id}
+            type="button"
+            onClick={() => setView(id)}
+            className={`h-9 rounded-full px-4 text-[12.5px] font-bold ${view === id ? 'bg-gradient-to-r from-[#f2661d] to-[#f5a524] text-[#1a0d03]' : 'text-[#9ba7aa]'}`}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+      {view === 'pay' ? <PayoutsPanel /> : <TripsMoney />}
     </div>
   )
 }

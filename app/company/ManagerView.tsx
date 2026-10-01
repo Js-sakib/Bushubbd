@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react'
 import toast from 'react-hot-toast'
 import { formatTripDate } from '@/lib/dates'
 import MoneyView from './MoneyView'
+import PaymentsPanel, { type PaymentsData } from './PaymentsPanel'
 import type { SaleBooking } from './SalesBreakdown'
 import ScanHistory, { type ScanStats } from './ScanHistory'
 import SeatMap, { type SeatKind } from './SeatMap'
@@ -15,6 +16,7 @@ import { tripCounts, type CompanyTrip } from './types'
 const TABS = [
   ['trips', 'Trips'],
   ['sales', 'Sales'],
+  ['payments', 'Payments'],
   ['scans', 'Scans'],
   ['staff', 'Staff'],
 ] as const
@@ -101,7 +103,7 @@ function TripCard({ trip, open, onToggle, onChanged }: { trip: CompanyTrip; open
           )}
           {(trip.onlineTickets || []).length > 0 && (
             <div className="flex flex-col gap-1.5">
-              <span className="label-xs">Sold on BusHub · BusHub owes {taka(payout)}</span>
+              <span className="label-xs">Sold on BusHub · you get {taka(payout)}</span>
               {trip.onlineTickets!.map((t) => (
                 <div key={t.code} className="flex items-start justify-between gap-3 text-[12.5px]">
                   <span className="min-w-0 truncate">
@@ -136,11 +138,16 @@ export default function ManagerView() {
   const [adding, setAdding] = useState(false)
   const [bookings, setBookings] = useState<SaleBooking[]>([])
   const [stats, setStats] = useState<ScanStats | null>(null)
+  const [payments, setPayments] = useState<PaymentsData | null>(null)
 
   useEffect(() => {
     fetch('/api/bookings?as=company', { cache: 'no-store' })
       .then((r) => r.json())
       .then((d) => setBookings(d.bookings || []))
+      .catch(() => undefined)
+    fetch('/api/company/payouts', { cache: 'no-store' })
+      .then((r) => r.json())
+      .then((d) => d.owed && setPayments(d))
       .catch(() => undefined)
     fetch('/api/scan', { cache: 'no-store' })
       .then((r) => r.json())
@@ -161,8 +168,9 @@ export default function ManagerView() {
     },
     { online: 0, counter: 0 }
   )
-  const paid = bookings.filter((b) => b.paymentStatus === 'paid' && b.status === 'confirmed')
-  const owed = paid.reduce((sum, b) => sum + (b.companyPayout || 0), 0)
+  // Everything BusHub has not paid yet: invoiced or not, trips gone or still to leave.
+  const owed = payments ? payments.owed.payout + payments.invoiced + payments.later.payout : null
+  const toSign = payments?.invoices.filter((i) => i.status === 'paid').length ?? 0
 
   if (!data) return <div className="py-16 text-center text-sm text-[#8e9a9d]">Loading...</div>
 
@@ -182,7 +190,8 @@ export default function ManagerView() {
         </div>
         <div className="flex flex-col gap-1 rounded-[18px] bg-gradient-to-br from-[#c77a0e] to-[#a25f06] p-3.5">
           <span className="text-[11px] font-bold text-[#fae3bc]">BusHub owes</span>
-          <span className="display text-[20px] font-bold leading-tight text-white">{taka(owed)}</span>
+          <span className="display text-[20px] font-bold leading-tight text-white">{owed === null ? '–' : taka(owed)}</span>
+          {toSign > 0 && <span className="text-[10.5px] font-bold text-white">{toSign} to sign</span>}
         </div>
       </div>
 
@@ -246,6 +255,7 @@ export default function ManagerView() {
       )}
 
       {tab === 'sales' && <MoneyView trips={trips} fleet={data.fleet} me={data.me} bookings={bookings} onChanged={reload} />}
+      {tab === 'payments' && <PaymentsPanel data={payments} />}
       {tab === 'scans' && <ScanHistory stats={stats} showScanner />}
       {tab === 'staff' && <StaffPanel />}
     </div>

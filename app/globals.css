@@ -272,6 +272,17 @@ input[type='date']::-webkit-calendar-picker-indicator {
   .no-print {
     display: none !important;
   }
+  /* Payout invoices print as the white sheet they are on screen, one trip never split. */
+  .invoice-paper {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    padding: 0 !important;
+  }
+  .invoice-trip {
+    break-inside: avoid;
+  }
   /* Browsers drop background colours when printing unless told otherwise, which would leave
      the ticket's white bus name on white paper. Print it as designed, minus the screen-only
      shadow, and turn the notches into paper-coloured cut-outs. */

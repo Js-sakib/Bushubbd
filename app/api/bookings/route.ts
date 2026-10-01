@@ -122,9 +122,9 @@ export async function POST(req: NextRequest) {
       booking.qrCode = await generateTicketQRCode(getVerifyUrl(booking.bookingCode))
       try {
         const result = await db.collection('bookings').insertOne({ ...booking } as any)
-        // Two bookings from one number at the same moment could both pass the check above;
-        // counted again now that this one is saved, the one that went over is undone.
-        const lateProblem = await purchaseLimitError(db, buyer, busId, seats.length, true)
+        // Bookings from one number at the same moment could all pass the check above; counted
+        // again now that this one is saved (with the ones saved before it), any past the limit is undone.
+        const lateProblem = await purchaseLimitError(db, buyer, busId, seats.length, result.insertedId)
         if (lateProblem) {
           await db.collection('bookings').deleteOne({ _id: result.insertedId })
           await releaseSeats(db, busId, seats)

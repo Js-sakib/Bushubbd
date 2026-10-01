@@ -4,7 +4,7 @@ import { usePathname } from 'next/navigation'
 import Logo from './BrandLogo'
 import LivePurchases from './LivePurchases'
 
-const BARE_ROUTES = ['/admin', '/company', '/verify']
+const BARE_ROUTES = ['/admin', '/company', '/verify', '/invoice']
 
 /**
  * Soft colour glows fixed behind every page, the same as the admin dashboard's, so the glass

@@ -11,7 +11,8 @@ export const fetchCache = 'force-no-store'
 /**
  * Refunds a paid ticket and puts its seats back on sale. Admin only: bus companies ask the
  * BusHub team. The status change is one conditional update, so the same ticket can't be
- * refunded twice, and a passenger who has already boarded keeps their seat.
+ * refunded twice, a passenger who has already boarded keeps their seat, and a ticket already in
+ * a payout invoice to the bus company stays paid out.
  */
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
   try {
@@ -27,7 +28,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     const result = await db
       .collection('bookings')
       .updateOne(
-        { ...query, paymentStatus: 'paid', status: 'confirmed', checkedIn: { $ne: true } },
+        { ...query, paymentStatus: 'paid', status: 'confirmed', checkedIn: { $ne: true }, payoutId: { $exists: false } },
         { $set: { status: 'refunded', refundedAt } }
       )
     const booking = await db.collection('bookings').findOne(query)
@@ -37,6 +38,8 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     if (result.modifiedCount === 0) {
       const error = booking.checkedIn
         ? 'This passenger has already boarded, so the ticket cannot be refunded'
+        : booking.payoutId
+          ? 'This ticket is already in a payout invoice to the bus company, so it cannot be refunded here'
         : booking.status === 'refunded'
           ? 'This ticket is already refunded'
           : 'Only a paid, confirmed booking can be refunded'
