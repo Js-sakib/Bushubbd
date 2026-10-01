@@ -4,7 +4,7 @@ import { connectToDatabase } from '@/lib/db'
 import { getAdminFromCookies } from '@/lib/auth'
 import { getCompanyUser } from '@/lib/staff'
 import { repairWronglyExpiredTickets } from '@/lib/seatHold'
-import { ScanResult, extractBookingCode, judgeTicket, lastDhakaDays, startOfDhakaDay, summarizeScans } from '@/lib/scan'
+import { ScanResult, extractBookingCode, judgeTicket, lastDhakaDays, scansByScanner, startOfDhakaDay, summarizeScans } from '@/lib/scan'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -156,6 +156,8 @@ export async function GET() {
     return NextResponse.json(
       {
         ...summarizeScans(scans as any),
+        // Who scanned what, for the manager; scans from before staff logins were made by the main login.
+        ...(user?.role === 'scanner' ? {} : { byScanner: scansByScanner(scans as any, 'Main login (old scans)') }),
         recent: scans.slice(0, 50).map((s) => ({
           id: s._id.toString(),
           bookingCode: s.bookingCode,

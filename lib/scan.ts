@@ -109,3 +109,37 @@ export function summarizeScans(
   )
   return { today: byDay[byDay.length - 1], week, days: [...byDay].reverse() }
 }
+
+export interface ScannerCount {
+  name: string
+  today: Omit<DayCount, 'date'>
+  week: Omit<DayCount, 'date'>
+}
+
+/** The same counts split by who scanned, busiest scanner first. */
+export function scansByScanner(
+  scans: { scannedAt: string; result: string; seatCount?: number; scannerId?: string; scannerName?: string }[],
+  fallbackName: string,
+  now: Date = new Date()
+): ScannerCount[] {
+  const today = dhakaDate(now)
+  const map = new Map<string, ScannerCount>()
+  for (const scan of scans) {
+    const key = scan.scannerId || ''
+    let row = map.get(key)
+    if (!row) {
+      row = { name: scan.scannerName || fallbackName, today: { tickets: 0, passengers: 0, rejected: 0 }, week: { tickets: 0, passengers: 0, rejected: 0 } }
+      map.set(key, row)
+    }
+    const buckets = dhakaDate(new Date(scan.scannedAt)) === today ? [row.today, row.week] : [row.week]
+    for (const b of buckets) {
+      if (scan.result === 'valid') {
+        b.tickets += 1
+        b.passengers += scan.seatCount || 0
+      } else {
+        b.rejected += 1
+      }
+    }
+  }
+  return Array.from(map.values()).sort((a, b) => b.week.passengers - a.week.passengers || b.week.rejected - a.week.rejected)
+}

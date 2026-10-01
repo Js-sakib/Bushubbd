@@ -7,6 +7,7 @@ import SalesBreakdown, { type SaleBooking } from './SalesBreakdown'
 import ScanHistory, { type ScanStats } from './ScanHistory'
 import SeatMap, { type SeatKind } from './SeatMap'
 import StaffPanel from './StaffPanel'
+import StaffSales from './StaffSales'
 import TripForm from './TripForm'
 import { changeSeat, useTrips } from './useTrips'
 import { tripCounts, type CompanyTrip } from './types'
@@ -244,7 +245,13 @@ export default function ManagerView() {
         </div>
       )}
 
-      {tab === 'sales' && <SalesBreakdown bookings={bookings} />}
+      {tab === 'sales' && (
+        <div className="flex flex-col gap-3">
+          <StaffSales trips={trips} />
+          <span className="label-xs mt-2 px-1">Sold on BusHub · what BusHub owes</span>
+          <SalesBreakdown bookings={bookings} />
+        </div>
+      )}
       {tab === 'scans' && <ScanHistory stats={stats} showScanner />}
       {tab === 'staff' && <StaffPanel />}
     </div>
