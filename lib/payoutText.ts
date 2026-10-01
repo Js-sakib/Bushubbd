@@ -37,4 +37,15 @@ export interface InvoiceSummaryView {
   payment: { method: PayMethod; reference: string; note: string; amount: number; at: string } | null
   confirmation: { signedBy: string; at: string } | null
   dispute: { note: string; by: string; at: string } | null
+  /** The company checked the tickets and amounts before payment. */
+  approval: { by: string; at: string } | null
+}
+
+/** The status in words, including the company's approval while BusHub has not paid yet. */
+export function statusOf(inv: Pick<InvoiceSummaryView, 'status' | 'approval'>) {
+  if (inv.status === 'unpaid' && inv.approval) {
+    return { label: 'Approved · waiting for BusHub to pay', dark: 'bg-[#a78bfa]/[0.16] text-[#c4b5fd]', light: 'bg-violet-100 text-violet-800' }
+  }
+  if (inv.status === 'unpaid') return { ...STATUS_TEXT.unpaid, label: 'Waiting for the company to approve' }
+  return STATUS_TEXT[inv.status]
 }

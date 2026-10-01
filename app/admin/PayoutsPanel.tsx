@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import toast from 'react-hot-toast'
 import { formatTripDate } from '@/lib/dates'
-import { STATUS_TEXT, type InvoiceSummaryView, type PayoutTotalsView } from '@/lib/payoutText'
+import { statusOf, type InvoiceSummaryView, type PayoutTotalsView } from '@/lib/payoutText'
 import { taka } from '@/lib/tripMoney'
 
 interface CompanyOwed {
@@ -110,7 +110,7 @@ export default function PayoutsPanel() {
               <span className="text-[11.5px] text-[#9ba7aa]">
                 {range(i.from, i.to)} · {i.totals.tickets} tickets
               </span>
-              <span className={`self-start rounded-full px-2 py-0.5 text-[10.5px] font-bold ${STATUS_TEXT[i.status].dark}`}>{STATUS_TEXT[i.status].label}</span>
+              <span className={`self-start rounded-full px-2 py-0.5 text-[10.5px] font-bold ${statusOf(i).dark}`}>{statusOf(i).label}</span>
             </div>
             <div className="flex shrink-0 flex-col items-end">
               <span className="text-[14px] font-bold">{taka(i.totals.payout)}</span>

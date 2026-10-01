@@ -6,7 +6,7 @@ import toast from 'react-hot-toast'
 import { LogoMark } from '../../BrandLogo'
 import PasswordInput from '../../PasswordInput'
 import { formatTripDate } from '@/lib/dates'
-import { PAY_METHODS, PAY_METHOD_LABELS, STATUS_TEXT, type InvoiceSummaryView, type PayMethod } from '@/lib/payoutText'
+import { PAY_METHODS, PAY_METHOD_LABELS, statusOf, type InvoiceSummaryView, type PayMethod } from '@/lib/payoutText'
 import { taka } from '@/lib/tripMoney'
 
 interface Line {
@@ -74,7 +74,7 @@ function Row({ label, value, strong = false }: { label: string; value: string; s
   return (
     <div className="flex items-baseline justify-between gap-3">
       <span className={strong ? 'font-bold text-[#16191a]' : 'text-[#5b6668]'}>{label}</span>
-      <span className={strong ? 'text-[18px] font-extrabold text-[#16191a]' : 'font-semibold text-[#16191a]'}>{value}</span>
+      <span className={`shrink-0 whitespace-nowrap ${strong ? 'text-[18px] font-extrabold text-[#16191a]' : 'font-semibold text-[#16191a]'}`}>{value}</span>
     </div>
   )
 }
@@ -158,6 +158,13 @@ function AdminActions({ inv, onDone }: { inv: Invoice; onDone: () => void }) {
       {toPay && !editing ? (
         <>
           <span className="display text-[16px] font-bold">Pay {taka(inv.totals.payout)} to {inv.companyName}</span>
+          {inv.approval ? (
+            <span className="text-[12.5px] font-semibold text-[#c4b5fd]">
+              ✓ Approved by the company ({inv.approval.by}, {dhakaDateTime(inv.approval.at)})
+            </span>
+          ) : inv.status === 'unpaid' ? (
+            <span className="text-[12.5px] text-[#fbbf24]">The company has not approved this invoice yet.</span>
+          ) : null}
           <p className="text-[12.5px] text-[#9ba7aa]">
             Send the money first, then write down how you sent it and the reference (bKash TrxID, bank reference). Cash needs no reference. The company then
             checks it and signs.
@@ -166,12 +173,16 @@ function AdminActions({ inv, onDone }: { inv: Invoice; onDone: () => void }) {
           <button
             type="button"
             disabled={busy || !ready}
-            onClick={() => confirm(`Record ${taka(inv.totals.payout)} paid to ${inv.companyName} ${says}?`) && send({ action: 'paid', method, reference: reference.trim(), note }, 'Payment recorded')}
+            onClick={() =>
+              confirm(
+                `${inv.approval ? '' : 'The company has not approved this invoice yet.\n\n'}Record ${taka(inv.totals.payout)} paid to ${inv.companyName} ${says}?`
+              ) && send({ action: 'paid', method, reference: reference.trim(), note }, 'Payment recorded')
+            }
             className="glass-btn h-12"
           >
             {busy ? 'Saving…' : `I paid ${taka(inv.totals.payout)}`}
           </button>
-          {inv.status === 'unpaid' && (
+          {(inv.status === 'unpaid' || (inv.status === 'disputed' && !inv.payment)) && (
             <button
               type="button"
               disabled={busy}
@@ -249,10 +260,53 @@ function CompanyActions({ inv, onDone }: { inv: Invoice; onDone: () => void }) {
     setPassword('')
     onDone()
   }
+  if (inv.status === 'unpaid' && inv.approval) {
+    return (
+      <p className="no-print rounded-2xl border border-[#a78bfa]/30 bg-[#a78bfa]/[0.08] px-4 py-3 text-[12.5px] text-[#ddd6fe]">
+        ✓ You approved this invoice ({inv.approval.by}, {dhakaDateTime(inv.approval.at)}). BusHub will now pay {taka(inv.totals.payout)}; then come back and tap Done.
+      </p>
+    )
+  }
+  if (inv.status === 'unpaid') {
+    return (
+      <div className="no-print glass flex flex-col gap-3 p-4">
+        <span className="display text-[16px] font-bold">Review and approve</span>
+        <p className="text-[12.5px] leading-relaxed text-[#9ba7aa]">
+          Check the tickets below: {inv.totals.tickets} tickets, {inv.totals.seats} seats, original price {taka(inv.totals.ticketTotal)}, BusHub commission{' '}
+          {taka(inv.totals.commission)}. If everything is right, approve it and BusHub pays you <b className="text-white">{taka(inv.totals.payout)}</b>.
+        </p>
+        {problem === null ? (
+          <>
+            <button
+              type="button"
+              disabled={busy}
+              onClick={() => confirm(`Approve ${inv.number}: BusHub pays you ${taka(inv.totals.payout)}?`) && send({ action: 'approve' }, 'Approved. BusHub will pay you.')}
+              className="glass-btn h-12"
+            >
+              {busy ? 'Saving…' : `Approve · ${taka(inv.totals.payout)}`}
+            </button>
+            <button type="button" onClick={() => setProblem('')} className="text-[12.5px] font-semibold text-[#f87171]">
+              Something is wrong?
+            </button>
+          </>
+        ) : (
+          <>
+            <textarea value={problem} onChange={(e) => setProblem(e.target.value.slice(0, 300))} rows={3} placeholder="What is wrong? e.g. Ticket BH-… is missing" className="input-dark h-auto py-3" aria-label="What is wrong" />
+            <button type="button" disabled={busy || problem.trim().length < 5} onClick={() => send({ action: 'dispute', note: problem }, 'Sent to BusHub')} className="glass-btn h-12">
+              Report the problem to BusHub
+            </button>
+            <button type="button" onClick={() => setProblem(null)} className="text-[12.5px] font-semibold text-[#9ba7aa]">
+              Back
+            </button>
+          </>
+        )}
+      </div>
+    )
+  }
   if (inv.status !== 'paid' || !inv.payment) return null
   return (
     <div className="no-print glass flex flex-col gap-3 p-4">
-      <span className="display text-[16px] font-bold">Check and sign</span>
+      <span className="display text-[16px] font-bold">Money arrived? Tap Done</span>
       <p className="text-[12.5px] leading-relaxed text-[#9ba7aa]">
         {inv.payment.method === 'cash' ? (
           <>
@@ -276,7 +330,7 @@ function CompanyActions({ inv, onDone }: { inv: Invoice; onDone: () => void }) {
             I checked the tickets on this invoice and received {taka(inv.payment.amount)}.
           </label>
           <button type="button" disabled={busy || !checked || name.trim().length < 3 || !password} onClick={() => send({ action: 'confirm', signedBy: name, password }, 'Signed. Thank you!')} className="glass-btn h-12">
-            {busy ? 'Signing…' : 'Sign: money received'}
+            {busy ? 'Signing…' : 'Done: money received'}
           </button>
           <button type="button" onClick={() => setProblem('')} className="text-[12.5px] font-semibold text-[#f87171]">
             Money not received, or something is wrong?
@@ -326,7 +380,7 @@ function InvoiceView() {
   if (error) return <p className="glass-lite mx-auto mt-10 max-w-md p-6 text-center text-sm text-[#c4cdcf]">{error}</p>
   if (!inv) return <div className="py-16 text-center text-sm text-[#8e9a9d]">Loading...</div>
 
-  const status = STATUS_TEXT[inv.status]
+  const status = statusOf(inv)
   const back = viewer === 'admin' ? '/admin' : '/company'
 
   return (
@@ -474,6 +528,11 @@ function InvoiceView() {
               </>
             ) : (
               <span className="text-[#5b6668]">Not paid yet</span>
+            )}
+            {inv.approval && (
+              <span className="text-[11.5px] text-[#5b6668]">
+                Tickets approved by the company: {inv.approval.by}, {dhakaDateTime(inv.approval.at)}
+              </span>
             )}
           </div>
           <div className="flex flex-col gap-1 sm:items-end sm:text-right">

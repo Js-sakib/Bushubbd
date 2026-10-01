@@ -1,7 +1,7 @@
 'use client'
 
 import { formatTripDate } from '@/lib/dates'
-import { STATUS_TEXT, type InvoiceSummaryView, type PayoutTotalsView } from '@/lib/payoutText'
+import { statusOf, type InvoiceSummaryView, type PayoutTotalsView } from '@/lib/payoutText'
 import { taka } from '@/lib/tripMoney'
 
 export interface PaymentsData {
@@ -21,6 +21,7 @@ const range = (from: string, to: string) => (from === to ? formatTripDate(from) 
 export default function PaymentsPanel({ data }: { data: PaymentsData | null }) {
   if (!data) return <div className="py-16 text-center text-sm text-[#8e9a9d]">Loading...</div>
   const toSign = data.invoices.filter((i) => i.status === 'paid')
+  const toApprove = data.invoices.filter((i) => i.status === 'unpaid' && !i.approval)
   const received = data.invoices.filter((i) => i.status === 'confirmed').reduce((n, i) => n + i.totals.payout, 0)
   const refunds = data.refunds.reduce((n, r) => n + r.amount, 0)
 
@@ -29,9 +30,17 @@ export default function PaymentsPanel({ data }: { data: PaymentsData | null }) {
       {toSign.length > 0 && (
         <a href={`/invoice/${toSign[0]._id}`} className="flex items-center gap-3 rounded-2xl border border-[#60a5fa]/40 bg-[#60a5fa]/[0.1] px-4 py-3">
           <span className="grow text-[13px] font-semibold text-[#bfdbfe]">
-            BusHub paid {taka(toSign[0].totals.payout)}. Check the money arrived and sign.
+            BusHub paid {taka(toSign[0].totals.payout)}. Check the money arrived and tap Done.
           </span>
           <span className="text-[12.5px] font-bold text-[#93c5fd]">Open ›</span>
+        </a>
+      )}
+      {toApprove.length > 0 && (
+        <a href={`/invoice/${toApprove[0]._id}`} className="flex items-center gap-3 rounded-2xl border border-[#f5a524]/40 bg-[#f5a524]/[0.08] px-4 py-3">
+          <span className="grow text-[13px] font-semibold text-[#fde68a]">
+            {toApprove.length === 1 ? `Invoice ${toApprove[0].number} (${taka(toApprove[0].totals.payout)}) needs your approval.` : `${toApprove.length} invoices need your approval.`}
+          </span>
+          <span className="text-[12.5px] font-bold text-[#fbbf24]">Review ›</span>
         </a>
       )}
 
@@ -40,9 +49,13 @@ export default function PaymentsPanel({ data }: { data: PaymentsData | null }) {
         <div className="flex items-start justify-between gap-3">
           <div className="flex flex-col">
             <span className="text-[13.5px] font-bold">For trips that have left</span>
-            <span className="text-[11.5px] text-[#78868a]">
-              {data.owed.tickets} tickets · {data.owed.seats} seats · price {taka(data.owed.ticketTotal)} · commission {taka(data.owed.commission)}
-            </span>
+            {data.owed.tickets > 0 && (
+              <span className="text-[11.5px] text-[#78868a]">
+                Not invoiced yet: {data.owed.tickets} tickets · {data.owed.seats} seats · {taka(data.owed.payout)}
+              </span>
+            )}
+            {data.invoiced > 0 && <span className="text-[11.5px] text-[#78868a]">On invoices waiting for payment: {taka(data.invoiced)}</span>}
+            {data.owed.tickets === 0 && data.invoiced === 0 && <span className="text-[11.5px] text-[#78868a]">Nothing waiting</span>}
           </div>
           <span className="shrink-0 text-[17px] font-bold text-[#f5a524]">{taka(data.owed.payout + data.invoiced)}</span>
         </div>
@@ -79,11 +92,17 @@ export default function PaymentsPanel({ data }: { data: PaymentsData | null }) {
               <span className="text-[11.5px] text-[#9ba7aa]">
                 {range(i.from, i.to)} · {i.totals.tickets} tickets · {i.totals.seats} seats
               </span>
-              <span className={`self-start rounded-full px-2 py-0.5 text-[10.5px] font-bold ${STATUS_TEXT[i.status].dark}`}>{STATUS_TEXT[i.status].label}</span>
+              <span className={`self-start rounded-full px-2 py-0.5 text-[10.5px] font-bold ${statusOf(i).dark}`}>{statusOf(i).label}</span>
             </div>
-            <div className="flex shrink-0 flex-col items-end">
+            <div className="flex shrink-0 flex-col items-end gap-1.5">
               <span className="text-[14px] font-bold">{taka(i.totals.payout)}</span>
-              <span className="text-[10.5px] text-[#f5a524]">Open ›</span>
+              {i.status === 'unpaid' && !i.approval ? (
+                <span className="rounded-full bg-gradient-to-r from-[#f2661d] to-[#f5a524] px-3 py-1 text-[11.5px] font-bold text-[#1a0d03]">Review & approve</span>
+              ) : i.status === 'paid' ? (
+                <span className="rounded-full bg-[#60a5fa] px-3 py-1 text-[11.5px] font-bold text-[#0b1a33]">Done ›</span>
+              ) : (
+                <span className="text-[10.5px] text-[#f5a524]">Open ›</span>
+              )}
             </div>
           </a>
         ))}

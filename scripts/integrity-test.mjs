@@ -593,6 +593,38 @@ check(
 await admPatch(invC.data.invoice._id, { action: 'cancel' })
 check('cancelling that invoice puts the refund back to take later', !(await db.collection('payoutRefunds').findOne({ bookingId: aTicket._id.toString() })).payoutId)
 
+// ---- The company reviews and approves an invoice before BusHub pays ----
+const approveTrip = await mkPayTrip('20:40')
+for (const seat of ['4A', '4B']) {
+  const b = await call('/api/bookings', { method: 'POST', body: { busId: approveTrip, seats: [seat], passengerName: 'Approve Me', passengerPhone: payPhone() } })
+  await call(`/api/bookings/${b.data.booking._id}`, { method: 'PATCH', body: { paymentStatus: 'paid' } })
+}
+await db.collection('buses').updateOne({ _id: new ObjectId(approveTrip) }, { $set: { date: yesterday } })
+await db.collection('bookings').updateMany({ busId: approveTrip }, { $set: { date: yesterday } })
+const invD = await call('/api/admin/payouts', { method: 'POST', cookie: admin, body: { companyId: green.id, tripId: approveTrip } })
+const invDId = invD.data.invoice._id
+const coPatch = (cookie, body) => call(`/api/company/payouts/${invDId}`, { method: 'PATCH', cookie, body })
+check('only the manager approves invoices', (await coPatch(counter1, { action: 'approve' })).status === 403 && (await coPatch(hanif.cookie, { action: 'approve' })).status === 404)
+const approved = await coPatch(green.cookie, { action: 'approve' })
+check('the company approves the invoice before payment', approved.status === 200 && approved.data.invoice.status === 'unpaid' && approved.data.invoice.approval?.by)
+check('an invoice is approved once', (await coPatch(green.cookie, { action: 'approve' })).status === 409)
+const invDFull = (await call(`/api/payouts/${invDId}?as=admin`, { cookie: admin })).data.invoice
+check('the admin sees the approval, and it does not change the signed record', invDFull.approval?.by && invDFull.history.some((h) => /approved by the company/.test(h.event)) && invDFull.check.contentOk === true)
+const paidD = await call(`/api/admin/payouts/${invDId}`, { method: 'PATCH', cookie: admin, body: { action: 'paid', method: 'bkash', reference: 'BKAPPROVE1' } })
+const doneD = await sign(green.cookie, green.password, invDId)
+check('after approval: BusHub pays, the company taps Done', paidD.status === 200 && doneD.status === 200 && doneD.data.invoice.status === 'confirmed')
+const approveTrip2 = await mkPayTrip('21:55')
+{
+  const b = await call('/api/bookings', { method: 'POST', body: { busId: approveTrip2, seats: ['6A'], passengerName: 'Question Me', passengerPhone: payPhone() } })
+  await call(`/api/bookings/${b.data.booking._id}`, { method: 'PATCH', body: { paymentStatus: 'paid' } })
+}
+await db.collection('buses').updateOne({ _id: new ObjectId(approveTrip2) }, { $set: { date: yesterday } })
+await db.collection('bookings').updateMany({ busId: approveTrip2 }, { $set: { date: yesterday } })
+const invE = await call('/api/admin/payouts', { method: 'POST', cookie: admin, body: { companyId: green.id, tripId: approveTrip2 } })
+const disputedE = await call(`/api/company/payouts/${invE.data.invoice._id}`, { method: 'PATCH', cookie: green.cookie, body: { action: 'dispute', note: 'A ticket is missing from this list' } })
+const cancelE = await call(`/api/admin/payouts/${invE.data.invoice._id}`, { method: 'PATCH', cookie: admin, body: { action: 'cancel' } })
+check('the company can question an invoice before payment, and the admin can then cancel it', disputedE.status === 200 && disputedE.data.invoice.status === 'disputed' && cancelE.status === 200)
+
 
 // ---- Ticket codes are unique ----
 const codes = await db.collection('bookings').aggregate([{ $group: { _id: '$bookingCode', n: { $sum: 1 } } }, { $match: { n: { $gt: 1 } } }]).toArray()

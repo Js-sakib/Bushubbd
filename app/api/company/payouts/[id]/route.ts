@@ -12,9 +12,9 @@ const MAX_TRIES = 5
 const WAIT_MINUTES = 15
 
 /**
- * The company manager signs off a paid invoice ("I received this money"), typing their name and
- * the company password, or reports a problem with it. Only the manager, only their own invoice,
- * and only once BusHub has recorded the payment.
+ * The company manager's steps on an invoice: approve its tickets and amounts before BusHub pays,
+ * report a problem (before or after payment), and once paid sign it off ("Done: money received")
+ * with their name and the company password. Only the manager, only their own invoice.
  */
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
   try {
@@ -60,14 +60,21 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
         { $set: { status: 'confirmed', confirmation, signFails: 0 }, $push: { history: { at, by: signedBy, event: 'Received and signed by the company' } } } as any
       )
       if (result.modifiedCount === 0) return NextResponse.json({ error: 'This invoice changed. Reload and try again.' }, { status: 409 })
+    } else if (body.action === 'approve') {
+      // The company checked the tickets and amounts before BusHub pays.
+      const result = await db.collection('payouts').updateOne(
+        { _id, status: 'unpaid', approval: { $exists: false } },
+        { $set: { approval: { by: user.name, at } }, $push: { history: { at, by: user.name, event: 'Tickets and amounts approved by the company' } } } as any
+      )
+      if (result.modifiedCount === 0) return NextResponse.json({ error: 'This invoice is already approved or paid' }, { status: 409 })
     } else if (body.action === 'dispute') {
       const note = String(body.note || '').replace(/\s+/g, ' ').trim().slice(0, 300)
       if (note.length < 5) return NextResponse.json({ error: 'Write what is wrong' }, { status: 400 })
       const result = await db.collection('payouts').updateOne(
-        { _id, status: 'paid' },
+        { _id, status: { $in: ['unpaid', 'paid'] } },
         { $set: { status: 'disputed', dispute: { note, by: user.name, at } }, $push: { history: { at, by: user.name, event: `Problem reported: ${note}` } } } as any
       )
-      if (result.modifiedCount === 0) return NextResponse.json({ error: 'Only a paid invoice can be questioned' }, { status: 409 })
+      if (result.modifiedCount === 0) return NextResponse.json({ error: 'This invoice can no longer be questioned' }, { status: 409 })
     } else {
       return NextResponse.json({ error: 'Nothing to change' }, { status: 400 })
     }
