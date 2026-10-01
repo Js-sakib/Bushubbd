@@ -390,6 +390,59 @@ const afterOff = await call('/api/company/trips', { cookie: counter2 })
 const loginOff = await call('/api/company/login', { method: 'POST', body: { email: c2.data.staff.email, password: c2.data.password } })
 check('a switched-off login stops working at once and cannot sign in', afterOff.status === 401 && loginOff.status === 403, `${afterOff.status} ${loginOff.status}`)
 
+// ---- Trip costs: bus staff and the manager enter them; the money adds up ----
+const addCost = (cookie, tripId, type, amount, note = '') => call('/api/company/costs', { method: 'POST', cookie, body: { tripId, type, amount, note } })
+const fuel = await addCost(green.scan, ct, 'fuel', 3500, 'Meghna pump')
+check('bus staff (scanner) add a fuel cost to their trip', fuel.status === 201 && fuel.data.cost.amount === 3500 && fuel.data.cost.addedBy === `Green Line ${run} gate`, JSON.stringify(fuel.data))
+const road = await addCost(green.cookie, ct, 'road', 800)
+check('the manager adds a road cost', road.status === 201)
+check('a counter login cannot add costs', (await addCost(counter1, ct, 'toll', 100)).status === 403)
+check("another company's bus staff cannot add costs to this trip", (await addCost(hanif.scan, ct, 'toll', 100)).status === 404)
+const badCosts = await Promise.all([addCost(green.scan, ct, 'fuel', -5), addCost(green.scan, ct, 'fuel', 12.5), addCost(green.scan, ct, 'fuel', 'abc'), addCost(green.scan, ct, 'fuel', 600000), addCost(green.scan, ct, 'party', 100)])
+check('wrong amounts and cost types are refused', badCosts.every((r) => r.status === 400), badCosts.map((r) => r.status).join(','))
+const laterDate = new Date(Date.now() + 6 * 3600e3 + 5 * 86400e3).toISOString().slice(0, 10)
+const laterTrip = await call('/api/company/trips', { method: 'POST', cookie: green.cookie, body: { fleetId: fleetBus._id, from: 'Dhaka', to: 'Sylhet', date: laterDate, departureTime: '09:10', price: 700 } })
+check('bus staff can only add costs for yesterday, today and tomorrow', (await addCost(green.scan, laterTrip.data.bus._id, 'fuel', 100)).status === 403)
+check('the manager can add costs to any of the company trips', (await addCost(green.cookie, laterTrip.data.bus._id, 'toll', 250)).status === 201)
+const staffCosts = (await call('/api/company/costs', { cookie: green.scan })).data
+const hanifCosts = (await call('/api/company/costs', { cookie: hanif.scan })).data
+check(
+  'bus staff see their own trips and costs, never another company',
+  staffCosts.trips.some((t) => t._id === ct) && staffCosts.costs.some((c) => c._id === fuel.data.cost._id) && !hanifCosts.trips.some((t) => t._id === ct) && !hanifCosts.costs.some((c) => c.busId === ct)
+)
+const typo = await addCost(green.scan, ct, 'toll', 9999)
+check('bus staff can take back their own cost straight away', (await call(`/api/company/costs/${typo.data.cost._id}`, { method: 'DELETE', cookie: green.scan })).status === 200)
+check("bus staff cannot remove the manager's cost", (await call(`/api/company/costs/${road.data.cost._id}`, { method: 'DELETE', cookie: green.scan })).status === 403)
+const oldCost = await addCost(green.scan, ct, 'toll', 120)
+await db.collection('tripCosts').updateOne({ _id: new ObjectId(oldCost.data.cost._id) }, { $set: { createdAt: new Date(Date.now() - 2 * 3600e3).toISOString() } })
+check('after an hour only the manager can remove a cost', (await call(`/api/company/costs/${oldCost.data.cost._id}`, { method: 'DELETE', cookie: green.scan })).status === 403)
+check("another company's manager cannot remove it", (await call(`/api/company/costs/${oldCost.data.cost._id}`, { method: 'DELETE', cookie: hanif.cookie })).status === 404)
+check('the manager can remove any cost', (await call(`/api/company/costs/${oldCost.data.cost._id}`, { method: 'DELETE', cookie: green.cookie })).status === 200)
+const withCosts = (await call('/api/company/trips', { cookie: green.cookie })).data.trips.find((t) => t._id === ct)
+check(
+  'the manager sees the costs and what each BusHub passenger paid',
+  withCosts.costs.map((c) => c.amount).sort().join(',') === '3500,800' && withCosts.onlineTickets.every((t) => t.total > 0 && t.payout > 0 && t.payout <= t.total),
+  JSON.stringify(withCosts.costs)
+)
+check('only the admin can see every company\'s trip money', (await call('/api/admin/trip-money', { cookie: green.cookie })).status === 401)
+const adminMoney = (await call('/api/admin/trip-money', { cookie: admin })).data.trips.find((t) => t._id === ct)
+const tripDoc = await db.collection('buses').findOne({ _id: new ObjectId(ct) })
+const paidHere = await db.collection('bookings').find({ busId: ct, status: 'confirmed', paymentStatus: 'paid' }).toArray()
+const m = adminMoney.money
+const paidTotal = paidHere.reduce((n, b) => n + b.totalPrice, 0)
+const paidPayout = paidHere.reduce((n, b) => n + b.companyPayout, 0)
+check(
+  'trip money adds up: counter at full price, BusHub total = fee + payout, left = counter + payout − costs',
+  m.counter.total === (tripDoc.blockedSeats || []).length * 700 &&
+    m.online.total === paidTotal &&
+    m.online.payout === paidPayout &&
+    m.online.fee === paidTotal - paidPayout &&
+    m.costs.total === 4300 && m.costs.fuel === 3500 && m.costs.road === 800 &&
+    m.left === m.counter.total + paidPayout - 4300 &&
+    m.seats.notSold === tripDoc.totalSeats - (tripDoc.blockedSeats || []).length - paidHere.reduce((n, b) => n + b.seats.length, 0),
+  JSON.stringify(m)
+)
+
 // ---- Ticket codes are unique ----
 const codes = await db.collection('bookings').aggregate([{ $group: { _id: '$bookingCode', n: { $sum: 1 } } }, { $match: { n: { $gt: 1 } } }]).toArray()
 check('no two tickets share a code', codes.length === 0, JSON.stringify(codes))

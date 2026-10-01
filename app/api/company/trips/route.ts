@@ -4,6 +4,7 @@ import { getPlaces } from '@/lib/places'
 import { dhakaDate, startOfDhakaDay } from '@/lib/scan'
 import { getCompanyUser } from '@/lib/staff'
 import { createTrip } from '@/lib/tripCreate'
+import { costsForTrips } from '@/lib/tripCosts'
 import { tripDeparted } from '@/lib/trips'
 
 export const dynamic = 'force-dynamic'
@@ -15,7 +16,7 @@ const HISTORY_DAYS = 30
 /**
  * The company's trips with every seat accounted for: sold on BusHub, being bought on BusHub right
  * now (a 10-minute hold), or sold at the counter and by whom. The manager also gets the BusHub
- * passengers and payout per trip, and trips from the last month; the counter only trips to come.
+ * passengers, payout and costs per trip, and trips from the last month; the counter only trips to come.
  */
 export async function GET() {
   try {
@@ -43,10 +44,11 @@ export async function GET() {
       db
         .collection('bookings')
         .find({ busId: { $in: ids }, status: { $in: ['pending', 'confirmed'] } })
-        .project({ busId: 1, seats: 1, status: 1, paymentStatus: 1, passengerName: 1, bookingCode: 1, companyPayout: 1, holdExpiresAt: 1, checkedIn: 1 })
+        .project({ busId: 1, seats: 1, status: 1, paymentStatus: 1, passengerName: 1, bookingCode: 1, totalPrice: 1, companyPayout: 1, holdExpiresAt: 1, checkedIn: 1 })
         .toArray(),
       db.collection('counterSales').find({ busId: { $in: ids } }).toArray(),
     ])
+    const costs = manager ? await costsForTrips(db, ids) : []
     const now = new Date().toISOString()
 
     return NextResponse.json(
@@ -86,9 +88,11 @@ export async function GET() {
                     code: b.bookingCode,
                     passengerName: b.passengerName,
                     seats: b.seats || [],
+                    total: b.totalPrice || 0,
                     payout: b.companyPayout || 0,
                     boarded: Boolean(b.checkedIn),
                   })),
+                  costs: costs.filter((c) => c.busId === id),
                 }
               : {}),
           }

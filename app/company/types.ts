@@ -1,4 +1,5 @@
 import type { StaffRole } from '@/lib/auth'
+import { tripMoney, type TripCost } from '@/lib/tripMoney'
 
 export interface Me {
   companyId: string
@@ -20,6 +21,9 @@ export interface OnlineTicket {
   code: string
   passengerName: string
   seats: string[]
+  /** What the passenger paid. */
+  total: number
+  /** What BusHub pays the company for it. */
   payout: number
   boarded: boolean
 }
@@ -43,6 +47,8 @@ export interface CompanyTrip {
   counterSeats: CounterSeat[]
   /** Manager only. */
   onlineTickets?: OnlineTicket[]
+  /** Manager only. */
+  costs?: TripCost[]
 }
 
 export interface FleetOption {
@@ -65,4 +71,16 @@ export function tripCounts(trip: CompanyTrip) {
   const held = trip.heldSeats.length
   const counter = trip.counterSeats.length
   return { online, held, counter, free: Math.max(0, trip.totalSeats - online - held - counter) }
+}
+
+/** A trip's money as the manager sees it (lib/tripMoney). */
+export function companyTripMoney(trip: CompanyTrip) {
+  return tripMoney({
+    price: trip.price,
+    totalSeats: trip.totalSeats,
+    counterSeats: trip.counterSeats.length,
+    heldSeats: trip.heldSeats.length,
+    online: (trip.onlineTickets || []).map((t) => ({ seats: t.seats.length, total: t.total, payout: t.payout })),
+    costs: trip.costs || [],
+  })
 }

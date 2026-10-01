@@ -15,7 +15,7 @@ interface StaffRow {
 
 const ROLE_INFO = {
   counter: { label: 'Counter', badge: 'bg-[#6d4aff]/[0.18] text-[#b9a6ff]', hint: 'Sells seats at the counter and adds trips' },
-  scanner: { label: 'Scanner', badge: 'bg-[#2dd4bf]/[0.15] text-[#5eead4]', hint: 'Scans tickets at the bus door' },
+  scanner: { label: 'Scanner', badge: 'bg-[#2dd4bf]/[0.15] text-[#5eead4]', hint: 'Bus staff (supervisor, conductor): scans tickets and adds trip costs' },
 }
 
 const EMPTY = { name: '', email: '', role: 'counter' as 'counter' | 'scanner', password: '' }

@@ -3,11 +3,11 @@
 import { useEffect, useMemo, useState } from 'react'
 import toast from 'react-hot-toast'
 import { formatTripDate } from '@/lib/dates'
-import SalesBreakdown, { type SaleBooking } from './SalesBreakdown'
+import MoneyView from './MoneyView'
+import type { SaleBooking } from './SalesBreakdown'
 import ScanHistory, { type ScanStats } from './ScanHistory'
 import SeatMap, { type SeatKind } from './SeatMap'
 import StaffPanel from './StaffPanel'
-import StaffSales from './StaffSales'
 import TripForm from './TripForm'
 import { changeSeat, useTrips } from './useTrips'
 import { tripCounts, type CompanyTrip } from './types'
@@ -245,13 +245,7 @@ export default function ManagerView() {
         </div>
       )}
 
-      {tab === 'sales' && (
-        <div className="flex flex-col gap-3">
-          <StaffSales trips={trips} />
-          <span className="label-xs mt-2 px-1">Sold on BusHub · what BusHub owes</span>
-          <SalesBreakdown bookings={bookings} />
-        </div>
-      )}
+      {tab === 'sales' && <MoneyView trips={trips} fleet={data.fleet} me={data.me} bookings={bookings} onChanged={reload} />}
       {tab === 'scans' && <ScanHistory stats={stats} showScanner />}
       {tab === 'staff' && <StaffPanel />}
     </div>
