@@ -83,7 +83,9 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
         return NextResponse.json({ error: 'Only a payment the company has not signed can be taken back' }, { status: 409 })
       }
     } else if (body.action === 'cancel') {
-      const result = await db.collection('payouts').updateOne({ _id, status: 'unpaid' }, { $set: { status: 'cancelled' }, $push: log('Cancelled') } as any)
+      const result = await db
+        .collection('payouts')
+        .updateOne({ _id, $or: [{ status: 'unpaid' }, { status: 'disputed', payment: { $exists: false } }] }, { $set: { status: 'cancelled' }, $push: log('Cancelled') } as any)
       if (result.modifiedCount === 0) return NextResponse.json({ error: 'Only an invoice nobody has paid can be cancelled' }, { status: 409 })
       await releaseInvoice(db, params.id)
     } else {

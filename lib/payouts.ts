@@ -326,6 +326,7 @@ export function invoiceSummary(inv: any) {
     payment: inv.payment || null,
     confirmation: inv.confirmation ? { signedBy: inv.confirmation.signedBy, at: inv.confirmation.at } : null,
     dispute: inv.dispute || null,
+    approval: inv.approval || null,
   }
 }
 
