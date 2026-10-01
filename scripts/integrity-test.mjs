@@ -56,7 +56,7 @@ async function makeCompany(name) {
     body: { name: `${name} gate`, email: `scan.${name.replace(/\W/g, '').toLowerCase()}@test.local`, role: 'scanner' },
   })
   const scanLogin = await call('/api/company/login', { method: 'POST', body: { email: staff.data?.staff?.email, password: staff.data?.password } })
-  return { id: res.data.company._id, name, cookie: login.cookie, email: res.data.company.email, scan: scanLogin.cookie }
+  return { id: res.data.company._id, name, cookie: login.cookie, email: res.data.company.email, password: res.data.password, scan: scanLogin.cookie }
 }
 const green = await makeCompany(`Green Line ${run}`)
 const hanif = await makeCompany(`Hanif ${run}`)
@@ -391,6 +391,91 @@ check(
     m.seats.notSold === tripDoc.totalSeats - (tripDoc.blockedSeats || []).length - paidHere.reduce((n, b) => n + b.seats.length, 0),
   JSON.stringify(m)
 )
+
+// ---- Paying the bus companies: invoices, payment, the company's signature ----
+const payPhone = () => '0193' + String(Math.floor(Math.random() * 1e7)).padStart(7, '0')
+const payDay = new Date(Date.now() + 30 * 3600e3).toISOString().slice(0, 10)
+const payTripRes = await call('/api/company/trips', { method: 'POST', cookie: green.cookie, body: { fleetId: fleetBus._id, from: 'Dhaka', to: 'Rajshahi', date: payDay, departureTime: '07:05', price: 900 } })
+const payTrip = payTripRes.data.bus._id
+const payBooking = async (seats) => {
+  const b = await call('/api/bookings', { method: 'POST', body: { busId: payTrip, seats, passengerName: 'Payout Test', passengerPhone: payPhone() } })
+  await call(`/api/bookings/${b.data.booking._id}`, { method: 'PATCH', body: { paymentStatus: 'paid' } })
+  return b.data.booking
+}
+const pb1 = await payBooking(['1A', '1B'])
+const pb2 = await payBooking(['2A'])
+const payTrip2 = (await call('/api/company/trips', { method: 'POST', cookie: green.cookie, body: { fleetId: fleetBus._id, from: 'Dhaka', to: 'Rajshahi', date: payDay, departureTime: '15:25', price: 900 } })).data.bus._id
+const b3 = await call('/api/bookings', { method: 'POST', body: { busId: payTrip2, seats: ['3A'], passengerName: 'Payout Test', passengerPhone: payPhone() } })
+await call(`/api/bookings/${b3.data.booking._id}`, { method: 'PATCH', body: { paymentStatus: 'paid' } })
+const pb3 = b3.data.booking
+const owedBefore = (await call('/api/company/payouts', { cookie: green.cookie })).data
+check('tickets on a trip that has not left are owed later, not now', owedBefore.later.tickets >= 2 && owedBefore.later.payout > 0, JSON.stringify(owedBefore.later))
+// The bus leaves: move the trip (and its tickets) to yesterday.
+const yesterday = new Date(Date.now() + 6 * 3600e3 - 86400e3).toISOString().slice(0, 10)
+await db.collection('buses').updateOne({ _id: new ObjectId(payTrip) }, { $set: { date: yesterday } })
+await db.collection('bookings').updateMany({ busId: payTrip }, { $set: { date: yesterday } })
+check('only the manager sees payments', (await call('/api/company/payouts', { cookie: counter1 })).status === 403 && (await call('/api/company/payouts', { cookie: green.scan })).status === 403)
+check('only the admin can make invoices', (await call('/api/admin/payouts', { method: 'POST', cookie: green.cookie, body: { companyId: green.id } })).status === 401)
+const paidRows = await db.collection('bookings').find({ busId: payTrip, status: 'confirmed', paymentStatus: 'paid' }).toArray()
+const inv1 = await call('/api/admin/payouts', { method: 'POST', cookie: admin, body: { companyId: green.id } })
+const inv1Full = (await call(`/api/payouts/${inv1.data.invoice._id}`, { cookie: green.cookie })).data.invoice
+const onTrip = inv1Full.lines.filter((l) => l.bookingId === pb1._id || l.bookingId === pb2._id)
+check(
+  'the invoice lists every ticket with date, route, seats, price, commission and what the company gets',
+  inv1.status === 201 && onTrip.length === 2 &&
+    onTrip.every((l) => l.date === yesterday && l.from === 'Dhaka' && l.to === 'Rajshahi' && l.seats.length > 0 && l.ticketPrice > 0 && l.payout + l.commission === l.ticketPrice),
+  JSON.stringify(inv1.data)
+)
+check(
+  'invoice totals come from the tickets in the database',
+  inv1Full.totals.payout === inv1Full.lines.reduce((n, l) => n + l.payout, 0) &&
+    paidRows.every((b) => inv1Full.lines.some((l) => l.bookingId === b._id.toString() && l.payout === b.companyPayout && l.ticketPrice === b.totalPrice)) &&
+    inv1Full.check.contentOk === true
+)
+check('nothing is invoiced twice', (await call('/api/admin/payouts', { method: 'POST', cookie: admin, body: { companyId: green.id } })).status === 409)
+check('a ticket already in an invoice cannot be refunded', (await call(`/api/bookings/${pb2._id}/refund`, { method: 'PATCH', cookie: admin })).status === 409)
+check("another company cannot open this invoice", (await call(`/api/payouts/${inv1.data.invoice._id}`, { cookie: hanif.cookie })).status === 404 && (await call(`/api/payouts/${inv1.data.invoice._id}`, { cookie: counter1 })).status === 401)
+const inv1Id = inv1.data.invoice._id
+const sign = (cookie, password, id = inv1Id) => call(`/api/company/payouts/${id}`, { method: 'PATCH', cookie, body: { action: 'confirm', signedBy: 'Test Manager', password } })
+check('the company cannot sign before BusHub records the payment', (await sign(green.cookie, green.password)).status === 409)
+check('the company cannot mark its own invoice paid', (await call(`/api/admin/payouts/${inv1Id}`, { method: 'PATCH', cookie: green.cookie, body: { action: 'paid', method: 'bkash', reference: 'ABC12345' } })).status === 401)
+check('a payment needs a proper reference', (await call(`/api/admin/payouts/${inv1Id}`, { method: 'PATCH', cookie: admin, body: { action: 'paid', method: 'bkash', reference: '<x>' } })).status === 400)
+const paidRes = await call(`/api/admin/payouts/${inv1Id}`, { method: 'PATCH', cookie: admin, body: { action: 'paid', method: 'bkash', reference: '9JK4M2PQ7X', note: 'test' } })
+check('the admin records the payment', paidRes.status === 200 && paidRes.data.invoice.status === 'paid' && paidRes.data.invoice.payment.amount === inv1Full.totals.payout)
+check('a paid invoice cannot be cancelled', (await call(`/api/admin/payouts/${inv1Id}`, { method: 'PATCH', cookie: admin, body: { action: 'cancel' } })).status === 409)
+check('a wrong password does not sign', (await sign(green.cookie, 'wrong-password')).status === 401)
+check("another company's manager cannot sign it", (await sign(hanif.cookie, hanif.password)).status === 404)
+const signed = await sign(green.cookie, green.password)
+const afterSign = (await call(`/api/payouts/${inv1Id}`, { cookie: green.cookie })).data.invoice
+check('the manager signs with the company password; the signature checks out', signed.status === 200 && afterSign.status === 'confirmed' && afterSign.check.signatureOk === true && afterSign.check.contentOk === true, JSON.stringify(signed.data))
+check('a signed invoice cannot be paid again', (await call(`/api/admin/payouts/${inv1Id}`, { method: 'PATCH', cookie: admin, body: { action: 'paid', method: 'bank', reference: 'OTHER123' } })).status === 409)
+await db.collection('payouts').updateOne({ _id: new ObjectId(inv1Id) }, { $set: { 'payment.reference': 'CHANGED99' } })
+const tamperedRef = (await call(`/api/payouts/${inv1Id}?as=admin`, { cookie: admin })).data.invoice
+await db.collection('payouts').updateOne({ _id: new ObjectId(inv1Id) }, { $set: { 'payment.reference': '9JK4M2PQ7X' }, $inc: { 'lines.0.payout': 500, 'totals.payout': 500 } })
+const tamperedLine = (await call(`/api/payouts/${inv1Id}?as=admin`, { cookie: admin })).data.invoice
+await db.collection('payouts').updateOne({ _id: new ObjectId(inv1Id) }, { $inc: { 'lines.0.payout': -500, 'totals.payout': -500 } })
+const restored = (await call(`/api/payouts/${inv1Id}?as=admin`, { cookie: admin })).data.invoice
+check(
+  'any change after signing shows: a new reference breaks the signature, a changed amount breaks the record',
+  tamperedRef.check.signatureOk === false && tamperedLine.check.contentOk === false && restored.check.contentOk && restored.check.signatureOk,
+  JSON.stringify([tamperedRef.check, tamperedLine.check, restored.check])
+)
+// Two invoices made at the same moment never share a ticket.
+await db.collection('buses').updateOne({ _id: new ObjectId(payTrip2) }, { $set: { date: yesterday } })
+await db.collection('bookings').updateMany({ busId: payTrip2 }, { $set: { date: yesterday } })
+const raceInv = await Promise.all([1, 2, 3].map(() => call('/api/admin/payouts', { method: 'POST', cookie: admin, body: { companyId: green.id } })))
+const inInvoices = await db.collection('payouts').countDocuments({ 'lines.bookingId': pb3._id, status: { $ne: 'cancelled' } })
+check('three invoices made at once: the new ticket lands in exactly one', raceInv.filter((r) => r.status === 201).length === 1 && inInvoices === 1, raceInv.map((r) => r.status).join(','))
+const inv2Id = raceInv.find((r) => r.status === 201).data.invoice._id
+const cancel = await call(`/api/admin/payouts/${inv2Id}`, { method: 'PATCH', cookie: admin, body: { action: 'cancel' } })
+const freed = await db.collection('bookings').findOne({ _id: new ObjectId(pb3._id) })
+check('cancelling an unpaid invoice puts its tickets back as owed', cancel.status === 200 && !freed.payoutId)
+const inv3 = await call('/api/admin/payouts', { method: 'POST', cookie: admin, body: { companyId: green.id } })
+await call(`/api/admin/payouts/${inv3.data.invoice._id}`, { method: 'PATCH', cookie: admin, body: { action: 'paid', method: 'nagad', reference: 'NGD778899' } })
+for (let i = 0; i < 5; i++) await sign(green.cookie, `wrong-${i}`, inv3.data.invoice._id)
+check('after 5 wrong passwords, signing waits even with the right one', (await sign(green.cookie, green.password, inv3.data.invoice._id)).status === 429)
+const dispute = await call(`/api/company/payouts/${inv3.data.invoice._id}`, { method: 'PATCH', cookie: green.cookie, body: { action: 'dispute', note: 'Nothing arrived on Nagad yet' } })
+check('the manager can report a problem with a payment', dispute.status === 200 && dispute.data.invoice.status === 'disputed')
 
 // ---- Ticket codes are unique ----
 const codes = await db.collection('bookings').aggregate([{ $group: { _id: '$bookingCode', n: { $sum: 1 } } }, { $match: { n: { $gt: 1 } } }]).toArray()
