@@ -49,11 +49,18 @@ async function makeCompany(name) {
     method: 'POST',
     body: { email: res.data.company.email, password: res.data.password },
   })
-  return { id: res.data.company._id, name, cookie: login.cookie }
+  // Boarding passengers needs a scanner login, which the company's manager creates.
+  const staff = await call('/api/company/staff', {
+    method: 'POST',
+    cookie: login.cookie,
+    body: { name: `${name} gate`, email: `scan.${name.replace(/\W/g, '').toLowerCase()}@test.local`, role: 'scanner' },
+  })
+  const scanLogin = await call('/api/company/login', { method: 'POST', body: { email: staff.data?.staff?.email, password: staff.data?.password } })
+  return { id: res.data.company._id, name, cookie: login.cookie, email: res.data.company.email, scan: scanLogin.cookie }
 }
 const green = await makeCompany(`Green Line ${run}`)
 const hanif = await makeCompany(`Hanif ${run}`)
-check('companies created and logged in', !!green.cookie && !!hanif.cookie)
+check('companies created and logged in, each with a scanner login', !!green.cookie && !!hanif.cookie && !!green.scan && !!hanif.scan)
 
 const dupCompany = await call('/api/companies', {
   method: 'POST',
@@ -149,7 +156,7 @@ const outOfRange = await call('/api/bookings', { method: 'POST', body: { busId: 
 check('a seat beyond the bus\'s seat count is refused', outOfRange.status === 400, `status ${outOfRange.status}`)
 
 const booking = winners[0].data.booking
-const unpaidScan = await call('/api/scan', { method: 'POST', cookie: green.cookie, body: { text: booking.bookingCode } })
+const unpaidScan = await call('/api/scan', { method: 'POST', cookie: green.scan, body: { text: booking.bookingCode } })
 check('an unpaid ticket does not board', unpaidScan.data?.result === 'unpaid', unpaidScan.data?.result)
 
 const paid = await call(`/api/bookings/${booking._id}`, { method: 'PATCH', body: { paymentStatus: 'paid', paymentMethod: 'bkash' } })
@@ -161,24 +168,24 @@ check('a paid ticket cannot be switched back to unpaid', unpay.status >= 400 && 
 
 // ---- Scanning: one ticket, one boarding ----
 const scans = await Promise.all(
-  Array.from({ length: 12 }, () => call('/api/scan', { method: 'POST', cookie: green.cookie, body: { text: `http://x/verify/${booking.bookingCode}` } }))
+  Array.from({ length: 12 }, () => call('/api/scan', { method: 'POST', cookie: green.scan, body: { text: `http://x/verify/${booking.bookingCode}` } }))
 )
 const valid = scans.filter((s) => s.data?.result === 'valid')
 check('12 phones scan the same ticket at once: it boards exactly once', valid.length === 1, `${valid.length} valid`)
 check('the other 11 scans say "already used"', scans.filter((s) => s.data?.result === 'already_used').length === 11)
 
-const screenshot = await call('/api/scan', { method: 'POST', cookie: green.cookie, body: { text: booking.bookingCode.toLowerCase() } })
+const screenshot = await call('/api/scan', { method: 'POST', cookie: green.scan, body: { text: booking.bookingCode.toLowerCase() } })
 check('a copied screenshot scanned later says "already used"', screenshot.data?.result === 'already_used', screenshot.data?.result)
 check('scanner shows the real passenger and seat from BusHub, not what is printed',
   screenshot.data?.ticket?.passengerName === 'Test Passenger' && screenshot.data?.ticket?.seats?.join() === '1A')
 
-const otherOp = await call('/api/scan', { method: 'POST', cookie: hanif.cookie, body: { text: booking.bookingCode } })
+const otherOp = await call('/api/scan', { method: 'POST', cookie: hanif.scan, body: { text: booking.bookingCode } })
 check('another company\'s scanner rejects the ticket', otherOp.data?.result === 'other_operator', otherOp.data?.result)
 check('and does not see the passenger\'s details', otherOp.data?.ticket === null)
 
-const fake = await call('/api/scan', { method: 'POST', cookie: green.cookie, body: { text: `BH-${dhakaToday.replace(/-/g, '')}-ZZZZZ` } })
+const fake = await call('/api/scan', { method: 'POST', cookie: green.scan, body: { text: `BH-${dhakaToday.replace(/-/g, '')}-ZZZZZ` } })
 check('a made-up ticket code is "not found"', fake.data?.result === 'not_found', fake.data?.result)
-const junk = await call('/api/scan', { method: 'POST', cookie: green.cookie, body: { text: 'https://evil.example/ticket' } })
+const junk = await call('/api/scan', { method: 'POST', cookie: green.scan, body: { text: 'https://evil.example/ticket' } })
 check('a random QR code is "not found"', junk.data?.result === 'not_found', junk.data?.result)
 const anon = await call('/api/scan', { method: 'POST', body: { text: booking.bookingCode } })
 check('nobody can scan without logging in', anon.status === 401, `status ${anon.status}`)
@@ -193,7 +200,7 @@ check('a bus company cannot refund (admin only)', companyRefund.status === 403, 
 const refunds = await Promise.all(Array.from({ length: 5 }, () => call(`/api/bookings/${b2.data.booking._id}/refund`, { method: 'PATCH', cookie: admin })))
 check('refunding the same ticket 5 times at once only refunds once', refunds.filter((r) => r.status === 200).length === 1,
   refunds.map((r) => r.status).join(','))
-const refundedScan = await call('/api/scan', { method: 'POST', cookie: green.cookie, body: { text: b2.data.booking.bookingCode } })
+const refundedScan = await call('/api/scan', { method: 'POST', cookie: green.scan, body: { text: b2.data.booking.bookingCode } })
 check('a refunded ticket does not board', refundedScan.data?.result === 'refunded', refundedScan.data?.result)
 const boardedRefund = await call(`/api/bookings/${booking._id}/refund`, { method: 'PATCH', cookie: admin })
 check('a ticket that already boarded cannot be refunded (its seat is in use)', boardedRefund.status === 409, `status ${boardedRefund.status}`)
@@ -236,14 +243,14 @@ const legacy = await db.collection('buses').insertOne({
 const legacyId = legacy.insertedId.toString()
 const lb = await call('/api/bookings', { method: 'POST', body: { busId: legacyId, seats: ['2B'], ...passenger } })
 await call(`/api/bookings/${lb.data.booking._id}`, { method: 'PATCH', body: { paymentStatus: 'paid' } })
-const beforeLink = await call('/api/scan', { method: 'POST', cookie: green.cookie, body: { text: lb.data.booking.bookingCode } })
+const beforeLink = await call('/api/scan', { method: 'POST', cookie: green.scan, body: { text: lb.data.booking.bookingCode } })
 check('an unlinked old trip is refused by the company scanner', beforeLink.data?.result === 'other_operator', beforeLink.data?.result)
 const link = await call(`/api/buses/${legacyId}`, { method: 'PATCH', cookie: admin, body: { fleetId: fleetBus._id } })
 check('admin links the old trip to a bus from the list', link.status === 200, JSON.stringify(link.data))
 const linkedTicket = await db.collection('bookings').findOne({ _id: new ObjectId(lb.data.booking._id) })
 check('its existing tickets now carry the listed bus and company name',
   linkedTicket.busName === fleetBus.name && linkedTicket.companyName === green.name, `${linkedTicket.busName} / ${linkedTicket.companyName}`)
-const afterLink = await call('/api/scan', { method: 'POST', cookie: green.cookie, body: { text: lb.data.booking.bookingCode } })
+const afterLink = await call('/api/scan', { method: 'POST', cookie: green.scan, body: { text: lb.data.booking.bookingCode } })
 check('and the company can scan them', afterLink.data?.result === 'valid', afterLink.data?.result)
 const relink = await call(`/api/buses/${legacyId}`, { method: 'PATCH', cookie: admin, body: { fleetId: fleetBus._id } })
 check('a linked trip cannot be moved to another bus', relink.status === 409, `status ${relink.status}`)
@@ -257,6 +264,64 @@ const delTrip = await call(`/api/buses/${trip._id}`, { method: 'DELETE', cookie:
 check('a trip with live tickets cannot be deleted', delTrip.status === 409, `status ${delTrip.status}`)
 const delFleet = await call(`/api/fleet/${fleetBus._id}`, { method: 'DELETE', cookie: admin })
 check('a listed bus with trips cannot be removed', delFleet.status === 409, `status ${delFleet.status}`)
+
+// ---- Company logins: management, counter and scanner ----
+const managerScan = await call('/api/scan', { method: 'POST', cookie: green.cookie, body: { text: booking.bookingCode } })
+check('the manager login cannot scan (scanner logins do)', managerScan.status === 403, `status ${managerScan.status}`)
+const mkStaff = (owner, label, role) =>
+  call('/api/company/staff', { method: 'POST', cookie: owner.cookie, body: { name: `${label} ${run}`, email: `${label.replace(/\W/g, '').toLowerCase()}.${run.toLowerCase()}@test.local`, role } })
+const c1 = await mkStaff(green, 'Dampara counter', 'counter')
+const c2 = await mkStaff(green, 'GEC counter', 'counter')
+const hc = await mkStaff(hanif, 'Hanif counter', 'counter')
+check('the manager adds counter logins (password shown once)', c1.status === 201 && !!c1.data.password && !c1.data.staff.passwordHash, JSON.stringify(c1.data))
+const dupEmail = await call('/api/company/staff', { method: 'POST', cookie: green.cookie, body: { name: 'Copy', email: green.email.toUpperCase(), role: 'counter' } })
+check('a staff login cannot reuse a company email', dupEmail.status === 409, `status ${dupEmail.status}`)
+const staffBySomeoneElse = await call('/api/company/staff', { method: 'POST', cookie: green.scan, body: { name: 'Sneaky', email: `sneaky${run}@test.local`, role: 'counter' } })
+check('only the manager can add staff logins', staffBySomeoneElse.status === 403, `status ${staffBySomeoneElse.status}`)
+const loginAs = async (s) => (await call('/api/company/login', { method: 'POST', body: { email: s.data.staff.email, password: s.data.password } })).cookie
+const counter1 = await loginAs(c1)
+const counter2 = await loginAs(c2)
+const hanifCounter = await loginAs(hc)
+const counterScan = await call('/api/scan', { method: 'POST', cookie: counter1, body: { text: booking.bookingCode } })
+check('a counter login cannot scan', counterScan.status === 403, `status ${counterScan.status}`)
+const counterBookings = await call('/api/bookings?as=company', { cookie: counter1 })
+check('a counter login cannot list passengers', counterBookings.status === 403, `status ${counterBookings.status}`)
+
+const tomorrowRoles = new Date(Date.now() + 30 * 3600e3).toISOString().slice(0, 10)
+const counterTrip = await call('/api/company/trips', { method: 'POST', cookie: counter1, body: { fleetId: fleetBus._id, from: 'Dhaka', to: 'Sylhet', date: tomorrowRoles, departureTime: '06:40', price: 700, boardingPoint: 'Dampara counter' } })
+check('a counter adds a trip for its own bus', counterTrip.status === 201, JSON.stringify(counterTrip.data))
+const foreignTrip = await call('/api/company/trips', { method: 'POST', cookie: hanifCounter, body: { fleetId: fleetBus._id, from: 'Dhaka', to: 'Sylhet', date: tomorrowRoles, departureTime: '06:50', price: 700 } })
+check('a counter cannot add a trip for another company\'s bus', foreignTrip.status === 403, `status ${foreignTrip.status}`)
+const ct = counterTrip.data.bus._id
+const sell = (cookie, seats, action = 'sell') => call(`/api/company/trips/${ct}/seats`, { method: 'PATCH', cookie, body: { seats, action } })
+const s1 = await sell(counter1, ['4D'])
+check('a counter sells seat 4D', s1.status === 200 && s1.data.bus.blockedSeats.includes('4D'), JSON.stringify(s1.data))
+const s2 = await sell(counter2, ['4D'])
+check('another counter cannot sell 4D again', s2.status === 409, `status ${s2.status}`)
+const onlineOn4D = await call('/api/bookings', { method: 'POST', body: { busId: ct, seats: ['4D'], passengerName: 'Online', passengerPhone: '01911111111' } })
+check('nobody can buy 4D online after the counter sold it', onlineOn4D.status === 409, `status ${onlineOn4D.status}`)
+const onlineSeat = await call('/api/bookings', { method: 'POST', body: { busId: ct, seats: ['2B'], passengerName: 'Online', passengerPhone: '01911111112' } })
+await call(`/api/bookings/${onlineSeat.data.booking._id}`, { method: 'PATCH', body: { paymentStatus: 'paid' } })
+const counterOnOnline = await sell(counter1, ['2B'])
+check('a counter cannot sell a seat sold on BusHub', counterOnOnline.status === 409, `status ${counterOnOnline.status}`)
+const seatRace = await Promise.all([sell(counter1, ['6A']), sell(counter2, ['6A']), call('/api/bookings', { method: 'POST', body: { busId: ct, seats: ['6A'], passengerName: 'Racer', passengerPhone: '01911111113' } })])
+check('two counters and a customer grab 6A at once: exactly one gets it', seatRace.filter((r) => r.status === 200 || r.status === 201).length === 1, seatRace.map((r) => r.status).join(','))
+const foreignSell = await call(`/api/company/trips/${ct}/seats`, { method: 'PATCH', cookie: hanifCounter, body: { seats: ['7A'], action: 'sell' } })
+check('another company\'s counter cannot touch this trip', foreignSell.status === 403, `status ${foreignSell.status}`)
+const undoOther = await sell(counter2, ['4D'], 'unsell')
+check('a counter cannot undo another counter\'s sale', undoOther.status === 403, `status ${undoOther.status}`)
+const managerView = await call('/api/company/trips', { cookie: green.cookie })
+const seenTrip = managerView.data.trips.find((t) => t._id === ct)
+check('the manager sees who sold 4D and the BusHub seat', seenTrip?.counterSeats.some((c) => c.seat === '4D' && c.soldBy === `Dampara counter ${run}`) && seenTrip.onlineSeats.includes('2B'), JSON.stringify(seenTrip))
+const managerUndo = await sell(green.cookie, ['4D'], 'unsell')
+check('the manager can undo any counter sale', managerUndo.status === 200 && !managerUndo.data.bus.blockedSeats.includes('4D'))
+const ownUndo = await sell(counter1, ['7C'])
+const ownUndo2 = await sell(counter1, ['7C'], 'unsell')
+check('a counter can undo its own sale', ownUndo.status === 200 && ownUndo2.status === 200)
+await call(`/api/company/staff/${c2.data.staff._id}`, { method: 'PATCH', cookie: green.cookie, body: { status: 'disabled' } })
+const afterOff = await call('/api/company/trips', { cookie: counter2 })
+const loginOff = await call('/api/company/login', { method: 'POST', body: { email: c2.data.staff.email, password: c2.data.password } })
+check('a switched-off login stops working at once and cannot sign in', afterOff.status === 401 && loginOff.status === 403, `${afterOff.status} ${loginOff.status}`)
 
 // ---- Ticket codes are unique ----
 const codes = await db.collection('bookings').aggregate([{ $group: { _id: '$bookingCode', n: { $sum: 1 } } }, { $match: { n: { $gt: 1 } } }]).toArray()
