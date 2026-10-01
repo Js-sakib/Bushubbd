@@ -1,7 +1,7 @@
 'use client'
 
 import { formatTripDate } from '@/lib/dates'
-import type { DayCount, ScanResult } from '@/lib/scan'
+import type { DayCount, ScanResult, ScannerCount } from '@/lib/scan'
 
 export interface RecentScan {
   id: string
@@ -22,6 +22,8 @@ export interface ScanStats {
   week: Omit<DayCount, 'date'>
   days: DayCount[]
   recent: RecentScan[]
+  /** Manager only: the same counts per scanner login. */
+  byScanner?: ScannerCount[]
 }
 
 const RESULT_CHIPS: Record<ScanResult, { label: string; className: string }> = {
@@ -44,6 +46,32 @@ function dhakaClock(iso: string): string {
 export default function ScanHistory({ stats, showScanner = false }: { stats: ScanStats | null; showScanner?: boolean }) {
   return (
     <div className="mt-5 flex flex-col gap-4">
+          {showScanner && stats?.byScanner && (
+            <div className="card-2 overflow-hidden">
+              <div className="border-b border-[#1a2123] px-4 py-3">
+                <span className="label-xs">Each scanner · passengers boarded</span>
+              </div>
+              {stats.byScanner.map((row, i) => (
+                <div key={`${row.name}-${i}`} className="flex items-center gap-3 border-b border-[#1a2123] px-4 py-3 last:border-b-0">
+                  <div className="flex min-w-0 grow flex-col">
+                    <span className="truncate text-[13.5px] font-semibold text-[#5eead4]">{row.name}</span>
+                    <span className="text-[11.5px] text-[#78868a]">
+                      7 days: {row.week.passengers} passenger{row.week.passengers === 1 ? '' : 's'} · {row.week.tickets} ticket{row.week.tickets === 1 ? '' : 's'}
+                      {row.week.rejected > 0 ? ` · ${row.week.rejected} rejected` : ''}
+                    </span>
+                  </div>
+                  <div className="flex shrink-0 flex-col items-end">
+                    <span className="display text-[20px] font-bold leading-none text-[#34d399]">{row.today.passengers}</span>
+                    <span className="text-[10.5px] text-[#8e9a9d]">today</span>
+                  </div>
+                </div>
+              ))}
+              {stats.byScanner.length === 0 && (
+                <div className="px-4 py-6 text-center text-sm text-[#8e9a9d]">No scans in the last 7 days.</div>
+              )}
+            </div>
+          )}
+
           <div className="card-2 overflow-hidden">
             <div className="border-b border-[#1a2123] px-4 py-3">
               <span className="label-xs">Passengers boarded, by day</span>

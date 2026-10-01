@@ -319,6 +319,22 @@ check('other connections can still check tickets', (await verifyAs('198.51.100.7
 // ---- Company logins: management, counter and scanner ----
 const managerScan = await call('/api/scan', { method: 'POST', cookie: green.cookie, body: { text: booking.bookingCode } })
 check('the manager login cannot scan (scanner logins do)', managerScan.status === 403, `status ${managerScan.status}`)
+const greenScans = await call('/api/scan', { cookie: green.cookie })
+const greenScanners = greenScans.data?.byScanner || []
+const greenOwn = (await call('/api/scan', { cookie: green.scan })).data
+check(
+  "the manager sees each scanner's counts, and they add up to the company's",
+  greenScanners.length > 0 &&
+    greenScanners.reduce((n, r) => n + r.week.passengers, 0) === greenScans.data.week.passengers &&
+    greenScanners.reduce((n, r) => n + r.week.rejected, 0) === greenScans.data.week.rejected,
+  JSON.stringify(greenScanners)
+)
+const hanifScanners = (await call('/api/scan', { cookie: hanif.cookie })).data?.byScanner || []
+check(
+  "a scanner sees only its own counts, and no company sees another's scanners",
+  greenOwn && !('byScanner' in greenOwn) && !hanifScanners.some((h) => greenScanners.some((g) => g.name === h.name)),
+  JSON.stringify(hanifScanners)
+)
 const mkStaff = (owner, label, role) =>
   call('/api/company/staff', { method: 'POST', cookie: owner.cookie, body: { name: `${label} ${run}`, email: `${label.replace(/\W/g, '').toLowerCase()}.${run.toLowerCase()}@test.local`, role } })
 const c1 = await mkStaff(green, 'Dampara counter', 'counter')
