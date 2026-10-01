@@ -15,7 +15,7 @@ export async function GET() {
   try {
     if (!getAdminFromCookies()) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     const { db } = await connectToDatabase()
-    const companies = await db.collection('companies').find({}).project({ name: 1, status: 1, payoutAccount: 1 }).sort({ name: 1 }).toArray()
+    const companies = await db.collection('companies').find({}).project({ name: 1, status: 1 }).sort({ name: 1 }).toArray()
     const rows = await Promise.all(
       companies.map(async (c) => {
         const id = c._id.toString()
@@ -27,7 +27,6 @@ export async function GET() {
           owed: totalsOf(owed),
           later,
           refunds: refunds.reduce((n, d) => n + d.amount, 0),
-          account: c.payoutAccount || null,
         }
       })
     )

@@ -6,9 +6,8 @@ import toast from 'react-hot-toast'
 import { LogoMark } from '../../BrandLogo'
 import PasswordInput from '../../PasswordInput'
 import { formatTripDate } from '@/lib/dates'
-import { ACCOUNT_LABELS, PAY_METHODS, PAY_METHOD_LABELS, STATUS_TEXT, type InvoiceSummaryView, type PayMethod } from '@/lib/payoutText'
+import { PAY_METHODS, PAY_METHOD_LABELS, STATUS_TEXT, type InvoiceSummaryView, type PayMethod } from '@/lib/payoutText'
 import { taka } from '@/lib/tripMoney'
-import { recentlyChanged, type PayoutAccount } from '@/lib/payoutAccount'
 
 interface Line {
   bookingId: string
@@ -80,35 +79,6 @@ function Row({ label, value, strong = false }: { label: string; value: string; s
   )
 }
 
-/** Where the company asked to be paid, so the admin sends it to the right place. */
-function PayToBox({ payTo }: { payTo: PayoutAccount | null }) {
-  if (!payTo) {
-    return (
-      <p className="rounded-xl border border-[#f5a524]/40 bg-[#f5a524]/[0.08] px-3.5 py-2.5 text-[12.5px] text-[#fbbf24]">
-        This company has not added where to pay them yet. They add it in Management → Payments. Until then, confirm by phone.
-      </p>
-    )
-  }
-  const fresh = recentlyChanged(payTo)
-  return (
-    <div className={`flex flex-col gap-0.5 rounded-xl border px-3.5 py-2.5 ${fresh ? 'border-[#f87171]/50 bg-[#f87171]/[0.08]' : 'border-white/10 bg-black/20'}`}>
-      <span className="label-xs">Pay to</span>
-      <span className="text-[14px] font-bold">
-        {ACCOUNT_LABELS[payTo.method]} · <span className="font-mono">{payTo.number}</span>
-      </span>
-      <span className="text-[12.5px] text-[#c4cdcf]">
-        {payTo.name}
-        {payTo.bank ? ` · ${payTo.bank}` : ''}
-      </span>
-      <span className={`text-[11px] ${fresh ? 'font-bold text-[#fca5a5]' : 'text-[#6e7b7e]'}`}>
-        {fresh ? '⚠ Changed in the last 3 days, ' : 'Set '}
-        {dhakaDateTime(payTo.updatedAt)} by {payTo.updatedBy}
-        {fresh ? '. Call the company to confirm before sending money.' : ''}
-      </span>
-    </div>
-  )
-}
-
 /** Method, reference and note: used to record a payment and to correct one. */
 function PaymentFields({
   method,
@@ -153,12 +123,12 @@ function PaymentFields({
  * Admin: record the payment, correct it later (a signed invoice then needs the company's
  * signature again), take back a payment recorded by mistake, or cancel an unpaid invoice.
  */
-function AdminActions({ inv, payTo, onDone }: { inv: Invoice; payTo: PayoutAccount | null; onDone: () => void }) {
+function AdminActions({ inv, onDone }: { inv: Invoice; onDone: () => void }) {
   const toPay = inv.status === 'unpaid' || inv.status === 'disputed'
   const canEdit = Boolean(inv.payment) && ['paid', 'disputed', 'confirmed'].includes(inv.status)
   const [editing, setEditing] = useState(false)
   const start = inv.payment && editing ? inv.payment : null
-  const [method, setMethod] = useState<PayMethod>((payTo?.method as PayMethod) || 'bkash')
+  const [method, setMethod] = useState<PayMethod>('bkash')
   const [reference, setReference] = useState('')
   const [note, setNote] = useState('')
   const [busy, setBusy] = useState(false)
@@ -188,7 +158,6 @@ function AdminActions({ inv, payTo, onDone }: { inv: Invoice; payTo: PayoutAccou
       {toPay && !editing ? (
         <>
           <span className="display text-[16px] font-bold">Pay {taka(inv.totals.payout)} to {inv.companyName}</span>
-          <PayToBox payTo={payTo} />
           <p className="text-[12.5px] text-[#9ba7aa]">
             Send the money first, then write down how you sent it and the reference (bKash TrxID, bank reference). Cash needs no reference. The company then
             checks it and signs.
@@ -338,7 +307,6 @@ function InvoiceView() {
   const as = useSearchParams().get('as')
   const [inv, setInv] = useState<Invoice | null>(null)
   const [viewer, setViewer] = useState<'admin' | 'company' | null>(null)
-  const [payTo, setPayTo] = useState<PayoutAccount | null>(null)
   const [error, setError] = useState('')
 
   const load = useCallback(() => {
@@ -348,7 +316,6 @@ function InvoiceView() {
         if (!ok) return setError(d?.error || 'Could not open the invoice')
         setInv(d.invoice)
         setViewer(d.viewer)
-        setPayTo(d.payTo || null)
       })
       .catch(() => setError('No internet connection'))
   }, [id, as])
@@ -373,7 +340,7 @@ function InvoiceView() {
         </button>
       </div>
 
-      {viewer === 'admin' && <AdminActions key={`${inv.status}-${inv.payment?.reference ?? ''}`} inv={inv} payTo={payTo} onDone={load} />}
+      {viewer === 'admin' && <AdminActions key={`${inv.status}-${inv.payment?.reference ?? ''}`} inv={inv} onDone={load} />}
       {viewer === 'company' && <CompanyActions inv={inv} onDone={load} />}
 
       <article className="invoice-paper rounded-[20px] bg-white p-5 text-[13px] text-[#16191a] shadow-[0_20px_60px_rgba(0,0,0,0.45)] sm:p-8">
