@@ -5,10 +5,11 @@ import toast from 'react-hot-toast'
 import QrCamera from './QrCamera'
 import ScanResultCard, { ScanResponse } from './ScanResultCard'
 import ScanHistory, { type ScanStats } from './ScanHistory'
+import StaffCosts from './StaffCosts'
 
-const TABS = ['scan', 'history'] as const
+const TABS = ['scan', 'history', 'costs'] as const
 
-/** The scanner login's page: board passengers, and see this scanner's own counts. */
+/** The scanner (bus staff) login's page: board passengers, see its own counts, and add trip costs. */
 export default function ScannerView() {
   const [tab, setTab] = useState<(typeof TABS)[number]>('scan')
 
@@ -185,6 +186,8 @@ export default function ScannerView() {
           <ScanHistory stats={stats} />
         </div>
       )}
+
+      {tab === 'costs' && <StaffCosts />}
     </div>
   )
 }

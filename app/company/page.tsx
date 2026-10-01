@@ -9,7 +9,7 @@ import ManagerView from './ManagerView'
 import ScannerView from './ScannerView'
 import type { Me } from './types'
 
-const TITLES = { manager: 'Management', counter: 'Counter', scanner: 'Ticket scanner' } as const
+const TITLES = { manager: 'Management', counter: 'Counter', scanner: 'Bus staff · scanner' } as const
 
 /**
  * One address for everyone at a bus company. The company login opens Management; counter and

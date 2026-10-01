@@ -24,6 +24,7 @@ async function ensureIndexes(db: Db) {
     ['staff', { companyId: 1 }, { name: 'company_staff' }],
     // A seat is sold at the counter once.
     ['counterSales', { busId: 1, seat: 1 }, { unique: true, name: 'counter_seat_unique' }],
+    ['tripCosts', { busId: 1 }, { name: 'trip_costs' }],
   ]
   for (const [collection, key, options] of indexes) {
     try {

@@ -12,6 +12,7 @@ import Overview from './Overview'
 import BookingsSection from './BookingsSection'
 import BusesSection from './BusesSection'
 import CompaniesSection from './CompaniesSection'
+import CostsSection from './CostsSection'
 import LeadsSection, { isDue } from './LeadsSection'
 import type { Booking, Bus, CompanyPrefill, CompanyRow, FleetBus, LeadRow, Section } from './types'
 import { LogoMark } from '../BrandLogo'
@@ -47,6 +48,17 @@ const NAV: { key: Section; label: string; icon: React.ReactNode }[] = [
         <path d="M3 11h18" />
         <circle cx="7.5" cy="19" r="1.6" />
         <circle cx="16.5" cy="19" r="1.6" />
+      </svg>
+    ),
+  },
+  {
+    key: 'costs',
+    label: 'Money',
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-[19px] w-[19px]">
+        <rect x="3" y="6" width="18" height="12" rx="2.5" />
+        <circle cx="12" cy="12" r="2.6" />
+        <path d="M6.5 9.5v5M17.5 9.5v5" />
       </svg>
     ),
   },
@@ -264,6 +276,7 @@ export default function AdminDashboard() {
           )}
           {section === 'bookings' && <BookingsSection bookings={bookings} query={query} onQuery={setQuery} onRefund={handleRefund} />}
           {section === 'buses' && <BusesSection buses={buses} bookings={bookings} companies={companies} fleet={fleet} places={places} onChanged={loadAll} />}
+          {section === 'costs' && <CostsSection />}
           {section === 'companies' && (
             <CompaniesSection companies={companies} onChanged={loadAll} prefill={companyPrefill} onPrefillUsed={clearPrefill} />
           )}
@@ -283,7 +296,7 @@ export default function AdminDashboard() {
 
       {/* Bottom tabs, phones */}
       <nav className="fixed inset-x-0 bottom-0 z-30 px-3 pb-[max(12px,env(safe-area-inset-bottom))] lg:hidden">
-        <div className="glass grid grid-cols-5 gap-1 p-1.5">
+        <div className="glass grid grid-cols-6 gap-1 p-1.5">
           {NAV.map((item) => {
             const active = section === item.key
             return (

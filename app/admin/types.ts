@@ -92,4 +92,4 @@ export interface CompanyPrefill {
   phone: string
 }
 
-export type Section = 'dashboard' | 'bookings' | 'buses' | 'companies' | 'leads'
+export type Section = 'dashboard' | 'bookings' | 'buses' | 'costs' | 'companies' | 'leads'
