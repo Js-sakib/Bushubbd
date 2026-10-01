@@ -3,7 +3,8 @@
 import { useCallback, useEffect, useState } from 'react'
 import toast from 'react-hot-toast'
 import { formatTripDate } from '@/lib/dates'
-import { STATUS_TEXT, type InvoiceSummaryView, type PayoutTotalsView } from '@/lib/payoutText'
+import { ACCOUNT_LABELS, STATUS_TEXT, type InvoiceSummaryView, type PayoutTotalsView } from '@/lib/payoutText'
+import { recentlyChanged, type PayoutAccount } from '@/lib/payoutAccount'
 import { taka } from '@/lib/tripMoney'
 
 interface CompanyOwed {
@@ -13,6 +14,9 @@ interface CompanyOwed {
   owed: PayoutTotalsView
   later: PayoutTotalsView
   invoiced: number
+  /** Refunds the company owes back, taken from its next payment. */
+  refunds: number
+  account: PayoutAccount | null
 }
 
 const range = (from: string, to: string) => (from === to ? formatTripDate(from) : `${formatTripDate(from)} – ${formatTripDate(to)}`)
@@ -46,10 +50,10 @@ export default function PayoutsPanel() {
 
   if (!data) return <div className="py-16 text-center text-sm text-[#8e9a9d]">Loading...</div>
 
-  const owedNow = data.companies.reduce((n, c) => n + c.owed.payout + c.invoiced, 0)
+  const owedNow = data.companies.reduce((n, c) => n + Math.max(0, c.owed.payout + c.invoiced - c.refunds), 0)
   const later = data.companies.reduce((n, c) => n + c.later.payout, 0)
   const toSign = data.invoices.filter((i) => i.status === 'paid').length
-  const companies = data.companies.filter((c) => c.owed.tickets > 0 || c.invoiced > 0 || c.later.tickets > 0)
+  const companies = data.companies.filter((c) => c.owed.tickets > 0 || c.invoiced > 0 || c.later.tickets > 0 || c.refunds > 0)
 
   return (
     <div className="flex flex-col gap-3">
@@ -81,6 +85,15 @@ export default function PayoutsPanel() {
                 </span>
                 {c.invoiced > 0 && <span className="text-[11.5px] text-[#fbbf24]">Already invoiced, not paid: {taka(c.invoiced)}</span>}
                 {c.later.tickets > 0 && <span className="text-[11.5px] text-[#6e7b7e]">Later: {taka(c.later.payout)} for trips still to leave</span>}
+                {c.refunds > 0 && <span className="text-[11.5px] text-[#fca5a5]">Refunds to take back: −{taka(c.refunds)} (from the next payment)</span>}
+                {c.account ? (
+                  <span className={`text-[11.5px] ${recentlyChanged(c.account) ? 'font-bold text-[#fca5a5]' : 'text-[#9ba7aa]'}`}>
+                    Pay to {ACCOUNT_LABELS[c.account.method]} <span className="font-mono">{c.account.number}</span> · {c.account.name}
+                    {recentlyChanged(c.account) ? ' · ⚠ changed recently, call to confirm' : ''}
+                  </span>
+                ) : (
+                  <span className="text-[11.5px] text-[#fbbf24]">No pay-to details yet</span>
+                )}
               </div>
               <span className="shrink-0 text-[17px] font-bold text-[#f5a524]">{taka(c.owed.payout)}</span>
             </div>

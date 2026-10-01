@@ -20,7 +20,14 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
     const invoice = await db.collection('payouts').findOne({ _id: new ObjectId(params.id), ...(admin ? {} : { companyId: user!.companyId }) })
     if (!invoice) return NextResponse.json({ error: 'Invoice not found' }, { status: 404 })
     const { signFails, signLockedUntil, ...rest } = invoice as any
-    return NextResponse.json({ invoice: invoiceFull(rest), viewer: admin ? 'admin' : 'company' }, { headers: { 'Cache-Control': 'no-store, max-age=0, must-revalidate' } })
+    const full = invoiceFull(rest)
+    // The admin paying it sees where the company wants its money.
+    const payTo = admin
+      ? (await db.collection('companies').findOne({ _id: new ObjectId(String(invoice.companyId)) }, { projection: { payoutAccount: 1 } }))?.payoutAccount || null
+      : null
+    // The company sees its tickets on the invoice, not who bought them.
+    if (!admin) full.lines = full.lines.map((l) => ({ ...l, passengerName: '' }))
+    return NextResponse.json({ invoice: full, viewer: admin ? 'admin' : 'company', payTo }, { headers: { 'Cache-Control': 'no-store, max-age=0, must-revalidate' } })
   } catch (err) {
     console.error(err)
     return NextResponse.json({ error: 'Failed to load the invoice' }, { status: 500 })

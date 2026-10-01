@@ -66,13 +66,29 @@ function RefundButton({ booking, onRefund }: { booking: Booking; onRefund: (id: 
   )
 }
 
+function DeleteButton({ booking, onDelete }: { booking: Booking; onDelete?: (b: Booking) => void }) {
+  if (!onDelete) return null
+  return (
+    <button
+      type="button"
+      onClick={() => onDelete(booking)}
+      aria-label={`Delete booking of ${booking.passengerName}`}
+      className="h-8 shrink-0 rounded-full border border-white/10 px-3 text-[11.5px] font-bold text-[#9ba7aa] transition hover:border-[#f87171]/40 hover:text-[#fca5a5]"
+    >
+      Delete
+    </button>
+  )
+}
+
 export default function BookingList({
   bookings,
   onRefund,
+  onDelete,
   empty = 'No bookings yet.',
 }: {
   bookings: Booking[]
   onRefund: (id: string) => void
+  onDelete?: (b: Booking) => void
   empty?: string
 }) {
   if (bookings.length === 0) {
@@ -84,22 +100,29 @@ export default function BookingList({
       {/* Phone: one card per booking. */}
       <ul className="flex flex-col md:hidden">
         {bookings.map((b) => (
-          <li key={b._id} className="flex items-center gap-3 border-t border-white/[0.06] px-4 py-3.5 first:border-t-0">
-            <Avatar name={b.passengerName} />
-            <div className="flex min-w-0 grow flex-col gap-0.5">
-              <span className="truncate text-[13.5px] font-semibold">{b.passengerName}</span>
-              <span className="truncate text-[11.5px] text-[#8e9a9d]">
-                {b.from} → {b.to} · {formatTripDate(b.date)}
-              </span>
-              <span className="truncate text-[11px] text-[#6e7b7e]">
-                {b.busName} · seats {b.seats.join(', ')}
-              </span>
+          <li key={b._id} className="flex flex-col gap-2.5 border-t border-white/[0.06] px-4 py-3.5 first:border-t-0">
+            <div className="flex items-center gap-3">
+              <Avatar name={b.passengerName} />
+              <div className="flex min-w-0 grow flex-col gap-0.5">
+                <span className="truncate text-[13.5px] font-semibold">{b.passengerName}</span>
+                <span className="truncate text-[11.5px] text-[#8e9a9d]">
+                  {b.from} → {b.to} · {formatTripDate(b.date)}
+                </span>
+                <span className="truncate text-[11px] text-[#6e7b7e]">
+                  {b.busName} · seats {b.seats.join(', ')}
+                </span>
+              </div>
+              <div className="flex shrink-0 flex-col items-end gap-1.5">
+                <span className="text-[13.5px] font-bold">{taka(b.totalPrice)}</span>
+                <StatusChip status={bookingStatus(b)} />
+              </div>
             </div>
-            <div className="flex shrink-0 flex-col items-end gap-1.5">
-              <span className="text-[13.5px] font-bold">{taka(b.totalPrice)}</span>
-              <StatusChip status={bookingStatus(b)} />
-              <RefundButton booking={b} onRefund={onRefund} />
-            </div>
+            {(bookingStatus(b) === 'paid' || onDelete) && (
+              <div className="flex justify-end gap-1.5">
+                <RefundButton booking={b} onRefund={onRefund} />
+                <DeleteButton booking={b} onDelete={onDelete} />
+              </div>
+            )}
           </li>
         ))}
       </ul>
@@ -150,7 +173,10 @@ export default function BookingList({
                   <StatusChip status={bookingStatus(b)} />
                 </td>
                 <td className="px-5 py-3 text-right">
-                  <RefundButton booking={b} onRefund={onRefund} />
+                  <div className="flex justify-end gap-1.5">
+                    <RefundButton booking={b} onRefund={onRefund} />
+                    <DeleteButton booking={b} onDelete={onDelete} />
+                  </div>
                 </td>
               </tr>
             ))}

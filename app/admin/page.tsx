@@ -154,7 +154,20 @@ export default function AdminDashboard() {
       toast.error(data?.error || 'Failed to refund')
       return
     }
-    toast.success('Ticket refunded')
+    toast.success(data?.note ? `Ticket refunded. ${data.note}` : 'Ticket refunded', { duration: data?.note ? 8000 : 3000 })
+    loadAll()
+  }
+
+  const handleDelete = async (booking: Booking) => {
+    const what = `${booking.passengerName} · ${booking.from} → ${booking.to} · seats ${booking.seats.join(', ')}`
+    if (!confirm(`Delete this booking?\n\n${what}\n\nIt is removed from every list and its seats go back on sale. A copy is kept in the archive.`)) return
+    const res = await fetch(`/api/bookings/${booking._id}`, { method: 'DELETE' })
+    const data = await res.json().catch(() => null)
+    if (!res.ok) {
+      toast.error(data?.error || 'Failed to delete')
+      return
+    }
+    toast.success('Booking deleted')
     loadAll()
   }
 
@@ -274,7 +287,7 @@ export default function AdminDashboard() {
           {section === 'dashboard' && (
             <Overview stats={stats} bookings={bookings} buses={buses} onRefund={handleRefund} onSeeAllBookings={() => go('bookings')} />
           )}
-          {section === 'bookings' && <BookingsSection bookings={bookings} query={query} onQuery={setQuery} onRefund={handleRefund} />}
+          {section === 'bookings' && <BookingsSection bookings={bookings} query={query} onQuery={setQuery} onRefund={handleRefund} onDelete={handleDelete} />}
           {section === 'buses' && <BusesSection buses={buses} bookings={bookings} companies={companies} fleet={fleet} places={places} onChanged={loadAll} />}
           {section === 'costs' && <CostsSection />}
           {section === 'companies' && (

@@ -17,9 +17,10 @@ export interface CounterSeat {
   soldAt: string | null
 }
 
+/** A ticket sold on BusHub, as the company sees it: no passenger name or phone. */
 export interface OnlineTicket {
   code: string
-  passengerName: string
+  bookedAt: string | null
   seats: string[]
   /** What the passenger paid. */
   total: number

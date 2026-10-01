@@ -106,8 +106,14 @@ function TripCard({ trip, open, onToggle, onChanged }: { trip: CompanyTrip; open
               <span className="label-xs">Sold on BusHub · you get {taka(payout)}</span>
               {trip.onlineTickets!.map((t) => (
                 <div key={t.code} className="flex items-start justify-between gap-3 text-[12.5px]">
-                  <span className="min-w-0 truncate">
-                    {t.passengerName} <span className="text-[#78868a]">· {t.seats.join(', ')}</span>
+                  <span className="flex min-w-0 flex-col">
+                    <span>
+                      Seats {t.seats.join(', ')} <span className="text-[#78868a]">· sold by BusHub</span>
+                    </span>
+                    <span className="truncate font-mono text-[11px] text-[#78868a]">
+                      {t.code}
+                      {t.bookedAt ? ` · ${dhakaTime(t.bookedAt)}` : ''}
+                    </span>
                   </span>
                   <span className={`shrink-0 font-semibold ${t.boarded ? 'text-[#34d399]' : 'text-[#9ba7aa]'}`}>{t.boarded ? 'Boarded ✓' : taka(t.payout)}</span>
                 </div>
@@ -139,16 +145,18 @@ export default function ManagerView() {
   const [bookings, setBookings] = useState<SaleBooking[]>([])
   const [stats, setStats] = useState<ScanStats | null>(null)
   const [payments, setPayments] = useState<PaymentsData | null>(null)
+  const loadPayments = () =>
+    fetch('/api/company/payouts', { cache: 'no-store' })
+      .then((r) => r.json())
+      .then((d) => d.owed && setPayments(d))
+      .catch(() => undefined)
 
   useEffect(() => {
     fetch('/api/bookings?as=company', { cache: 'no-store' })
       .then((r) => r.json())
       .then((d) => setBookings(d.bookings || []))
       .catch(() => undefined)
-    fetch('/api/company/payouts', { cache: 'no-store' })
-      .then((r) => r.json())
-      .then((d) => d.owed && setPayments(d))
-      .catch(() => undefined)
+    loadPayments()
     fetch('/api/scan', { cache: 'no-store' })
       .then((r) => r.json())
       .then((d) => !d.error && setStats(d))
@@ -168,8 +176,11 @@ export default function ManagerView() {
     },
     { online: 0, counter: 0 }
   )
-  // Everything BusHub has not paid yet: invoiced or not, trips gone or still to leave.
-  const owed = payments ? payments.owed.payout + payments.invoiced + payments.later.payout : null
+  // Everything BusHub has not paid yet (invoiced or not, trips gone or still to leave), less
+  // refunds the company owes back.
+  const owed = payments
+    ? payments.owed.payout + payments.invoiced + payments.later.payout - payments.refunds.reduce((n, r) => n + r.amount, 0)
+    : null
   const toSign = payments?.invoices.filter((i) => i.status === 'paid').length ?? 0
 
   if (!data) return <div className="py-16 text-center text-sm text-[#8e9a9d]">Loading...</div>
@@ -255,7 +266,7 @@ export default function ManagerView() {
       )}
 
       {tab === 'sales' && <MoneyView trips={trips} fleet={data.fleet} me={data.me} bookings={bookings} onChanged={reload} />}
-      {tab === 'payments' && <PaymentsPanel data={payments} />}
+      {tab === 'payments' && <PaymentsPanel data={payments} onChanged={loadPayments} />}
       {tab === 'scans' && <ScanHistory stats={stats} showScanner />}
       {tab === 'staff' && <StaffPanel />}
     </div>
