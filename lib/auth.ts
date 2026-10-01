@@ -9,10 +9,24 @@ const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-change-me'
  */
 export const EMAIL_COLLATION = { locale: 'en', strength: 2 } as const
 
+/**
+ * What a bus company login may do. The company's own login is the manager; the manager adds
+ * counter staff (sell seats, add trips) and scanner staff (board passengers).
+ */
+export type StaffRole = 'manager' | 'counter' | 'scanner'
+
 export interface CompanyTokenPayload {
   companyId: string
   email: string
   role: 'company'
+  /** Missing on logins from before staff existed: those are the company's own, the manager. */
+  staffRole?: StaffRole
+  staffId?: string
+  name?: string
+}
+
+export function companyRole(token: Pick<CompanyTokenPayload, 'staffRole'>): StaffRole {
+  return token.staffRole ?? 'manager'
 }
 
 export interface AdminTokenPayload {

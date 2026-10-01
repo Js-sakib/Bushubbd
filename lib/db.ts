@@ -22,6 +22,11 @@ async function ensureIndexes(db: Db) {
     ],
     ['bookings', { busId: 1, status: 1 }, { name: 'bus_bookings' }],
     ['leads', { nameKey: 1 }, { unique: true, name: 'lead_name_unique' }],
+    // One login per email whatever its capitals; the company logins are checked in code.
+    ['staff', { email: 1 }, { unique: true, name: 'staff_email_unique', collation: { locale: 'en', strength: 2 } }],
+    ['staff', { companyId: 1 }, { name: 'company_staff' }],
+    // A seat is sold at the counter once.
+    ['counterSales', { busId: 1, seat: 1 }, { unique: true, name: 'counter_seat_unique' }],
   ]
   for (const [collection, key, options] of indexes) {
     try {

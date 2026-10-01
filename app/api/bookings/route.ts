@@ -15,6 +15,7 @@ import { tripDeparted } from '@/lib/trips'
 import { seatSelectionError, takenSeats } from '@/lib/seats'
 import { getCompanyFromCookies, getAdminFromCookies } from '@/lib/auth'
 import { Booking } from '@/lib/models'
+import { getCompanyUser } from '@/lib/staff'
 import { cleanBags } from '@/lib/luggage'
 import { phoneKey } from '@/lib/phone'
 import { purchaseLimitError } from '@/lib/purchaseLimits'
@@ -163,6 +164,10 @@ export async function GET(req: NextRequest) {
     }
 
     const { db } = await connectToDatabase()
+    // Of a company's logins, only the manager sees its passengers.
+    if (company && (await getCompanyUser(db))?.role !== 'manager') {
+      return NextResponse.json({ error: 'Only the company manager can see bookings' }, { status: 403 })
+    }
     await repairWronglyExpiredTickets(db)
     let query: Record<string, any> = {}
     if (company) {

@@ -105,6 +105,32 @@ export interface Company {
   passwordResetAt?: string
 }
 
+/** A counter or scanner login a company manager created. The manager is the company login itself. */
+export interface Staff {
+  _id?: string
+  companyId: string
+  companyName: string
+  name: string
+  email: string
+  passwordHash: string
+  role: 'counter' | 'scanner'
+  status: 'active' | 'disabled'
+  createdAt: string
+  passwordResetAt?: string
+}
+
+/** Who sold a seat at the counter, so the manager can see it on the seat map. */
+export interface CounterSale {
+  _id?: string
+  busId: string
+  seat: string
+  companyId: string
+  soldBy: string
+  staffId?: string
+  role: 'manager' | 'counter' | 'admin'
+  soldAt: string
+}
+
 export interface WhatsAppSession {
   _id?: string
   phone: string

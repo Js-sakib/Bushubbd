@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { ObjectId } from 'mongodb'
+import { ObjectId, type Db } from 'mongodb'
 import { connectToDatabase } from '@/lib/db'
-import { getAdminFromCookies, getCompanyFromCookies } from '@/lib/auth'
+import { getAdminFromCookies } from '@/lib/auth'
+import { getCompanyUser } from '@/lib/staff'
 import { repairWronglyExpiredTickets } from '@/lib/seatHold'
 import { recordMiss, tooManyMisses } from '@/lib/rateLimit'
 import { ScanResult, extractBookingCode, judgeTicket, lastDhakaDays, startOfDhakaDay, summarizeScans } from '@/lib/scan'
@@ -14,10 +15,25 @@ const NO_STORE = { 'Cache-Control': 'no-store, max-age=0, must-revalidate' }
 /** Wrong codes one operator login may enter in ten minutes. */
 const SCAN_MISS_LIMIT = 20
 
-function scannerId(): string | null {
-  const company = getCompanyFromCookies()
-  if (company) return company.companyId
-  return getAdminFromCookies() ? 'admin' : null
+interface Scanner {
+  /** Whose scans these are: the scanner login, or 'admin'. */
+  id: string
+  /** The company whose tickets this scanner may board, or 'admin' for any. */
+  companyId: string
+  name: string
+}
+
+/**
+ * Only scanner logins (and the BusHub admin) board passengers. The manager sees every scan of the
+ * company; counter logins sell seats and have nothing to do here.
+ */
+async function currentScanner(db: Db): Promise<Scanner | 'forbidden' | null> {
+  const user = await getCompanyUser(db)
+  if (user) {
+    if (user.role !== 'scanner' || !user.staffId) return 'forbidden'
+    return { id: user.staffId, companyId: user.companyId, name: user.name }
+  }
+  return getAdminFromCookies() ? { id: 'admin', companyId: 'admin', name: 'BusHub admin' } : null
 }
 
 /**
@@ -27,19 +43,24 @@ function scannerId(): string | null {
  */
 export async function POST(req: NextRequest) {
   try {
-    const scanner = scannerId()
+    const { db } = await connectToDatabase()
+    const scanner = await currentScanner(db)
     if (!scanner) {
       return NextResponse.json({ error: 'Please log in to scan tickets' }, { status: 401 })
+    }
+    if (scanner === 'forbidden') {
+      return NextResponse.json({ error: 'Scanning needs a Scanner login. Your manager can add one.' }, { status: 403 })
     }
 
     const { text } = await req.json().catch(() => ({ text: '' }))
     const bookingCode = extractBookingCode(String(text || ''))
-    const { db } = await connectToDatabase()
     const now = new Date()
 
     const respond = async (result: ScanResult, booking?: any, busCompanyId?: string, checkedInAt?: string) => {
       await db.collection('scans').insertOne({
-        scannerId: scanner,
+        scannerId: scanner.id,
+        scannerName: scanner.name,
+        companyId: scanner.companyId,
         busCompanyId: busCompanyId || null,
         bookingCode: bookingCode || null,
         bookingId: booking?._id?.toString() || null,
@@ -81,7 +102,7 @@ export async function POST(req: NextRequest) {
 
     // After too many codes that match no ticket, this login waits: nobody can try codes one
     // after another until a real one turns up.
-    const missKey = `scan:${scanner}`
+    const missKey = `scan:${scanner.id}`
     if (await tooManyMisses(db, missKey, SCAN_MISS_LIMIT)) {
       return NextResponse.json(
         { error: 'Too many wrong codes. Wait 10 minutes, then scan again.' },
@@ -104,7 +125,7 @@ export async function POST(req: NextRequest) {
       : null
     const busCompanyId = bus?.companyId as string | undefined
 
-    const verdict = judgeTicket(booking as any, busCompanyId, scanner, now)
+    const verdict = judgeTicket(booking as any, busCompanyId, scanner.companyId, now)
     if (verdict !== 'valid') return respond(verdict, booking, busCompanyId)
 
     // Only one scan can win, so the same ticket cannot board twice from two phones at once.
@@ -113,7 +134,7 @@ export async function POST(req: NextRequest) {
       .collection('bookings')
       .updateOne(
         { _id: booking._id, checkedIn: { $ne: true } },
-        { $set: { checkedIn: true, checkedInAt, checkedInBy: scanner } }
+        { $set: { checkedIn: true, checkedInAt, checkedInBy: scanner.id, checkedInByName: scanner.name } }
       )
     if (boarded.modifiedCount === 0) {
       const latest = await db.collection('bookings').findOne({ _id: booking._id })
@@ -126,18 +147,22 @@ export async function POST(req: NextRequest) {
   }
 }
 
-/** Today's and the last seven days' boardings for this scanner, plus recent scans. */
+/**
+ * Today's and the last seven days' boardings, plus recent scans: a scanner sees its own, the
+ * company manager sees every scanner of the company (and scans from before staff logins).
+ */
 export async function GET() {
   try {
-    const scanner = scannerId()
-    if (!scanner) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+    const { db } = await connectToDatabase()
+    const user = await getCompanyUser(db)
+    let filter: Record<string, unknown>
+    if (user?.role === 'scanner' && user.staffId) filter = { scannerId: user.staffId }
+    else if (user?.role === 'manager') filter = { $or: [{ companyId: user.companyId }, { scannerId: user.companyId }] }
+    else if (!user && getAdminFromCookies()) filter = {}
+    else return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
     const days = lastDhakaDays(7)
     const since = startOfDhakaDay(days[0]).toISOString()
-    const { db } = await connectToDatabase()
-    const filter = scanner === 'admin' ? {} : { scannerId: scanner }
     const scans = await db
       .collection('scans')
       .find({ ...filter, scannedAt: { $gte: since } })
@@ -158,6 +183,7 @@ export async function GET() {
           travelDate: s.travelDate,
           departureTime: s.departureTime,
           seatCount: s.seatCount,
+          scannerName: s.scannerName || null,
           scannedAt: s.scannedAt,
         })),
       },
