@@ -123,12 +123,12 @@ function PayState({ trip, onPay, busy }: { trip: MoneyTrip; onPay: (t: MoneyTrip
     <div className="flex flex-col gap-2">
       {trip.pay.paid > 0 && <span className="text-[12px] font-semibold text-[#0a8a84]">✓ Paid {taka(trip.pay.paid)}</span>}
       {trip.pay.invoiced > 0 && trip.pay.invoiceId && (
-        <a href={`/invoice/${trip.pay.invoiceId}?as=admin`} className="glass-btn h-11 text-sm">
+        <a href={`/invoice/${trip.pay.invoiceId}?as=admin`} className="glass-btn btn-orange h-11 text-sm">
           Open invoice {trip.pay.invoiceNumber} · pay {taka(trip.pay.invoiced)}
         </a>
       )}
       {trip.pay.owed > 0 && (
-        <button type="button" disabled={busy} onClick={() => onPay(trip)} className="glass-btn h-11 text-sm">
+        <button type="button" disabled={busy} onClick={() => onPay(trip)} className="glass-btn btn-orange h-11 text-sm">
           {busy ? 'Making invoice…' : `Pay this trip · ${taka(trip.pay.owed)}`}
         </button>
       )}
@@ -299,9 +299,9 @@ function TripsMoney() {
           <Line label="Already paid to companies" value={taka(total.paid)} tone="text-[#0a8a84]" />
           <Line label="Pay later" sub="Trips still to leave" value={taka(total.later)} tone="text-[#2563eb]" />
         </div>
-        <div className="flex items-center justify-between gap-3 rounded-2xl bg-gradient-to-br from-[#c77a0e]/60 to-[#a25f06]/50 px-3.5 py-3">
+        <div className="flex items-center justify-between gap-3 rounded-2xl bg-gradient-to-br from-[#f2661d] to-[#feb249] px-3.5 py-3 text-[#1a0d03] shadow-[0_10px_24px_rgba(242,102,29,0.3)]">
           <span className="text-[13.5px] font-bold">To pay now</span>
-          <span className="display text-[20px] font-bold text-[#111111]">{taka(total.toPay)}</span>
+          <span className="display text-[20px] font-bold text-[#1a0d03]">{taka(total.toPay)}</span>
         </div>
       </div>
 

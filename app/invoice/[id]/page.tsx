@@ -178,7 +178,7 @@ function AdminActions({ inv, onDone }: { inv: Invoice; onDone: () => void }) {
                 `${inv.approval ? '' : 'The company has not approved this invoice yet.\n\n'}Record ${taka(inv.totals.payout)} paid to ${inv.companyName} ${says}?`
               ) && send({ action: 'paid', method, reference: reference.trim(), note }, 'Payment recorded')
             }
-            className="glass-btn h-12"
+            className="glass-btn btn-orange h-12"
           >
             {busy ? 'Saving…' : `I paid ${taka(inv.totals.payout)}`}
           </button>

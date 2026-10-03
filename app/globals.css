@@ -403,3 +403,16 @@ input[type='date']::-webkit-calendar-picker-indicator {
   background: rgba(255, 255, 255, 0.7);
   color: var(--ink);
 }
+
+/* Money buttons (pay a trip, open an invoice to pay, I paid): solid brand orange. */
+.glass-btn.btn-orange,
+.light-panel .glass-btn.btn-orange {
+  background: linear-gradient(135deg, #f2661d, #feb249);
+  border-color: rgba(255, 255, 255, 0.45);
+  color: #1a0d03;
+  box-shadow: 0 10px 24px rgba(242, 102, 29, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+.glass-btn.btn-orange:hover:not(:disabled),
+.light-panel .glass-btn.btn-orange:hover:not(:disabled) {
+  box-shadow: 0 14px 30px rgba(242, 102, 29, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
