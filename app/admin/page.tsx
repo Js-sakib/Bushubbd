@@ -13,6 +13,7 @@ import BookingsSection from './BookingsSection'
 import BusesSection from './BusesSection'
 import CompaniesSection from './CompaniesSection'
 import CostsSection from './CostsSection'
+import SearchBox from '../SearchBox'
 import LeadsSection, { isDue } from './LeadsSection'
 import type { Booking, Bus, CompanyPrefill, CompanyRow, FleetBus, LeadRow, Section } from './types'
 import { LogoMark } from '../BrandLogo'
@@ -284,6 +285,18 @@ export default function AdminDashboard() {
         </header>
 
         <main className="px-3 pb-28 pt-4 sm:px-5 lg:px-6 lg:pb-10">
+          {section === 'dashboard' && (
+            <div className="mb-4 md:hidden">
+              <SearchBox
+                value={query}
+                onChange={(q) => {
+                  setQuery(q)
+                  if (q) setSection('bookings')
+                }}
+                placeholder="Search passenger, code, route, phone"
+              />
+            </div>
+          )}
           {section === 'dashboard' && (
             <Overview stats={stats} bookings={bookings} buses={buses} onRefund={handleRefund} onSeeAllBookings={() => go('bookings')} />
           )}

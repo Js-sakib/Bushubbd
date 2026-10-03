@@ -5,6 +5,8 @@ import toast from 'react-hot-toast'
 import { formatTripDate } from '@/lib/dates'
 import { statusOf, type InvoiceSummaryView, type PayoutTotalsView } from '@/lib/payoutText'
 import { taka } from '@/lib/tripMoney'
+import SearchBox from '../SearchBox'
+import { matches } from '@/lib/search'
 
 interface CompanyOwed {
   _id: string
@@ -27,6 +29,7 @@ const range = (from: string, to: string) => (from === to ? formatTripDate(from) 
 export default function PayoutsPanel() {
   const [data, setData] = useState<{ companies: CompanyOwed[]; invoices: InvoiceSummaryView[] } | null>(null)
   const [busy, setBusy] = useState<string | null>(null)
+  const [search, setSearch] = useState('')
 
   const load = useCallback(() => {
     fetch('/api/admin/payouts', { cache: 'no-store' })
@@ -51,10 +54,12 @@ export default function PayoutsPanel() {
   const owedNow = data.companies.reduce((n, c) => n + Math.max(0, c.owed.payout + c.invoiced - c.refunds), 0)
   const later = data.companies.reduce((n, c) => n + c.later.payout, 0)
   const toSign = data.invoices.filter((i) => i.status === 'paid').length
-  const companies = data.companies.filter((c) => c.owed.tickets > 0 || c.invoiced > 0 || c.later.tickets > 0 || c.refunds > 0)
+  const companies = data.companies.filter((c) => (c.owed.tickets > 0 || c.invoiced > 0 || c.later.tickets > 0 || c.refunds > 0) && matches(search, c.name))
+  const invoices = data.invoices.filter((i) => matches(search, i.number, i.companyName, i.from, i.to, formatTripDate(i.from), formatTripDate(i.to), statusOf(i).label))
 
   return (
     <div className="flex flex-col gap-3 lg:grid lg:grid-cols-2 lg:items-start">
+      <SearchBox value={search} onChange={setSearch} placeholder="Search company, invoice number, date, status" className="lg:col-span-2" />
       <div className="flex flex-col gap-3">
       <div className="grid grid-cols-2 gap-2.5">
         <div className="flex flex-col gap-1 rounded-[18px] bg-gradient-to-br from-[#c77a0e] to-[#a25f06] p-3.5">
@@ -104,7 +109,7 @@ export default function PayoutsPanel() {
         <div className="border-b border-[#1a2123] px-4 py-3">
           <span className="label-xs">Invoices</span>
         </div>
-        {data.invoices.map((i) => (
+        {invoices.map((i) => (
           <a key={i._id} href={`/invoice/${i._id}?as=admin`} className="flex items-start gap-3 border-b border-[#1a2123] px-4 py-3 last:border-b-0 hover:bg-white/[0.03]">
             <div className="flex min-w-0 grow flex-col gap-0.5">
               <span className="truncate text-[13.5px] font-bold">

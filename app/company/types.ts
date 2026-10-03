@@ -1,4 +1,5 @@
 import type { StaffRole } from '@/lib/auth'
+import { formatTripDate } from '@/lib/dates'
 import { tripMoney, type TripCost } from '@/lib/tripMoney'
 
 export interface Me {
@@ -93,4 +94,9 @@ export function companyTripMoney(trip: CompanyTrip) {
 /** How a bus reads in a list: number plate first (it never changes), then name and type. */
 export function busLabel(f: { name: string; plateNumber?: string; busType: string }) {
   return f.plateNumber ? `${f.plateNumber} · ${f.name} · ${f.busType}` : `${f.name} · ${f.busType}`
+}
+
+/** What a trip can be found by in the search boxes. */
+export function tripSearchText(t: CompanyTrip) {
+  return [t.from, t.to, t.plateNumber, t.busName, t.busType, t.date, formatTripDate(t.date), t.departureTime, t.boardingPoint, t.counterSeats.map((c) => c.soldBy)]
 }

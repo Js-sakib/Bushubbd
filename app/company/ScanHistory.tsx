@@ -1,6 +1,9 @@
 'use client'
 
+import { useState } from 'react'
 import { formatTripDate } from '@/lib/dates'
+import { matches } from '@/lib/search'
+import SearchBox from '../SearchBox'
 import type { DayCount, ScanResult, ScannerCount } from '@/lib/scan'
 
 export interface RecentScan {
@@ -44,6 +47,7 @@ function dhakaClock(iso: string): string {
 
 /** Boardings by day and the latest scans; the manager also sees which scanner did each. */
 export default function ScanHistory({ stats, showScanner = false }: { stats: ScanStats | null; showScanner?: boolean }) {
+  const [search, setSearch] = useState('')
   // The manager's page is wide on a computer: counts on the left, the latest scans on the right.
   return (
     <div className={`mt-5 flex flex-col gap-4 ${showScanner ? 'lg:grid lg:grid-cols-2 lg:items-start' : ''}`}>
@@ -98,7 +102,14 @@ export default function ScanHistory({ stats, showScanner = false }: { stats: Sca
             <div className="border-b border-[#1a2123] px-4 py-3">
               <span className="label-xs">Recent scans</span>
             </div>
-            {(stats?.recent ?? []).map((item) => {
+            {(stats?.recent.length || 0) > 4 && (
+              <div className="border-b border-[#1a2123] px-3 py-2.5">
+                <SearchBox value={search} onChange={setSearch} placeholder="Search ticket code, bus, route, scanner" />
+              </div>
+            )}
+            {(stats?.recent ?? [])
+              .filter((item) => matches(search, item.bookingCode, item.busName, item.from, item.to, item.travelDate, item.scannerName, RESULT_CHIPS[item.result]?.label))
+              .map((item) => {
               const chip = RESULT_CHIPS[item.result] ?? RESULT_CHIPS.not_found
               return (
                 <div key={item.id} className="flex items-start gap-3 border-b border-[#1a2123] px-4 py-3 last:border-b-0">

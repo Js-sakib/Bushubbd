@@ -6,6 +6,8 @@ import { formatTripDate } from '@/lib/dates'
 import { taka } from '@/lib/tripMoney'
 import PayoutsPanel from './PayoutsPanel'
 import Plate from '../Plate'
+import SearchBox from '../SearchBox'
+import { matches } from '@/lib/search'
 
 interface MoneyTrip {
   _id: string
@@ -97,6 +99,7 @@ function TripsMoney() {
   const [data, setData] = useState<{ companies: { _id: string; name: string }[]; trips: MoneyTrip[] } | null>(null)
   const [companyId, setCompanyId] = useState('')
   const [bus, setBus] = useState('')
+  const [search, setSearch] = useState('')
   const [period, setPeriod] = useState<Period>('all')
   const [busy, setBusy] = useState<string | null>(null)
 
@@ -119,10 +122,11 @@ function TripsMoney() {
       (t) =>
         (!companyId || t.companyId === companyId) &&
         (!bus || t.busName === bus) &&
-        (period === 'all' || (period === 'finished' ? t.departed : !t.departed))
+        (period === 'all' || (period === 'finished' ? t.departed : !t.departed)) &&
+        matches(search, t.companyName, t.from, t.to, t.busName, t.plateNumber, t.date, formatTripDate(t.date), t.departureTime, t.pay.invoiceNumber)
     )
     return period === 'upcoming' ? list : [...list].reverse()
-  }, [data, companyId, bus, period])
+  }, [data, companyId, bus, period, search])
   const total = useMemo(() => sum(shown), [shown])
 
   const pay = async (trip: MoneyTrip) => {
@@ -146,6 +150,7 @@ function TripsMoney() {
 
   return (
     <div className="flex flex-col gap-3">
+      <SearchBox value={search} onChange={setSearch} placeholder="Search route, number plate, company, bus, date, invoice" />
       <div className="grid gap-2 sm:grid-cols-2">
         <select
           value={companyId}

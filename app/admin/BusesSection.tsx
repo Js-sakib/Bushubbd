@@ -12,6 +12,8 @@ import type { Booking, Bus, CompanyRow, FleetBus } from './types'
 import { dhakaDate } from '@/lib/scan'
 import { dhakaClock, tripDeparted } from '@/lib/trips'
 import Plate from '../Plate'
+import SearchBox from '../SearchBox'
+import { matches } from '@/lib/search'
 
 const EMPTY_FLEET_FORM = { name: '', plateNumber: '', companyId: '', busType: 'AC', totalSeats: '40', logoUrl: '' }
 const EMPTY_TRIP_FORM = {
@@ -154,6 +156,11 @@ const BUS = (
  * Buses are listed once (name, company, type, seats) and every trip picks one from a dropdown,
  * so a ticket's bus and company name always match the company that scans it.
  */
+/** What a trip can be found by in the search box. */
+function tripFound(search: string, b: Bus) {
+  return matches(search, b.from, b.to, b.busName, b.plateNumber, b.companyName, b.date, formatTripDate(b.date), b.departureTime, b.boardingPoint)
+}
+
 export default function BusesSection({
   buses,
   bookings,
@@ -214,17 +221,20 @@ export default function BusesSection({
   }
   const boardingCopied = Boolean(tripForm.boardingPoint) && tripForm.boardingPoint === autoBoarding.current.point
 
-  const upcoming = useMemo(() => buses.filter((b) => !tripDeparted(b.date, b.departureTime, now)).sort(byTime), [buses, now])
+  const [search, setSearch] = useState('')
+  const upcomingAll = useMemo(() => buses.filter((b) => !tripDeparted(b.date, b.departureTime, now)).sort(byTime), [buses, now])
+  const upcoming = useMemo(() => upcomingAll.filter((b) => tripFound(search, b)), [upcomingAll, search])
   const finished = useMemo(
-    () => buses.filter((b) => tripDeparted(b.date, b.departureTime, now)).sort((a, b) => byTime(b, a)),
-    [buses, now]
+    () => buses.filter((b) => tripDeparted(b.date, b.departureTime, now) && tripFound(search, b)).sort((a, b) => byTime(b, a)),
+    [buses, now, search]
   )
+  const shownFleet = fleet.filter((f) => matches(search, f.name, f.plateNumber, f.companyName, f.busType))
   const sales = useMemo(() => salesByTrip(bookings), [bookings])
   const upcomingByFleet = useMemo(() => {
     const map = new Map<string, number>()
-    for (const b of upcoming) if (b.fleetId) map.set(b.fleetId, (map.get(b.fleetId) || 0) + 1)
+    for (const b of upcomingAll) if (b.fleetId) map.set(b.fleetId, (map.get(b.fleetId) || 0) + 1)
     return map
-  }, [upcoming])
+  }, [upcomingAll])
 
   // On today's date, a departure time that has already gone can't be picked.
   const pastTime = tripForm.date === today && tripForm.departureTime !== '' && tripForm.departureTime <= clock
@@ -360,6 +370,7 @@ export default function BusesSection({
 
   return (
     <div className="flex flex-col gap-4 sm:gap-5">
+      <SearchBox value={search} onChange={setSearch} placeholder="Search buses and trips: route, number plate, bus, company, date" />
       <PlacesPanel places={places} onChanged={onChanged} />
 
       <section className="glass flex flex-col">
@@ -402,7 +413,7 @@ export default function BusesSection({
             )}
             {fleet.length > 0 && (
               <ul className="flex flex-col">
-                {fleet.map((f) => {
+                {shownFleet.map((f) => {
                   const next = upcomingByFleet.get(f._id) || 0
                   return (
                     <li key={f._id} className="flex flex-col gap-2.5 border-t border-white/[0.06] px-5 py-3 sm:flex-row sm:items-center sm:gap-3">
@@ -542,7 +553,9 @@ export default function BusesSection({
           <h2 className="display text-[15.5px] font-bold">Upcoming trips</h2>
           <span className="text-[11.5px] text-[#78868a]">{upcoming.length} on sale</span>
         </div>
-        {upcoming.length === 0 && <p className="px-5 pb-8 pt-4 text-center text-sm text-[#8e9a9d]">No upcoming trips. Add one above.</p>}
+        {upcoming.length === 0 && (
+          <p className="px-5 pb-8 pt-4 text-center text-sm text-[#8e9a9d]">{search ? 'No upcoming trips match your search.' : 'No upcoming trips. Add one above.'}</p>
+        )}
         <ul className="flex flex-col">
           {upcoming.map((b) => {
             const linked = Boolean(b.fleetId)
