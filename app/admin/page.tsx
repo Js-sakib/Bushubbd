@@ -205,7 +205,7 @@ export default function AdminDashboard() {
   const title = NAV.find((n) => n.key === section)?.label ?? 'Dashboard'
 
   return (
-    <div className="relative min-h-screen overflow-x-clip">
+    <div className="panel-buttons relative min-h-screen overflow-x-clip">
       {/* Colour glows the glass panels blur over. Decoration only. */}
       <div aria-hidden className="pointer-events-none fixed inset-0 -z-10">
         <div className="absolute -left-40 -top-40 h-[480px] w-[480px] rounded-full bg-[#f2661d] opacity-[0.16] blur-[120px]" />
@@ -234,7 +234,7 @@ export default function AdminDashboard() {
                   aria-current={active ? 'page' : undefined}
                   className={`flex h-11 items-center gap-3 rounded-2xl px-3.5 text-[14px] font-semibold transition ${
                     active
-                      ? 'bg-gradient-to-r from-[#f2661d] to-[#feb249] text-[#1a0d03] shadow-[0_8px_24px_rgba(242,102,29,0.35)]'
+                      ? 'bg-[#002447] text-[#fbeceb] shadow-[0_8px_24px_rgba(0,36,71,0.3)]'
                       : 'text-[#2b2b2b] hover:bg-[#111111]/[0.05] hover:text-[#111111]'
                   }`}
                 >
@@ -350,7 +350,7 @@ export default function AdminDashboard() {
                 onClick={() => go(item.key)}
                 aria-current={active ? 'page' : undefined}
                 className={`relative flex flex-col items-center gap-1 rounded-2xl py-2 text-[10.5px] font-bold transition ${
-                  active ? 'bg-gradient-to-br from-[#f2661d] to-[#feb249] text-[#1a0d03] shadow-[0_6px_18px_rgba(242,102,29,0.4)]' : 'text-[#3f3f3f]'
+                  active ? 'bg-[#002447] text-[#fbeceb] shadow-[0_8px_24px_rgba(0,36,71,0.3)]' : 'text-[#3f3f3f]'
                 }`}
               >
                 {item.icon}

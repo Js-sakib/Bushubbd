@@ -62,10 +62,10 @@ export default function PayoutsPanel() {
       <SearchBox value={search} onChange={setSearch} placeholder="Search company, invoice number, date, status" className="lg:col-span-2" />
       <div className="flex flex-col gap-3">
       <div className="grid grid-cols-2 gap-2.5">
-        <div className="flex flex-col gap-1 rounded-[18px] bg-gradient-to-br from-[#c77a0e] to-[#a25f06] p-3.5">
-          <span className="text-[11px] font-bold text-[#fae3bc]">To pay now</span>
-          <span className="display text-[22px] font-bold leading-tight text-white">{taka(owedNow)}</span>
-          <span className="text-[10.5px] text-[#fae3bc]">Trips that have left</span>
+        <div className="flex flex-col gap-1 rounded-[18px] bg-gradient-to-br from-[#f2661d] to-[#feb249] p-3.5 shadow-[0_10px_24px_rgba(242,102,29,0.3)]">
+          <span className="text-[11px] font-bold text-[#4a1d00]">To pay now</span>
+          <span className="display text-[22px] font-bold leading-tight text-[#1a0d03]">{taka(owedNow)}</span>
+          <span className="text-[10.5px] text-[#4a1d00]">Trips that have left</span>
         </div>
         <div className="flex flex-col gap-1 rounded-[18px] bg-gradient-to-br from-[#2f5bc4] to-[#24479b] p-3.5">
           <span className="text-[11px] font-bold text-[#dbe6ff]">Owed later</span>
@@ -94,7 +94,7 @@ export default function PayoutsPanel() {
               <span className="shrink-0 text-[17px] font-bold text-[#0b7f8c]">{taka(c.owed.payout)}</span>
             </div>
             {c.owed.tickets > 0 && (
-              <button type="button" disabled={busy === c._id} onClick={() => makeInvoice(c)} className="glass-btn h-11 text-sm">
+              <button type="button" disabled={busy === c._id} onClick={() => makeInvoice(c)} className="glass-btn btn-orange h-11 text-sm">
                 {busy === c._id ? 'Making…' : `Make invoice and pay ${taka(c.owed.payout)}`}
               </button>
             )}

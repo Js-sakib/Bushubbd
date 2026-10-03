@@ -70,20 +70,30 @@ export default function ScannerView() {
   return (
     <div>
       <div className="mt-5 grid grid-cols-2 gap-3">
-        <div className="flex flex-col gap-1.5 rounded-[18px] bg-gradient-to-br from-[#0dabab] to-[#0a7479] p-4">
-          <span className="text-[11.5px] font-bold text-[#d9fbfa]">Boarded today</span>
-          <span className="display text-3xl font-bold leading-none text-white">{stats?.today.passengers ?? '–'}</span>
-          <span className="text-[11.5px] text-[#d9fbfa]">
+        <button
+          type="button"
+          onClick={() => setTab('history')}
+          className="flex flex-col gap-1.5 rounded-[18px] bg-[#002447] p-4 text-left text-[#fbeceb] shadow-[0_10px_24px_rgba(0,36,71,0.3)] transition hover:-translate-y-0.5"
+        >
+          <span className="text-[11.5px] font-bold opacity-80">Boarded today</span>
+          <span className="display text-3xl font-bold leading-none">{stats?.today.passengers ?? '–'}</span>
+          <span className="text-[11.5px] opacity-80">
             {stats ? `${stats.today.tickets} ticket${stats.today.tickets === 1 ? '' : 's'} scanned` : 'passengers'}
           </span>
-        </div>
-        <div className="flex flex-col gap-1.5 rounded-[18px] bg-gradient-to-br from-[#2f5bc4] to-[#24479b] p-4">
-          <span className="text-[11.5px] font-bold text-[#dbe6ff]">Last 7 days</span>
-          <span className="display text-3xl font-bold leading-none text-white">{stats?.week.passengers ?? '–'}</span>
-          <span className="text-[11.5px] text-[#dbe6ff]">
+          <span className="text-[10.5px] font-bold opacity-90">Details ›</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => setTab('history')}
+          className="flex flex-col gap-1.5 rounded-[18px] bg-[#53d3d1] p-4 text-left text-[#002447] shadow-[0_10px_24px_rgba(83,211,209,0.4)] transition hover:-translate-y-0.5"
+        >
+          <span className="text-[11.5px] font-bold opacity-80">Last 7 days</span>
+          <span className="display text-3xl font-bold leading-none">{stats?.week.passengers ?? '–'}</span>
+          <span className="text-[11.5px] opacity-80">
             {stats ? `${stats.week.tickets} ticket${stats.week.tickets === 1 ? '' : 's'} scanned` : 'passengers'}
           </span>
-        </div>
+          <span className="text-[10.5px] font-bold opacity-90">Details ›</span>
+        </button>
       </div>
 
       <div className="mt-5 flex gap-2">
