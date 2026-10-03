@@ -34,9 +34,9 @@ export interface TicketBooking {
   validUntil: string
 }
 
-const INK = '#16191a'
+const INK = '#100c0d'
 const REPORT_MINUTES = 30
-const MUTED = '#7b8689'
+const MUTED = '#8a8f86'
 const PAYMENT_NAMES: Record<string, string> = { bkash: 'বিকাশ', nagad: 'নগদ', card: 'কার্ড' }
 const BUS_TYPES: Record<string, string> = { AC: 'এসি', 'Non-AC': 'নন-এসি', Sleeper: 'স্লিপার' }
 const BANGLA_FONT = 'var(--font-bangla), var(--font-body), sans-serif'
@@ -92,7 +92,7 @@ function Watermark() {
           <div
             key={i}
             className="whitespace-nowrap text-[13px] font-extrabold tracking-[0.18em]"
-            style={{ color: '#0e3f43', opacity: 0.035, paddingLeft: i % 2 ? 60 : 0 }}
+            style={{ color: '#002447', opacity: 0.035, paddingLeft: i % 2 ? 60 : 0 }}
           >
             {'BUSHUBBD.COM  ·  BUSHUB  ·  '.repeat(6)}
           </div>
@@ -138,23 +138,23 @@ const Ticket = forwardRef<HTMLDivElement, { booking: TicketBooking }>(function T
     <div
       ref={ref}
       // Inline background so it survives being cloned into an image.
-      style={{ backgroundColor: '#ffffff', color: INK, fontFamily: BANGLA_FONT }}
+      style={{ backgroundColor: '#fcfcfc', color: INK, fontFamily: BANGLA_FONT }}
       className="ticket-print relative overflow-hidden rounded-[24px] shadow-[0_26px_50px_rgba(0,0,0,0.5)]"
     >
       {/* Header */}
-      <div className="relative bg-gradient-to-br from-[#0e3f43] to-[#16585d] px-5 pb-4 pt-4" style={{ zIndex: 1 }}>
+      <div className="relative bg-gradient-to-br from-[#002447] to-[#042a2b] px-5 pb-4 pt-4" style={{ zIndex: 1 }}>
         <div className="flex items-center justify-between gap-3">
           <Logo tone="dark" className="h-6 w-auto" />
           <div className="flex flex-col items-end leading-none">
             <span className="text-[19px] font-bold text-white">বাস টিকেট</span>
-            <span className="mt-1 text-[9.5px] font-bold tracking-[0.2em] text-[#a9c6c8]">BUS TICKET</span>
+            <span className="mt-1 text-[9.5px] font-bold tracking-[0.2em] text-[#c9dde6]">BUS TICKET</span>
           </div>
         </div>
         <div className="mt-3.5 flex items-center gap-3 rounded-2xl px-3 py-2.5" style={{ backgroundColor: 'rgba(255,255,255,0.08)' }}>
           <OperatorLogo logoUrl={booking.logoUrl} name={booking.companyName} variant="light" className="h-9 w-9 rounded-[10px]" />
           <div className="flex min-w-0 grow flex-col">
             <span className="display text-[14px] font-bold leading-tight text-white">{booking.busName}</span>
-            <span className="truncate text-[11px] leading-tight text-[#a9c6c8]">{booking.companyName}</span>
+            <span className="truncate text-[11px] leading-tight text-[#c9dde6]">{booking.companyName}</span>
           </div>
           {busType && (
             <span className="shrink-0 rounded-full px-2.5 py-1 text-[11px] font-bold text-white" style={{ backgroundColor: 'rgba(255,255,255,0.15)' }}>
@@ -175,13 +175,13 @@ const Ticket = forwardRef<HTMLDivElement, { booking: TicketBooking }>(function T
             {dep !== null && (
               <span className="mt-0.5 flex flex-col leading-tight">
                 <span className="text-[10px] font-semibold" style={{ color: MUTED }}>ছাড়বে</span>
-                <span className="whitespace-nowrap text-[13px] font-bold" style={{ color: '#0e3f43' }}>{bnClock(dep)}</span>
+                <span className="whitespace-nowrap text-[13px] font-bold" style={{ color: '#002447' }}>{bnClock(dep)}</span>
               </span>
             )}
           </div>
           <div className="flex w-[84px] flex-col items-center gap-1">
             <div className="flex w-full items-center gap-1">
-              <span className="h-[6px] w-[6px] shrink-0 rounded-full bg-[#0e3f43]" />
+              <span className="h-[6px] w-[6px] shrink-0 rounded-full bg-[#002447]" />
               <span className="h-0.5 grow bg-[repeating-linear-gradient(90deg,#c5ccce_0_4px,transparent_4px_8px)]" />
               <svg viewBox="0 0 24 24" fill="none" stroke="#f2661d" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5 shrink-0">
                 <rect x="3" y="4" width="18" height="12.5" rx="3" />
@@ -210,8 +210,8 @@ const Ticket = forwardRef<HTMLDivElement, { booking: TicketBooking }>(function T
 
         {/* Where to board: typed once per trip by the admin and copied onto every ticket */}
         {booking.boardingPoint && (
-          <div className="relative mx-5 mb-3.5 flex items-start gap-3 rounded-2xl border px-3.5 py-3" style={{ zIndex: 1, borderColor: '#cfe3e1', backgroundColor: 'rgba(233,244,243,0.92)' }}>
-            <svg viewBox="0 0 24 24" fill="none" stroke="#0e3f43" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="mt-0.5 h-5 w-5 shrink-0">
+          <div className="relative mx-5 mb-3.5 flex items-start gap-3 rounded-2xl border px-3.5 py-3" style={{ zIndex: 1, borderColor: '#d7e8ec', backgroundColor: 'rgba(233,244,243,0.92)' }}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="#002447" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="mt-0.5 h-5 w-5 shrink-0">
               <path d="M12 21s-6.5-5.6-6.5-11A6.5 6.5 0 0 1 18.5 10c0 5.4-6.5 11-6.5 11z" />
               <circle cx="12" cy="10" r="2.3" />
             </svg>
@@ -229,7 +229,7 @@ const Ticket = forwardRef<HTMLDivElement, { booking: TicketBooking }>(function T
                 target="_blank"
                 rel="noopener noreferrer"
                 className="no-print shrink-0 self-center rounded-full px-3 py-1.5 text-[11.5px] font-bold text-white"
-                style={{ backgroundColor: '#0e3f43' }}
+                style={{ backgroundColor: '#002447' }}
               >
                 ম্যাপ ↗
               </a>
@@ -238,7 +238,7 @@ const Ticket = forwardRef<HTMLDivElement, { booking: TicketBooking }>(function T
         )}
 
         {/* Journey details */}
-        <div className="relative grid grid-cols-2 gap-x-3 gap-y-3 border-t border-dashed border-[#dfe4e5] px-5 py-3.5" style={{ zIndex: 1 }}>
+        <div className="relative grid grid-cols-2 gap-x-3 gap-y-3 border-t border-dashed border-[#e6e0d6] px-5 py-3.5" style={{ zIndex: 1 }}>
           <Field label="যাত্রীর নাম" value={booking.passengerName} />
           <Field label="মোবাইল নম্বর" value={maskPhone(booking.passengerPhone)} align="right" />
           <Field label="ভ্রমণের তারিখ" value={bnDate(booking.date)} className="col-span-2" />
@@ -250,7 +250,7 @@ const Ticket = forwardRef<HTMLDivElement, { booking: TicketBooking }>(function T
         </div>
 
         {/* Fare */}
-        <div className="relative mx-5 rounded-2xl border border-[#e3e8e9] px-3.5 py-3" style={{ zIndex: 1, backgroundColor: 'rgba(244,246,246,0.92)' }}>
+        <div className="relative mx-5 rounded-2xl border border-[#ebe5dc] px-3.5 py-3" style={{ zIndex: 1, backgroundColor: 'rgba(244,246,246,0.92)' }}>
           <div className="flex items-center justify-between text-[12.5px]">
             <span style={{ color: MUTED }}>ভাড়া</span>
             <span className="font-semibold">
@@ -266,7 +266,7 @@ const Ticket = forwardRef<HTMLDivElement, { booking: TicketBooking }>(function T
               </span>
             </span>
           </div>
-          <div className="mt-2.5 flex items-end justify-between border-t border-[#dfe4e5] pt-2.5">
+          <div className="mt-2.5 flex items-end justify-between border-t border-[#e6e0d6] pt-2.5">
             <span className="text-[13px] font-bold">সর্বমোট পরিশোধ</span>
             <span className="text-[24px] font-bold leading-none">{taka(booking.totalPrice)}</span>
           </div>
@@ -291,8 +291,8 @@ const Ticket = forwardRef<HTMLDivElement, { booking: TicketBooking }>(function T
 
         {/* Tear line */}
         <div className="relative mt-4 h-5" style={{ zIndex: 1 }}>
-          <span className="ticket-notch absolute -left-2.5 top-0 h-5 w-5 rounded-full bg-[#0b0e0f]" />
-          <span className="ticket-notch absolute -right-2.5 top-0 h-5 w-5 rounded-full bg-[#0b0e0f]" />
+          <span className="ticket-notch absolute -left-2.5 top-0 h-5 w-5 rounded-full bg-[#002447]" />
+          <span className="ticket-notch absolute -right-2.5 top-0 h-5 w-5 rounded-full bg-[#002447]" />
           <span className="absolute left-4 right-4 top-2.5 h-0.5 bg-[repeating-linear-gradient(90deg,#d6dcde_0_6px,transparent_6px_12px)]" />
         </div>
 
@@ -308,7 +308,7 @@ const Ticket = forwardRef<HTMLDivElement, { booking: TicketBooking }>(function T
                 src={booking.qrCode}
                 alt="টিকেটের কিউআর কোড"
                 style={{ backgroundColor: '#ffffff' }}
-                className="h-[150px] w-[150px] rounded-[16px] border border-[#e3e8e9] p-2"
+                className="h-[150px] w-[150px] rounded-[16px] border border-[#ebe5dc] p-2"
               />
               {refunded && (
                 <span
@@ -321,7 +321,7 @@ const Ticket = forwardRef<HTMLDivElement, { booking: TicketBooking }>(function T
             </div>
           )}
           <span className="display text-[17px] font-bold tracking-[0.02em]">{booking.bookingCode}</span>
-          <span className="max-w-[300px] text-[11.5px] leading-relaxed" style={{ color: '#5d6669' }}>
+          <span className="max-w-[300px] text-[11.5px] leading-relaxed" style={{ color: '#6c7469' }}>
             সুপারভাইজার কোডটি স্ক্যান করলে BusHub-এ সঙ্গে সঙ্গে যাচাই হয়। অন্য কারো টিকেটের ছবি বা কপি দিয়ে বাসে ওঠা
             যাবে না। অনুগ্রহ করে {reportBy}-এর মধ্যে কাউন্টারে উপস্থিত থাকুন।
           </span>
@@ -329,7 +329,7 @@ const Ticket = forwardRef<HTMLDivElement, { booking: TicketBooking }>(function T
       </div>
 
       {/* Footer */}
-      <div className="relative flex items-center justify-between gap-2 border-t border-[#e3e8e9] bg-[#f4f6f6] px-5 py-2.5" style={{ zIndex: 1 }}>
+      <div className="relative flex items-center justify-between gap-2 border-t border-[#ebe5dc] bg-[#f4f6f6] px-5 py-2.5" style={{ zIndex: 1 }}>
         <Logo tone="light" className="h-5 w-auto" />
         <span className="text-right text-[10px] leading-snug" style={{ color: MUTED }}>
           <span className="whitespace-nowrap">© {year} BusHub · bushubbd.com</span>

@@ -116,8 +116,8 @@ export default function QrCamera({ onDetected }: { onDetected: (text: string) =>
 
   if (error) {
     return (
-      <div className="flex aspect-square w-full flex-col items-center justify-center gap-3 rounded-[22px] border border-[#3a2c10] bg-[#1a1508] p-6 text-center">
-        <svg viewBox="0 0 24 24" fill="none" stroke="#f5a524" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-9 w-9">
+      <div className="flex aspect-square w-full flex-col items-center justify-center gap-3 rounded-[22px] border border-[#3a2c10] bg-[#fff6dc] p-6 text-center">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#feb249" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-9 w-9">
           <path d="M3 7.5A1.5 1.5 0 0 1 4.5 6H7l1.5-2h7L17 6h2.5A1.5 1.5 0 0 1 21 7.5v10a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 17.5z" />
           <path d="M3 3l18 18" />
         </svg>
@@ -134,9 +134,9 @@ export default function QrCamera({ onDetected }: { onDetected: (text: string) =>
       {/* Aiming frame: the four corners of the area to hold the ticket's QR code in. */}
       <div className="pointer-events-none absolute inset-[16%]">
         {['left-0 top-0 border-l-4 border-t-4 rounded-tl-2xl', 'right-0 top-0 border-r-4 border-t-4 rounded-tr-2xl', 'left-0 bottom-0 border-l-4 border-b-4 rounded-bl-2xl', 'right-0 bottom-0 border-r-4 border-b-4 rounded-br-2xl'].map((corner) => (
-          <span key={corner} className={`absolute h-10 w-10 border-[#f5a524] ${corner}`} />
+          <span key={corner} className={`absolute h-10 w-10 border-[#cc8b65] ${corner}`} />
         ))}
-        <span className="absolute inset-x-3 top-1/2 h-0.5 animate-pulse bg-[#f5a524]/70" />
+        <span className="absolute inset-x-3 top-1/2 h-0.5 animate-pulse bg-[#feb249]/70" />
       </div>
 
       <span className="absolute inset-x-0 bottom-3 text-center text-[12.5px] font-semibold text-white/85">

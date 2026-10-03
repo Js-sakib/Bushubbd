@@ -11,9 +11,9 @@ import type { Me } from './types'
 
 const ROLES = { manager: 'Management', counter: 'Counter', scanner: 'Bus staff · scanner' } as const
 const ROLE_STYLE = {
-  manager: 'bg-[#f5a524]/[0.15] text-[#fbbf24]',
-  counter: 'bg-[#6d4aff]/[0.18] text-[#c4b5fd]',
-  scanner: 'bg-[#2dd4bf]/[0.15] text-[#5eead4]',
+  manager: 'bg-[#feb249]/[0.15] text-[#8a6d00]',
+  counter: 'bg-[#5eb1bf]/[0.18] text-[#2d7886]',
+  scanner: 'bg-[#2dd4bf]/[0.15] text-[#0f8f80]',
 } as const
 
 /**
@@ -42,17 +42,17 @@ export default function OperatorPanel() {
     router.push(companyPath('/company/login'))
   }
 
-  if (!me) return <div className="py-16 text-center text-sm text-[#8e9a9d]">Checking access...</div>
+  if (!me) return <div className="py-16 text-center text-sm text-[#4f5d75]">Checking access...</div>
 
   return (
     <div className={`mx-auto pb-10 ${me.role === 'manager' ? 'max-w-6xl' : me.role === 'counter' ? 'max-w-5xl' : 'max-w-xl'}`}>
-      <div className="flex items-center gap-3 border-b border-[#1b2325] pb-4">
+      <div className="flex items-center gap-3 border-b border-[#c9d6e4] pb-4">
         <LogoMark className="h-9 w-9 shrink-0" />
         <div className="flex min-w-0 grow flex-col gap-0.5">
           <h1 className="display truncate text-[19px] font-bold leading-tight">{me.companyName}</h1>
           <span className="flex min-w-0 items-center gap-1.5">
             <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10.5px] font-bold ${ROLE_STYLE[me.role]}`}>{ROLES[me.role]}</span>
-            {me.role !== 'manager' && <span className="truncate text-[12.5px] font-semibold text-[#c4cdcf]">{me.name}</span>}
+            {me.role !== 'manager' && <span className="truncate text-[12.5px] font-semibold text-[#24344f]">{me.name}</span>}
           </span>
         </div>
         <button type="button" onClick={logout} className="chip">

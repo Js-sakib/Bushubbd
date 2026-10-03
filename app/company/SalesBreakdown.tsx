@@ -53,37 +53,37 @@ function byTripTime(a: { date: string; departureTime: string }, b: { date: strin
 
 function TripRow({ trip, showBus }: { trip: Trip; showBus: boolean }) {
   return (
-    <details className="group border-b border-[#1a2123] last:border-b-0">
+    <details className="group border-b border-[#c9d6e4] last:border-b-0">
       <summary className="flex cursor-pointer list-none items-start gap-3 px-4 py-3 marker:hidden">
         <div className="flex min-w-0 grow flex-col gap-0.5">
           {showBus && <span className="truncate text-[13px] font-bold">{trip.busName}</span>}
-          <span className={`flex flex-wrap items-center gap-x-2 gap-y-1 ${showBus ? 'text-[12px] text-[#b7c1c3]' : 'text-[13px] font-semibold'}`}>
+          <span className={`flex flex-wrap items-center gap-x-2 gap-y-1 ${showBus ? 'text-[12px] text-[#2f3f5a]' : 'text-[13px] font-semibold'}`}>
             <span>
               {trip.from} → {trip.to}
             </span>
             <Plate plate={trip.plateNumber} />
           </span>
-          <span className="text-[11.5px] text-[#78868a]">
+          <span className="text-[11.5px] text-[#5a677d]">
             {formatTripDate(trip.date)} · {trip.departureTime}
           </span>
         </div>
         <div className="flex shrink-0 flex-col items-end gap-0.5">
-          <span className="text-[13px] font-bold text-[#34d399]">{taka(trip.payout)}</span>
-          <span className="text-[11px] text-[#9ba7aa]">
+          <span className="text-[13px] font-bold text-[#0a8a84]">{taka(trip.payout)}</span>
+          <span className="text-[11px] text-[#44526b]">
             {trip.seats} seat{trip.seats === 1 ? '' : 's'} · {trip.sold.length} ticket{trip.sold.length === 1 ? '' : 's'}
           </span>
-          <span className="text-[10.5px] text-[#f5a524] group-open:hidden">Show tickets ›</span>
-          <span className="hidden text-[10.5px] text-[#f5a524] group-open:inline">Hide tickets ‹</span>
+          <span className="text-[10.5px] text-[#0b7f8c] group-open:hidden">Show tickets ›</span>
+          <span className="hidden text-[10.5px] text-[#0b7f8c] group-open:inline">Hide tickets ‹</span>
         </div>
       </summary>
-      <div className="flex flex-col gap-1.5 bg-black/20 px-4 pb-3 pt-1">
+      <div className="flex flex-col gap-1.5 bg-white/60 px-4 pb-3 pt-1">
         {[...trip.sold, ...trip.refunded].map((b) => (
           <div key={b._id} className="flex items-center justify-between gap-3 text-[12px]">
             <span className="min-w-0 truncate">
-              Seats {b.seats.join(', ')} <span className="font-mono text-[11px] text-[#78868a]">· {b.bookingCode}</span>
-              {b.checkedIn && <span className="text-[#34d399]"> · boarded</span>}
+              Seats {b.seats.join(', ')} <span className="font-mono text-[11px] text-[#5a677d]">· {b.bookingCode}</span>
+              {b.checkedIn && <span className="text-[#0a8a84]"> · boarded</span>}
             </span>
-            <span className={`shrink-0 font-semibold ${isSold(b) ? 'text-[#c4cdcf]' : 'text-[#f87171]'}`}>
+            <span className={`shrink-0 font-semibold ${isSold(b) ? 'text-[#24344f]' : 'text-[#d23c3c]'}`}>
               {isSold(b) ? taka(b.companyPayout ?? b.totalPrice) : 'Refunded'}
             </span>
           </div>
@@ -137,19 +137,19 @@ export default function SalesBreakdown({ bookings }: { bookings: SaleBooking[] }
   }, [trips])
 
   if (trips.length === 0) {
-    return <div className="card-2 px-4 py-8 text-center text-sm text-[#8e9a9d]">No tickets sold yet.</div>
+    return <div className="card-2 px-4 py-8 text-center text-sm text-[#4f5d75]">No tickets sold yet.</div>
   }
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="flex gap-1 self-start rounded-full border border-white/10 bg-black/30 p-1">
+      <div className="flex gap-1 self-start rounded-full border border-[#0b2545]/10 bg-white/60 p-1">
         {(['trip', 'bus'] as const).map((v) => (
           <button
             key={v}
             type="button"
             onClick={() => setView(v)}
             className={`h-9 rounded-full px-4 text-[12.5px] font-bold transition ${
-              view === v ? 'bg-[#f6f1ea] text-[#14191b]' : 'text-[#9ba7aa]'
+              view === v ? 'bg-[#0b2545] text-[#ffffff]' : 'text-[#44526b]'
             }`}
           >
             {v === 'trip' ? 'By trip' : 'By bus'}
@@ -166,14 +166,14 @@ export default function SalesBreakdown({ bookings }: { bookings: SaleBooking[] }
       ) : (
         buses.map((bus) => (
           <div key={bus.busName} className="card-2 overflow-hidden">
-            <div className="flex items-center justify-between gap-3 border-b border-[#1a2123] bg-white/[0.03] px-4 py-3">
+            <div className="flex items-center justify-between gap-3 border-b border-[#c9d6e4] bg-[#0b2545]/[0.05] px-4 py-3">
               <div className="flex min-w-0 flex-col">
                 <span className="truncate text-[14px] font-bold">{bus.busName}</span>
-                <span className="text-[11.5px] text-[#9ba7aa]">
+                <span className="text-[11.5px] text-[#44526b]">
                   {bus.trips.length} trip{bus.trips.length === 1 ? '' : 's'} · {bus.seats} seat{bus.seats === 1 ? '' : 's'} sold
                 </span>
               </div>
-              <span className="shrink-0 text-[15px] font-bold text-[#34d399]">{taka(bus.payout)}</span>
+              <span className="shrink-0 text-[15px] font-bold text-[#0a8a84]">{taka(bus.payout)}</span>
             </div>
             {bus.trips.map((trip) => (
               <TripRow key={trip.busId} trip={trip} showBus={false} />

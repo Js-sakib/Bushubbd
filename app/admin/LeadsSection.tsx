@@ -11,12 +11,12 @@ import type { CompanyRow, LeadRow } from './types'
 const EMPTY_FORM = { companyName: '', contactName: '', phone: '', altPhone: '', area: '', source: 'Counter visit', followUpDate: '', note: '' }
 
 const STATUS_STYLE: Record<string, string> = {
-  new: 'bg-white/[0.07] text-[#c4cdcf]',
-  called: 'bg-[#60a5fa]/[0.14] text-[#93c5fd]',
-  interested: 'bg-[#f5a524]/[0.15] text-[#fbbf24]',
-  trial: 'bg-[#a78bfa]/[0.16] text-[#c4b5fd]',
-  joined: 'bg-[#34d399]/[0.14] text-[#6ee7b7]',
-  not_interested: 'bg-[#f87171]/[0.12] text-[#fca5a5]',
+  new: 'bg-[#0b2545]/[0.05] text-[#24344f]',
+  called: 'bg-[#60a5fa]/[0.14] text-[#2563eb]',
+  interested: 'bg-[#feb249]/[0.15] text-[#8a6d00]',
+  trial: 'bg-[#86c6d1]/[0.16] text-[#2d7886]',
+  joined: 'bg-[#3fd0c9]/[0.14] text-[#0a8a84]',
+  not_interested: 'bg-[#f87171]/[0.12] text-[#c13b3b]',
 }
 
 /** Leads that are finished (joined or said no) don't need a follow-up reminder. */
@@ -44,14 +44,14 @@ function PhoneButtons({ phone }: { phone: string }) {
   const wa = whatsappNumber(phone)
   return (
     <div className="flex items-center gap-2">
-      <a href={telHref(phone)} className="flex h-9 items-center gap-1.5 rounded-full bg-[#34d399]/[0.14] px-3.5 text-[12.5px] font-bold text-[#6ee7b7]">
+      <a href={telHref(phone)} className="flex h-9 items-center gap-1.5 rounded-full bg-[#3fd0c9]/[0.14] px-3.5 text-[12.5px] font-bold text-[#0a8a84]">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5">
           <path d="M5 4h3.5l1.5 4.5-2 1.5a11 11 0 0 0 6 6l1.5-2L20 15.5V19a1.5 1.5 0 0 1-1.5 1.5A15.5 15.5 0 0 1 3.5 5.5 1.5 1.5 0 0 1 5 4z" />
         </svg>
         {phone}
       </a>
       {wa && (
-        <a href={`https://wa.me/${wa}`} target="_blank" rel="noopener noreferrer" className="flex h-9 items-center rounded-full bg-[#12a594]/[0.16] px-3 text-[12px] font-bold text-[#5eead4]">
+        <a href={`https://wa.me/${wa}`} target="_blank" rel="noopener noreferrer" className="flex h-9 items-center rounded-full bg-[#12a594]/[0.16] px-3 text-[12px] font-bold text-[#0f8f80]">
           WhatsApp
         </a>
       )}
@@ -103,20 +103,20 @@ function LeadCard({
   }
 
   return (
-    <li className={`flex flex-col gap-3 border-t border-white/[0.06] px-5 py-4 ${due ? 'bg-[#f2661d]/[0.06]' : ''}`}>
+    <li className={`flex flex-col gap-3 border-t border-[#0b2545]/10 px-5 py-4 ${due ? 'bg-[#f2661d]/[0.06]' : ''}`}>
       <div className="flex items-start gap-3">
         <div className="flex min-w-0 grow flex-col gap-0.5">
           <span className="truncate text-[15px] font-semibold">{lead.companyName}</span>
           {(lead.contactName || lead.area) && (
-            <span className="truncate text-[12px] text-[#9ba7aa]">{[lead.contactName, lead.area].filter(Boolean).join(' · ')}</span>
+            <span className="truncate text-[12px] text-[#44526b]">{[lead.contactName, lead.area].filter(Boolean).join(' · ')}</span>
           )}
           {lead.followUpDate && !CLOSED.includes(lead.status) && (
-            <span className={`text-[11.5px] font-bold ${due ? 'text-[#ff8a4c]' : 'text-[#78868a]'}`}>
+            <span className={`text-[11.5px] font-bold ${due ? 'text-[#ff8a4c]' : 'text-[#5a677d]'}`}>
               {lead.followUpDate < today ? 'Follow-up overdue: ' : lead.followUpDate === today ? 'Follow up today: ' : 'Next follow-up: '}
               {formatTripDate(lead.followUpDate)}
             </span>
           )}
-          {company && <span className="text-[11.5px] font-bold text-[#6ee7b7]">Has a BusHub login ({company.status})</span>}
+          {company && <span className="text-[11.5px] font-bold text-[#0a8a84]">Has a BusHub login ({company.status})</span>}
         </div>
         <span className={`inline-flex h-6 shrink-0 items-center rounded-full px-2.5 text-[11px] font-bold ${STATUS_STYLE[lead.status] || STATUS_STYLE.new}`}>
           {leadStatusLabel(lead.status)}
@@ -128,7 +128,7 @@ function LeadCard({
         {lead.altPhone && <PhoneButtons phone={lead.altPhone} />}
       </div>
 
-      {lastNote && !open && <p className="line-clamp-2 text-[12.5px] leading-snug text-[#b7c1c3]">“{lastNote.text}”</p>}
+      {lastNote && !open && <p className="line-clamp-2 text-[12.5px] leading-snug text-[#2f3f5a]">“{lastNote.text}”</p>}
 
       <div className="flex flex-wrap items-center gap-2">
         <select
@@ -147,19 +147,19 @@ function LeadCard({
         <button
           type="button"
           onClick={() => setOpen((v) => !v)}
-          className="h-9 rounded-full border border-white/10 bg-white/[0.05] px-3.5 text-[12px] font-bold text-[#f5a524] transition hover:bg-white/[0.09]"
+          className="h-9 rounded-full border border-[#0b2545]/10 bg-[#0b2545]/[0.05] px-3.5 text-[12px] font-bold text-[#0b7f8c] transition hover:bg-[#0b2545]/[0.05]"
         >
           {open ? 'Close' : `Notes${lead.notes.length ? ` (${lead.notes.length})` : ''}`}
         </button>
         {['interested', 'trial', 'joined'].includes(lead.status) && !company && (
-          <button type="button" onClick={() => onCreateLogin(lead)} className="h-9 rounded-full bg-[#f5a524] px-3.5 text-[12px] font-bold text-[#2b1a02]">
+          <button type="button" onClick={() => onCreateLogin(lead)} className="h-9 rounded-full bg-[#feb249] px-3.5 text-[12px] font-bold text-[#2b1a02]">
             Create their login
           </button>
         )}
       </div>
 
       {open && (
-        <div className="flex flex-col gap-3 rounded-2xl border border-white/[0.08] bg-black/20 p-3.5">
+        <div className="flex flex-col gap-3 rounded-2xl border border-[#0b2545]/10 bg-white/60 p-3.5">
           <form
             onSubmit={async (e) => {
               e.preventDefault()
@@ -181,7 +181,7 @@ function LeadCard({
             </button>
           </form>
 
-          <label className="flex items-center justify-between gap-3 text-[12.5px] text-[#c4cdcf]">
+          <label className="flex items-center justify-between gap-3 text-[12.5px] text-[#24344f]">
             Next follow-up
             <span className="flex items-center gap-2">
               <input
@@ -195,17 +195,17 @@ function LeadCard({
           </label>
 
           {lead.notes.length > 0 && (
-            <ol className="flex flex-col gap-2 border-t border-white/[0.06] pt-3">
+            <ol className="flex flex-col gap-2 border-t border-[#0b2545]/10 pt-3">
               {[...lead.notes].reverse().map((n, i) => (
                 <li key={`${n.at}-${i}`} className="flex flex-col gap-0.5">
-                  <span className="text-[10.5px] font-bold uppercase tracking-wide text-[#78868a]">{when(n.at)}</span>
-                  <span className="whitespace-pre-wrap text-[13px] leading-snug text-[#dfe5e6]">{n.text}</span>
+                  <span className="text-[10.5px] font-bold uppercase tracking-wide text-[#5a677d]">{when(n.at)}</span>
+                  <span className="whitespace-pre-wrap text-[13px] leading-snug text-[#1b2b45]">{n.text}</span>
                 </li>
               ))}
             </ol>
           )}
 
-          <button type="button" onClick={remove} className="self-start text-[12px] font-bold text-[#fca5a5]">
+          <button type="button" onClick={remove} className="self-start text-[12px] font-bold text-[#c13b3b]">
             Delete this lead
           </button>
         </div>
@@ -318,22 +318,22 @@ export default function LeadsSection({
       <section className="glass flex flex-col">
         <button type="button" onClick={() => setAdding((v) => !v)} aria-expanded={adding} className="flex items-center justify-between gap-3 px-5 py-4 text-left">
           <span className="flex items-center gap-3">
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#f2661d] to-[#f5a524] text-[#1a0d03] shadow-[0_6px_18px_rgba(242,102,29,0.35)]">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#f2661d] to-[#feb249] text-[#1a0d03] shadow-[0_6px_18px_rgba(242,102,29,0.35)]">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" className="h-4 w-4">
                 <path d="M12 5v14M5 12h14" />
               </svg>
             </span>
             <span className="flex flex-col">
               <span className="display text-[15.5px] font-bold">Add a bus company lead</span>
-              <span className="text-[11.5px] text-[#78868a]">A company you met at a counter or found online</span>
+              <span className="text-[11.5px] text-[#5a677d]">A company you met at a counter or found online</span>
             </span>
           </span>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className={`h-5 w-5 shrink-0 text-[#8e9a9d] transition ${adding ? 'rotate-180' : ''}`}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className={`h-5 w-5 shrink-0 text-[#4f5d75] transition ${adding ? 'rotate-180' : ''}`}>
             <path d="m6 9 6 6 6-6" />
           </svg>
         </button>
         {adding && (
-          <form onSubmit={addLead} className="grid gap-3 border-t border-white/[0.06] px-5 pb-5 pt-4 sm:grid-cols-2">
+          <form onSubmit={addLead} className="grid gap-3 border-t border-[#0b2545]/10 px-5 pb-5 pt-4 sm:grid-cols-2">
             <input required placeholder="Bus company name" value={form.companyName} onChange={(e) => setForm({ ...form, companyName: e.target.value })} className="input-dark" aria-label="Bus company name" />
             <input placeholder="Contact person (owner, manager)" value={form.contactName} onChange={(e) => setForm({ ...form, contactName: e.target.value })} className="input-dark" aria-label="Contact person" />
             <input required type="tel" placeholder="Phone" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} className="input-dark" aria-label="Phone" />
@@ -359,7 +359,7 @@ export default function LeadsSection({
       {leads.length === 0 ? (
         <section className="glass flex flex-col items-start gap-3 p-5">
           <span className="display text-[16px] font-bold">No leads yet</span>
-          <p className="text-[13px] leading-relaxed text-[#c4cdcf]">
+          <p className="text-[13px] leading-relaxed text-[#24344f]">
             Start with 9 well-known bus companies. Their public numbers come from their own websites and Facebook pages. Numbers change, so check each one when you call.
           </p>
           <button type="button" onClick={loadStarter} disabled={saving} className="glass-btn h-11 px-5 text-[13.5px]">
@@ -371,7 +371,7 @@ export default function LeadsSection({
           <div className="flex flex-col gap-3 px-5 pb-3 pt-4">
             <div className="flex items-baseline justify-between">
               <h2 className="display text-[15.5px] font-bold">Leads</h2>
-              <span className="text-[11.5px] text-[#78868a]">{shown.length} shown</span>
+              <span className="text-[11.5px] text-[#5a677d]">{shown.length} shown</span>
             </div>
             <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search name, person, route, phone" aria-label="Search leads" className="input-dark h-11 text-[13.5px]" />
             <div className="-mx-5 flex gap-2 overflow-x-auto px-5 pb-1">
@@ -388,7 +388,7 @@ export default function LeadsSection({
               ))}
             </div>
           </div>
-          {shown.length === 0 && <p className="px-5 pb-8 pt-2 text-center text-sm text-[#8e9a9d]">Nothing here.</p>}
+          {shown.length === 0 && <p className="px-5 pb-8 pt-2 text-center text-sm text-[#4f5d75]">Nothing here.</p>}
           <ul className="flex flex-col">
             {shown.map((l) => (
               <LeadCard

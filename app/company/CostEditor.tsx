@@ -66,23 +66,23 @@ export default function CostEditor({
       <div className="flex flex-col gap-1.5">
         <div className="flex items-center justify-between">
           <span className="label-xs">Trip costs</span>
-          <span className="text-[13px] font-bold text-[#f87171]">{taka(total)}</span>
+          <span className="text-[13px] font-bold text-[#d23c3c]">{taka(total)}</span>
         </div>
-        {costs.length === 0 && <span className="text-[12px] text-[#78868a]">No costs entered yet.</span>}
+        {costs.length === 0 && <span className="text-[12px] text-[#5a677d]">No costs entered yet.</span>}
         {costs.map((c) => (
           <div key={c._id} className="flex items-start gap-3 text-[12.5px]">
             <div className="flex min-w-0 grow flex-col">
               <span className="font-semibold">
-                {COST_LABELS[c.type].en} <span className="text-[#78868a]">{COST_LABELS[c.type].bn}</span>
-                {c.note && <span className="font-normal text-[#c4cdcf]"> · {c.note}</span>}
+                {COST_LABELS[c.type].en} <span className="text-[#5a677d]">{COST_LABELS[c.type].bn}</span>
+                {c.note && <span className="font-normal text-[#24344f]"> · {c.note}</span>}
               </span>
-              <span className="text-[11px] text-[#6e7b7e]">
+              <span className="text-[11px] text-[#617086]">
                 {c.addedBy} · {dhakaTime(c.createdAt)}
               </span>
             </div>
-            <span className="shrink-0 font-bold text-[#fca5a5]">{taka(c.amount)}</span>
+            <span className="shrink-0 font-bold text-[#c13b3b]">{taka(c.amount)}</span>
             {canRemove(c) && (
-              <button type="button" onClick={() => remove(c)} aria-label="Remove this cost" className="-my-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[#78868a] hover:bg-white/[0.06] hover:text-white">
+              <button type="button" onClick={() => remove(c)} aria-label="Remove this cost" className="-my-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[#5a677d] hover:bg-[#0b2545]/[0.05] hover:text-[#0b2545]">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" className="h-3.5 w-3.5">
                   <path d="M6 6l12 12M18 6 6 18" />
                 </svg>
@@ -92,7 +92,7 @@ export default function CostEditor({
         ))}
       </div>
 
-      <form onSubmit={add} className="flex flex-col gap-2.5 rounded-2xl border border-white/[0.07] bg-black/20 p-3">
+      <form onSubmit={add} className="flex flex-col gap-2.5 rounded-2xl border border-[#0b2545]/10 bg-white/60 p-3">
         <span className="text-[12.5px] font-bold">Add a cost</span>
         <div className="grid grid-cols-4 gap-1.5">
           {COST_TYPES.map((t) => (
@@ -102,7 +102,7 @@ export default function CostEditor({
               onClick={() => setType(t)}
               aria-pressed={type === t}
               className={`flex flex-col items-center rounded-xl border px-1 py-2 text-[12px] font-bold transition ${
-                type === t ? 'border-[#f5a524] bg-[#f5a524]/[0.12] text-[#f5a524]' : 'border-white/10 text-[#b7c1c3]'
+                type === t ? 'border-[#cc8b65] bg-[#feb249]/[0.12] text-[#0b7f8c]' : 'border-[#0b2545]/10 text-[#2f3f5a]'
               }`}
             >
               {COST_LABELS[t].en}

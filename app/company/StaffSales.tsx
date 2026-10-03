@@ -69,83 +69,83 @@ export default function StaffSales({ trips, period }: { trips: CompanyTrip[]; pe
 
   return (
     <div className="card-2 overflow-hidden">
-      <div className="flex flex-col gap-0.5 border-b border-[#1a2123] px-4 py-3">
+      <div className="flex flex-col gap-0.5 border-b border-[#c9d6e4] px-4 py-3">
         <span className="label-xs">Who sold seats</span>
-        <span className="text-[11px] text-[#6e7b7e]">{period}</span>
+        <span className="text-[11px] text-[#617086]">{period}</span>
       </div>
 
-      <div className="flex flex-col gap-2.5 border-b border-[#1a2123] px-4 py-3.5">
+      <div className="flex flex-col gap-2.5 border-b border-[#c9d6e4] px-4 py-3.5">
         <div className="flex items-end justify-between gap-3">
-          <span className="text-[13px] text-[#c4cdcf]">
-            <span className="display text-[22px] font-bold text-white">{sold}</span> of {totalSeats} seats sold
+          <span className="text-[13px] text-[#24344f]">
+            <span className="display text-[22px] font-bold text-[#0b2545]">{sold}</span> of {totalSeats} seats sold
           </span>
-          <span className="text-[12px] font-semibold text-[#34d399]">{notSold} not sold</span>
+          <span className="text-[12px] font-semibold text-[#0a8a84]">{notSold} not sold</span>
         </div>
-        <div className="flex h-2.5 overflow-hidden rounded-full bg-[#12372c]">
-          <span style={{ width: pct(online) }} className="bg-gradient-to-r from-[#f2661d] to-[#f5a524]" />
-          <span style={{ width: pct(counter) }} className="bg-[#6d4aff]" />
+        <div className="flex h-2.5 overflow-hidden rounded-full bg-[#dff6f5]">
+          <span style={{ width: pct(online) }} className="bg-gradient-to-r from-[#f2661d] to-[#feb249]" />
+          <span style={{ width: pct(counter) }} className="bg-[#5eb1bf]" />
         </div>
       </div>
 
-      <div className="flex items-center gap-3 border-b border-[#1a2123] px-4 py-3">
+      <div className="flex items-center gap-3 border-b border-[#c9d6e4] px-4 py-3">
         <div className="flex min-w-0 grow flex-col">
-          <span className="text-[13.5px] font-semibold text-[#f5a524]">BusHub online</span>
-          <span className="text-[11.5px] text-[#78868a]">Tickets bought on bushubbd.com · {taka(onlineMoney)}</span>
+          <span className="text-[13.5px] font-semibold text-[#0b7f8c]">BusHub online</span>
+          <span className="text-[11.5px] text-[#5a677d]">Tickets bought on bushubbd.com · {taka(onlineMoney)}</span>
         </div>
         <span className="display shrink-0 text-[20px] font-bold">{online}</span>
       </div>
 
-      <div className="flex items-center gap-3 border-b border-[#1a2123] px-4 py-3">
+      <div className="flex items-center gap-3 border-b border-[#c9d6e4] px-4 py-3">
         <div className="flex min-w-0 grow flex-col">
-          <span className="text-[13.5px] font-semibold text-[#a78bfa]">Counter total</span>
-          <span className="text-[11.5px] text-[#78868a]">
+          <span className="text-[13.5px] font-semibold text-[#2d7886]">Counter total</span>
+          <span className="text-[11.5px] text-[#5a677d]">
             All counters · {taka(counterMoney)} · {counterToday} today
           </span>
         </div>
         <span className="display shrink-0 text-[20px] font-bold">{counter}</span>
       </div>
 
-      <div className="flex items-center gap-3 border-b border-[#1a2123] px-4 py-3">
+      <div className="flex items-center gap-3 border-b border-[#c9d6e4] px-4 py-3">
         <div className="flex min-w-0 grow flex-col">
-          <span className="text-[13.5px] font-semibold text-[#34d399]">Not sold</span>
-          <span className="text-[11.5px] text-[#78868a]">Empty seats on these trips</span>
+          <span className="text-[13.5px] font-semibold text-[#0a8a84]">Not sold</span>
+          <span className="text-[11.5px] text-[#5a677d]">Empty seats on these trips</span>
         </div>
         <span className="display shrink-0 text-[20px] font-bold">{notSold}</span>
       </div>
 
       {sellers.length > 0 && (
-        <div className="border-b border-[#1a2123] bg-white/[0.02] px-4 py-2">
+        <div className="border-b border-[#c9d6e4] bg-[#0b2545]/[0.05] px-4 py-2">
           <span className="label-xs">Each counter</span>
         </div>
       )}
 
       {sellers.map((s, i) => (
-        <details key={`${s.name}-${i}`} className="group border-b border-[#1a2123] last:border-b-0">
+        <details key={`${s.name}-${i}`} className="group border-b border-[#c9d6e4] last:border-b-0">
           <summary className="flex cursor-pointer list-none items-center gap-3 px-4 py-3 marker:hidden">
             <div className="flex min-w-0 grow flex-col">
-              <span className="truncate text-[13.5px] font-semibold text-[#c4b5fd]">{s.name}</span>
-              <span className="text-[11.5px] text-[#78868a]">
+              <span className="truncate text-[13.5px] font-semibold text-[#2d7886]">{s.name}</span>
+              <span className="text-[11.5px] text-[#5a677d]">
                 {s.seats} seat{s.seats === 1 ? '' : 's'} · {taka(s.value)} at ticket price
               </span>
-              <span className="text-[10.5px] text-[#f5a524] group-open:hidden">Show trips ›</span>
-              <span className="hidden text-[10.5px] text-[#f5a524] group-open:inline">Hide trips ‹</span>
+              <span className="text-[10.5px] text-[#0b7f8c] group-open:hidden">Show trips ›</span>
+              <span className="hidden text-[10.5px] text-[#0b7f8c] group-open:inline">Hide trips ‹</span>
             </div>
             <div className="flex shrink-0 flex-col items-end">
-              <span className="display text-[20px] font-bold leading-none text-[#a78bfa]">{s.today}</span>
-              <span className="text-[10.5px] text-[#8e9a9d]">today</span>
+              <span className="display text-[20px] font-bold leading-none text-[#2d7886]">{s.today}</span>
+              <span className="text-[10.5px] text-[#4f5d75]">today</span>
             </div>
           </summary>
-          <div className="flex flex-col gap-1.5 bg-black/20 px-4 pb-3 pt-1">
+          <div className="flex flex-col gap-1.5 bg-white/60 px-4 pb-3 pt-1">
             {s.trips.map(({ trip, seats }) => (
               <div key={trip._id} className="flex items-start justify-between gap-3 text-[12px]">
                 <span className="min-w-0">
                   {trip.from} → {trip.to} <Plate plate={trip.plateNumber} className="mx-0.5 align-middle" />
-                  <span className="text-[#78868a]">
+                  <span className="text-[#5a677d]">
                     {' '}
                     · {formatTripDate(trip.date)} · {trip.departureTime} · {trip.busName}
                   </span>
                 </span>
-                <span className="max-w-[45%] shrink-0 text-right font-semibold text-[#c4cdcf]">
+                <span className="max-w-[45%] shrink-0 text-right font-semibold text-[#24344f]">
                   {seats.length} · {seats.join(', ')}
                 </span>
               </div>
@@ -155,7 +155,7 @@ export default function StaffSales({ trips, period }: { trips: CompanyTrip[]; pe
       ))}
 
       {sellers.length === 0 && (
-        <div className="px-4 py-6 text-center text-sm text-[#8e9a9d]">No seats sold at the counter yet.</div>
+        <div className="px-4 py-6 text-center text-sm text-[#4f5d75]">No seats sold at the counter yet.</div>
       )}
     </div>
   )

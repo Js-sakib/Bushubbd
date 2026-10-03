@@ -71,7 +71,7 @@ function ConfirmationContent() {
     // the glass background. (Put on the ticket itself, it would paint over the white card.)
     return toBlob(ticketRef.current, {
       pixelRatio: 2.5,
-      backgroundColor: '#0b0e0f',
+      backgroundColor: '#002447',
       cacheBust: true,
       imagePlaceholder: BLANK_PIXEL,
       filter: onScreenOnly,
@@ -182,15 +182,15 @@ function ConfirmationContent() {
   }
 
   if (loading) {
-    return <div className="py-16 text-center text-sm text-[#8e9a9d]">Loading your ticket...</div>
+    return <div className="py-16 text-center text-sm text-[#4f5d75]">Loading your ticket...</div>
   }
 
   if (error || !booking) {
     return (
       <div className="px-5 py-16">
         <div className="card mx-auto flex max-w-sm flex-col items-center gap-4 p-8 text-center">
-          <h1 className="text-xl font-bold text-[#f87171]">Booking not found</h1>
-          <p className="text-[13px] text-[#9ba7aa]">{error}</p>
+          <h1 className="text-xl font-bold text-[#d23c3c]">Booking not found</h1>
+          <p className="text-[13px] text-[#44526b]">{error}</p>
           <a href="/" className="glass-btn glass-btn-plain h-11 text-sm">
             Back to home
           </a>
@@ -217,17 +217,17 @@ function ConfirmationContent() {
       <div className="no-print mt-3 flex flex-wrap gap-2">
         <span
           className={`inline-flex h-[30px] items-center gap-1.5 rounded-full px-3 text-xs font-bold ${
-            paid ? 'bg-[#34d399]/[0.14] text-[#34d399]' : 'bg-[#f5a524]/[0.14] text-[#f5a524]'
+            paid ? 'bg-[#3fd0c9]/[0.14] text-[#0a8a84]' : 'bg-[#feb249]/[0.14] text-[#0b7f8c]'
           }`}
         >
           {paid ? 'Paid' : 'Payment pending'}
         </span>
         {booking.status === 'refunded' ? (
-          <span className="inline-flex h-[30px] items-center rounded-full bg-[#f87171]/[0.14] px-3 text-xs font-bold text-[#f87171]">
+          <span className="inline-flex h-[30px] items-center rounded-full bg-[#f87171]/[0.14] px-3 text-xs font-bold text-[#d23c3c]">
             Refunded
           </span>
         ) : remaining ? (
-          <span className="inline-flex h-[30px] items-center gap-1.5 rounded-full bg-[#f5a524]/[0.13] px-3 text-xs font-bold text-[#f5a524]">
+          <span className="inline-flex h-[30px] items-center gap-1.5 rounded-full bg-[#feb249]/[0.13] px-3 text-xs font-bold text-[#0b7f8c]">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" className="h-3 w-3">
               <circle cx="12" cy="12" r="9" />
               <path d="M12 7.5V12l3 2" />
@@ -235,7 +235,7 @@ function ConfirmationContent() {
             Valid {remaining}
           </span>
         ) : (
-          <span className="inline-flex h-[30px] items-center rounded-full bg-white/[0.07] px-3 text-xs font-bold text-[#c4cdcf]">
+          <span className="inline-flex h-[30px] items-center rounded-full bg-[#0b2545]/[0.05] px-3 text-xs font-bold text-[#24344f]">
             Expired
           </span>
         )}
@@ -313,7 +313,7 @@ function ConfirmationContent() {
           </button>
         </div>
 
-        <p className="text-center text-[11.5px] leading-snug text-[#78868a]">
+        <p className="text-center text-[11.5px] leading-snug text-[#5a677d]">
           Keep the PDF or image on your phone so you can board without internet.
         </p>
 
@@ -333,16 +333,16 @@ function ConfirmationContent() {
           </button>
         )}
         {paid && booking.status !== 'refunded' && (
-          <p className="text-center text-[11px] leading-snug text-[#78868a]">
+          <p className="text-center text-[11px] leading-snug text-[#5a677d]">
             The story picture shows your trip only. The QR code and ticket number stay private.
           </p>
         )}
       </div>
 
       {returnBusId && (
-        <div className="no-print mt-5 flex flex-col gap-3 rounded-[20px] border border-[#1e4b4f] bg-gradient-to-br from-[#0e3f43]/90 to-[#141a1c]/90 p-4 sm:max-w-lg">
+        <div className="no-print mt-5 flex flex-col gap-3 rounded-[20px] border border-[#c3d1e0] bg-gradient-to-br from-[#002447]/90 to-[#08324d]/90 p-4 sm:max-w-lg">
           <div className="flex items-center gap-3">
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[13px] bg-[#2dd4bf]/[0.16] text-[#2dd4bf]">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[13px] bg-[#2dd4bf]/[0.16] text-[#0f8f80]">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
                 <path d="M7 4v16M3.5 16.5 7 20l3.5-3.5" />
                 <path d="M17 20V4M13.5 7.5 17 4l3.5 3.5" />
@@ -350,7 +350,7 @@ function ConfirmationContent() {
             </span>
             <div className="flex flex-col gap-0.5">
               <span className="text-sm font-bold">One leg to go</span>
-              <span className="text-[12px] leading-snug text-[#a9bbbc]">
+              <span className="text-[12px] leading-snug text-[#34445f]">
                 Your return from {booking.to} is still waiting. Pick those seats now.
               </span>
             </div>
@@ -379,7 +379,7 @@ function ConfirmationContent() {
 
 export default function Confirmation() {
   return (
-    <Suspense fallback={<div className="py-16 text-center text-sm text-[#8e9a9d]">Loading...</div>}>
+    <Suspense fallback={<div className="py-16 text-center text-sm text-[#4f5d75]">Loading...</div>}>
       <ConfirmationContent />
     </Suspense>
   )

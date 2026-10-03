@@ -40,7 +40,7 @@ export default function CompanyRegister() {
           <LogoMark className="h-12 w-12" />
           <div>
             <h1 className="display text-xl font-bold">Register your bus company</h1>
-            <p className="mt-1 text-[12.5px] leading-snug text-[#8e9a9d]">
+            <p className="mt-1 text-[12.5px] leading-snug text-[#4f5d75]">
               An admin reviews and approves your account before you can log in.
             </p>
           </div>
@@ -62,9 +62,9 @@ export default function CompanyRegister() {
           </button>
         </form>
 
-        <p className="text-center text-[12.5px] text-[#8e9a9d]">
+        <p className="text-center text-[12.5px] text-[#4f5d75]">
           Already registered?{' '}
-          <button type="button" onClick={() => router.push(companyPath('/company/login'))} className="font-semibold text-[#f5a524] hover:underline">
+          <button type="button" onClick={() => router.push(companyPath('/company/login'))} className="font-semibold text-[#0b7f8c] hover:underline">
             Log in
           </button>
         </p>

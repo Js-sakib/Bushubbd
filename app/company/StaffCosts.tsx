@@ -50,9 +50,9 @@ export default function StaffCosts() {
     load()
   }, [load])
 
-  if (!data) return <div className="py-16 text-center text-sm text-[#8e9a9d]">Loading...</div>
+  if (!data) return <div className="py-16 text-center text-sm text-[#4f5d75]">Loading...</div>
   if (data.trips.length === 0) {
-    return <p className="glass-lite mt-5 p-5 text-center text-[13px] text-[#8e9a9d]">No trips yesterday, today or tomorrow.</p>
+    return <p className="glass-lite mt-5 p-5 text-center text-[13px] text-[#4f5d75]">No trips yesterday, today or tomorrow.</p>
   }
 
   const today = dhakaDate()
@@ -83,21 +83,21 @@ export default function StaffCosts() {
                 </span>
                 <Plate plate={trip.plateNumber} />
               </span>
-              <span className="truncate text-[11.5px] text-[#9ba7aa]">
+              <span className="truncate text-[11.5px] text-[#44526b]">
                 {formatTripDate(trip.date)} · {trip.busName}
               </span>
             </div>
-            <span className="shrink-0 text-right text-[11px] text-[#9ba7aa]">
+            <span className="shrink-0 text-right text-[11px] text-[#44526b]">
               {costs.length} cost{costs.length === 1 ? '' : 's'}
               <br />
-              <span className="text-[14px] font-bold text-[#fca5a5]">{taka(costs.reduce((n, c) => n + c.amount, 0))}</span>
+              <span className="text-[14px] font-bold text-[#c13b3b]">{taka(costs.reduce((n, c) => n + c.amount, 0))}</span>
             </span>
           </div>
           <CostEditor tripId={trip._id} costs={costs} me={data.me} onChanged={load} />
         </div>
       )}
 
-      <p className="rounded-2xl border border-[#1e4b4f] bg-[#0e3f43]/40 px-4 py-3 text-[12px] leading-relaxed text-[#a9bbbc]">
+      <p className="rounded-2xl border border-[#c3d1e0] bg-white/70 px-4 py-3 text-[12px] leading-relaxed text-[#34445f]">
         Your manager sees every cost you add. Made a mistake? You can remove your own cost within an hour; after that, ask your
         manager.
       </p>

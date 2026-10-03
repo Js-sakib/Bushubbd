@@ -49,7 +49,7 @@ export default function PayoutsPanel() {
     window.location.href = `/invoice/${json.invoice._id}?as=admin`
   }
 
-  if (!data) return <div className="py-16 text-center text-sm text-[#8e9a9d]">Loading...</div>
+  if (!data) return <div className="py-16 text-center text-sm text-[#4f5d75]">Loading...</div>
 
   const owedNow = data.companies.reduce((n, c) => n + Math.max(0, c.owed.payout + c.invoiced - c.refunds), 0)
   const later = data.companies.reduce((n, c) => n + c.later.payout, 0)
@@ -68,30 +68,30 @@ export default function PayoutsPanel() {
           <span className="text-[10.5px] text-[#fae3bc]">Trips that have left</span>
         </div>
         <div className="flex flex-col gap-1 rounded-[18px] bg-gradient-to-br from-[#2f5bc4] to-[#24479b] p-3.5">
-          <span className="text-[11px] font-bold text-[#c9d8fa]">Owed later</span>
+          <span className="text-[11px] font-bold text-[#dbe6ff]">Owed later</span>
           <span className="display text-[22px] font-bold leading-tight text-white">{taka(later)}</span>
-          <span className="text-[10.5px] text-[#c9d8fa]">Trips still to leave</span>
+          <span className="text-[10.5px] text-[#dbe6ff]">Trips still to leave</span>
         </div>
       </div>
-      {toSign > 0 && <p className="px-1 text-[12px] text-[#93c5fd]">{toSign} paid invoice{toSign === 1 ? ' is' : 's are'} waiting for the company to sign.</p>}
+      {toSign > 0 && <p className="px-1 text-[12px] text-[#2563eb]">{toSign} paid invoice{toSign === 1 ? ' is' : 's are'} waiting for the company to sign.</p>}
 
       <div className="card-2 overflow-hidden">
-        <div className="border-b border-[#1a2123] px-4 py-3">
+        <div className="border-b border-[#c9d6e4] px-4 py-3">
           <span className="label-xs">Each company · after commission</span>
         </div>
         {companies.map((c) => (
-          <div key={c._id} className="flex flex-col gap-2.5 border-b border-[#1a2123] px-4 py-3.5 last:border-b-0">
+          <div key={c._id} className="flex flex-col gap-2.5 border-b border-[#c9d6e4] px-4 py-3.5 last:border-b-0">
             <div className="flex items-start justify-between gap-3">
               <div className="flex min-w-0 flex-col">
                 <span className="truncate text-[14px] font-bold">{c.name}</span>
-                <span className="text-[11.5px] text-[#9ba7aa]">
+                <span className="text-[11.5px] text-[#44526b]">
                   {c.owed.tickets} ticket{c.owed.tickets === 1 ? '' : 's'} · {c.owed.seats} seats · price {taka(c.owed.ticketTotal)} · commission {taka(c.owed.commission)}
                 </span>
-                {c.invoiced > 0 && <span className="text-[11.5px] text-[#fbbf24]">Already invoiced, not paid: {taka(c.invoiced)}</span>}
-                {c.later.tickets > 0 && <span className="text-[11.5px] text-[#6e7b7e]">Later: {taka(c.later.payout)} for trips still to leave</span>}
-                {c.refunds > 0 && <span className="text-[11.5px] text-[#fca5a5]">Refunds to take back: −{taka(c.refunds)} (from the next payment)</span>}
+                {c.invoiced > 0 && <span className="text-[11.5px] text-[#8a6d00]">Already invoiced, not paid: {taka(c.invoiced)}</span>}
+                {c.later.tickets > 0 && <span className="text-[11.5px] text-[#617086]">Later: {taka(c.later.payout)} for trips still to leave</span>}
+                {c.refunds > 0 && <span className="text-[11.5px] text-[#c13b3b]">Refunds to take back: −{taka(c.refunds)} (from the next payment)</span>}
               </div>
-              <span className="shrink-0 text-[17px] font-bold text-[#f5a524]">{taka(c.owed.payout)}</span>
+              <span className="shrink-0 text-[17px] font-bold text-[#0b7f8c]">{taka(c.owed.payout)}</span>
             </div>
             {c.owed.tickets > 0 && (
               <button type="button" disabled={busy === c._id} onClick={() => makeInvoice(c)} className="glass-btn h-11 text-sm">
@@ -100,33 +100,33 @@ export default function PayoutsPanel() {
             )}
           </div>
         ))}
-        {companies.length === 0 && <div className="px-4 py-8 text-center text-sm text-[#8e9a9d]">Nothing owed to any company.</div>}
+        {companies.length === 0 && <div className="px-4 py-8 text-center text-sm text-[#4f5d75]">Nothing owed to any company.</div>}
       </div>
 
       </div>
 
       <div className="card-2 overflow-hidden">
-        <div className="border-b border-[#1a2123] px-4 py-3">
+        <div className="border-b border-[#c9d6e4] px-4 py-3">
           <span className="label-xs">Invoices</span>
         </div>
         {invoices.map((i) => (
-          <a key={i._id} href={`/invoice/${i._id}?as=admin`} className="flex items-start gap-3 border-b border-[#1a2123] px-4 py-3 last:border-b-0 hover:bg-white/[0.03]">
+          <a key={i._id} href={`/invoice/${i._id}?as=admin`} className="flex items-start gap-3 border-b border-[#c9d6e4] px-4 py-3 last:border-b-0 hover:bg-[#0b2545]/[0.05]">
             <div className="flex min-w-0 grow flex-col gap-0.5">
               <span className="truncate text-[13.5px] font-bold">
                 <span className="font-mono">{i.number}</span> · {i.companyName}
               </span>
-              <span className="text-[11.5px] text-[#9ba7aa]">
+              <span className="text-[11.5px] text-[#44526b]">
                 {range(i.from, i.to)} · {i.totals.tickets} tickets
               </span>
               <span className={`self-start rounded-full px-2 py-0.5 text-[10.5px] font-bold ${statusOf(i).dark}`}>{statusOf(i).label}</span>
             </div>
             <div className="flex shrink-0 flex-col items-end">
               <span className="text-[14px] font-bold">{taka(i.totals.payout)}</span>
-              <span className="text-[10.5px] text-[#f5a524]">Open ›</span>
+              <span className="text-[10.5px] text-[#0b7f8c]">Open ›</span>
             </div>
           </a>
         ))}
-        {data.invoices.length === 0 && <div className="px-4 py-8 text-center text-sm text-[#8e9a9d]">No invoices yet.</div>}
+        {data.invoices.length === 0 && <div className="px-4 py-8 text-center text-sm text-[#4f5d75]">No invoices yet.</div>}
       </div>
     </div>
   )

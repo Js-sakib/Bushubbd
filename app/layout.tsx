@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { Hind_Siliguri, Manrope, Space_Grotesk } from 'next/font/google'
+import { Hind_Siliguri, Inter, Plus_Jakarta_Sans } from 'next/font/google'
 import { Toaster } from 'react-hot-toast'
 import SiteChrome from './SiteChrome'
 import JsonLd from './routes/JsonLd'
@@ -8,16 +8,16 @@ import './globals.css'
 
 // Self-hosted at build time. Besides being faster than the Google CDN, it keeps the fonts
 // same-origin so the ticket can be rendered to an image with its real typeface.
-const manrope = Manrope({
+const inter = Inter({
   subsets: ['latin'],
   weight: ['400', '500', '600', '700', '800'],
   variable: '--font-body',
   display: 'swap',
 })
 
-const spaceGrotesk = Space_Grotesk({
+const jakarta = Plus_Jakarta_Sans({
   subsets: ['latin'],
-  weight: ['500', '600', '700'],
+  weight: ['500', '600', '700', '800'],
   variable: '--font-display',
   display: 'swap',
 })
@@ -101,15 +101,15 @@ const ORGANIZATION = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${manrope.variable} ${spaceGrotesk.variable} ${hindSiliguri.variable}`}>
-      <body>
+    <html lang="en" className={`${inter.variable} ${jakarta.variable} ${hindSiliguri.variable}`}>
+      <body className="light-panel">
         <JsonLd data={ORGANIZATION} />
         <SiteChrome>{children}</SiteChrome>
         <Toaster
           position="top-center"
           containerClassName="no-print"
           toastOptions={{
-            style: { background: '#151b1d', color: '#f6f4ef', border: '1px solid #2a3437' },
+            style: { background: '#08324d', color: '#fbeceb', border: '1px solid #2a5874' },
           }}
         />
       </body>

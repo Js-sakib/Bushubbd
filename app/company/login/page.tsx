@@ -41,7 +41,7 @@ export default function CompanyLogin() {
           <LogoMark className="h-12 w-12" />
           <div>
             <h1 className="display text-xl font-bold">Operator login</h1>
-            <p className="mt-1 text-[12.5px] text-[#8e9a9d]">Management, counter and scanner logins</p>
+            <p className="mt-1 text-[12.5px] text-[#4f5d75]">Management, counter and scanner logins</p>
           </div>
         </div>
 
@@ -60,7 +60,7 @@ export default function CompanyLogin() {
               <button
                 type="button"
                 onClick={() => router.push(companyPath('/company/forgot'))}
-                className="text-[12px] font-semibold text-[#f5a524] hover:underline"
+                className="text-[12px] font-semibold text-[#0b7f8c] hover:underline"
               >
                 Forgot password?
               </button>
@@ -72,9 +72,9 @@ export default function CompanyLogin() {
           </button>
         </form>
 
-        <p className="text-center text-[12.5px] text-[#8e9a9d]">
+        <p className="text-center text-[12.5px] text-[#4f5d75]">
           New operator?{' '}
-          <button type="button" onClick={() => router.push(companyPath('/company/register'))} className="font-semibold text-[#f5a524] hover:underline">
+          <button type="button" onClick={() => router.push(companyPath('/company/register'))} className="font-semibold text-[#0b7f8c] hover:underline">
             Register here
           </button>
         </p>

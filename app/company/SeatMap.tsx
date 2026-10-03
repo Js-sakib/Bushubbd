@@ -6,11 +6,11 @@ import type { CompanyTrip } from './types'
 export type SeatKind = 'free' | 'online' | 'held' | 'counter' | 'mine'
 
 const STYLES: Record<SeatKind, string> = {
-  free: 'border border-[#2a6b52] bg-[#12372c] text-[#7de3b8] hover:border-[#34d399]',
-  online: 'border border-[#f5a524] bg-gradient-to-br from-[#f2661d] to-[#f5a524] text-[#170b02]',
-  held: 'border border-dashed border-[#f5a524] bg-[#f5a524]/[0.08] text-[#f5a524]',
-  counter: 'border border-[#8b6dff] bg-[#5b3fd6] text-white',
-  mine: 'border-2 border-white bg-[#6d4aff] text-white',
+  free: 'border border-[#c9d6e4] bg-white text-[#0b2545] shadow-[0_1px_2px_rgba(11,37,69,0.08)] hover:border-[#0dabab]',
+  online: 'border border-[#cc8b65] bg-gradient-to-br from-[#f2661d] to-[#feb249] text-[#170b02]',
+  held: 'border border-dashed border-[#cc8b65] bg-[#feb249]/[0.08] text-[#0b7f8c]',
+  counter: 'border border-[#5eb1bf] bg-[#4a9aa8] text-white',
+  mine: 'border-2 border-white bg-[#5eb1bf] text-white',
 }
 
 export const SEAT_LEGEND: { kind: SeatKind; label: string }[] = [
@@ -69,23 +69,23 @@ export default function SeatMap({
     <div className="flex flex-col gap-3">
       <div className="flex flex-wrap gap-x-3 gap-y-1.5">
         {SEAT_LEGEND.map((l) => (
-          <span key={l.kind} className="flex items-center gap-1.5 text-[11px] text-[#9ba7aa]">
+          <span key={l.kind} className="flex items-center gap-1.5 text-[11px] text-[#44526b]">
             <span className={`h-3 w-3 rounded-[4px] ${STYLES[l.kind]}`} />
             {l.label}
           </span>
         ))}
         {myStaffId && (
-          <span className="flex items-center gap-1.5 text-[11px] text-[#9ba7aa]">
+          <span className="flex items-center gap-1.5 text-[11px] text-[#44526b]">
             <span className={`h-3 w-3 rounded-[4px] ${STYLES.mine}`} />
             Sold by you
           </span>
         )}
       </div>
-      <div className="flex flex-col gap-2 rounded-2xl border border-white/[0.07] bg-black/25 p-3">
-        <div className="flex justify-end pb-1 text-[10.5px] font-bold uppercase tracking-wide text-[#6e7b7e]">Driver</div>
+      <div className="flex flex-col gap-2 rounded-2xl border border-[#0b2545]/10 bg-white/60 p-3">
+        <div className="flex justify-end pb-1 text-[10.5px] font-bold uppercase tracking-wide text-[#617086]">Driver</div>
         {rows.map((row, i) => (
           <div key={i} className="flex items-center gap-2">
-            <span className="w-4 shrink-0 text-[10.5px] font-bold text-[#6e7b7e]">{i + 1}</span>
+            <span className="w-4 shrink-0 text-[10.5px] font-bold text-[#617086]">{i + 1}</span>
             {row.slice(0, 2).map(seatButton)}
             <span className="w-4 shrink-0" />
             {row.slice(2, 4).map(seatButton)}

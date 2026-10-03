@@ -3,7 +3,7 @@ export default function Plate({ plate, className = '' }: { plate?: string | null
   if (!plate) return null
   return (
     <span
-      className={`inline-flex shrink-0 items-center whitespace-nowrap rounded-[5px] border border-[#f5a524] bg-[#f6f1ea] px-1.5 py-px font-mono text-[10.5px] font-bold leading-4 tracking-wide text-[#14191b] shadow-[0_0_0_2px_rgba(245,165,36,0.18)] ${className}`}
+      className={`inline-flex shrink-0 items-center whitespace-nowrap rounded-[5px] border border-[#feb249] bg-[#fff8ec] px-1.5 py-px font-mono text-[10.5px] font-bold leading-4 tracking-wide text-[#100c0d] shadow-[0_0_0_2px_rgba(254,178,73,0.18)] ${className}`}
       title="Number plate"
     >
       {plate}

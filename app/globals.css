@@ -3,21 +3,31 @@
 @tailwind utilities;
 
 :root {
-  --bg: #0b0e0f;
-  --surface: #141a1c;
-  --surface-2: #12181a;
-  --surface-3: #151b1d;
-  --line: #222b2e;
-  --line-soft: #1f2729;
-  --field: #0f1517;
-  --field-line: #2a3437;
-  --gold: #f5a524;
+  --bg: #002447;
+  --surface: #08324d;
+  --surface-2: #06304a;
+  --surface-3: #08324d;
+  --line: #24506b;
+  --line-soft: #1f4a66;
+  --field: #001d3a;
+  --field-line: #2a5874;
+  --gold: #feb249;
   --orange: #f2661d;
   --teal: #2dd4bf;
-  --teal-deep: #0e3f43;
-  --ink: #f6f4ef;
-  --muted: #9ba7aa;
-  --muted-2: #78868a;
+  --teal-deep: #002447;
+  --ink: #fbeceb;
+  --muted: #b8b2a6;
+  --muted-2: #959488;
+  /* Shared widgets (search box, calendar) take their colours from these, so they suit both the
+     dark panels and the light counter pages. */
+  --c-ink: #fbeceb;
+  --c-muted: #b8b2a6;
+  --c-faint: #88908a;
+  --c-range: #fde7c0;
+  --c-hover: rgba(255, 255, 255, 0.08);
+  --c-line: rgba(255, 255, 255, 0.1);
+  --c-field: rgba(0, 0, 0, 0.3);
+  --c-pop: #100c0d;
 }
 
 * {
@@ -31,14 +41,16 @@ html {
 }
 
 body {
-  background: var(--bg);
+  /* Pink -> blue -> aqua, to the top right. */
+  background: linear-gradient(to right top, #d16ba5, #c777b9, #ba83ca, #aa8fd8, #9a9ae1, #8aa7ec, #79b3f4, #69bff8, #52cffe, #41dfff, #46eefa, #5ffbf1) fixed;
+  background-color: var(--bg);
   color: var(--ink);
-  font-family: var(--font-body), 'Manrope', system-ui, -apple-system, sans-serif;
+  font-family: var(--font-body), 'Inter', system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 
 h1, h2, h3, .display {
-  font-family: var(--font-display), 'Space Grotesk', system-ui, sans-serif;
+  font-family: var(--font-display), 'Plus Jakarta Sans', system-ui, sans-serif;
   letter-spacing: -0.01em;
 }
 
@@ -69,10 +81,10 @@ h1, h2, h3, .display {
    into the dark, with a hint of teal at the far end. */
 .nav-glow {
   background:
-    radial-gradient(140% 220% at 0% 50%, rgba(242, 102, 29, 0.72) 0%, rgba(245, 165, 36, 0.26) 34%, rgba(245, 165, 36, 0) 58%),
-    radial-gradient(90% 200% at 100% 50%, rgba(18, 165, 148, 0.22) 0%, rgba(18, 165, 148, 0) 60%),
+    radial-gradient(140% 220% at 0% 50%, rgba(242, 102, 29, 0.72) 0%, rgba(254, 178, 73, 0.26) 34%, rgba(254, 178, 73, 0) 58%),
+    radial-gradient(90% 200% at 100% 50%, rgba(83, 211, 209, 0.24) 0%, rgba(83, 211, 209, 0) 60%),
     linear-gradient(150deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.02) 60%),
-    rgba(14, 18, 20, 0.9);
+    rgba(16, 12, 13, 0.9);
   border-color: rgba(255, 196, 140, 0.16);
   box-shadow: 0 18px 50px rgba(0, 0, 0, 0.38), 0 8px 30px rgba(242, 102, 29, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
@@ -131,7 +143,7 @@ h1, h2, h3, .display {
   height: 30px;
   flex-shrink: 0;
   border-radius: 999px;
-  background: linear-gradient(135deg, #f2661d, #f5a524);
+  background: linear-gradient(135deg, #f2661d, #feb249);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -156,14 +168,14 @@ h1, h2, h3, .display {
 }
 
 .input-dark::placeholder {
-  color: #6e7b7e;
+  color: #88908a;
   font-weight: 500;
 }
 
 .input-dark:focus {
   outline: none;
   border-color: var(--gold);
-  box-shadow: 0 0 0 3px rgba(245, 165, 36, 0.16);
+  box-shadow: 0 0 0 3px rgba(254, 178, 73, 0.16);
 }
 
 /* Search fields have their own clear button. */
@@ -174,7 +186,7 @@ input[type='search'].input-dark::-webkit-search-cancel-button {
 
 select.input-dark {
   appearance: none;
-  background-image: linear-gradient(45deg, transparent 50%, #8e9a9d 50%), linear-gradient(135deg, #8e9a9d 50%, transparent 50%);
+  background-image: linear-gradient(45deg, transparent 50%, #aaa598 50%), linear-gradient(135deg, #aaa598 50%, transparent 50%);
   background-position: calc(100% - 18px) 21px, calc(100% - 13px) 21px;
   background-size: 5px 5px, 5px 5px;
   background-repeat: no-repeat;
@@ -183,7 +195,7 @@ select.input-dark {
 
 /* The field itself is see-through; the opened option list must not be. */
 select.input-dark option {
-  background: #12181a;
+  background: #06304a;
   color: var(--ink);
 }
 
@@ -230,7 +242,7 @@ input[type='date']::-webkit-calendar-picker-indicator {
   font-size: 10px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: #8e9a9d;
+  color: #aaa598;
   font-weight: 700;
 }
 
@@ -240,7 +252,7 @@ input[type='date']::-webkit-calendar-picker-indicator {
   border-radius: 999px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   background: rgba(255, 255, 255, 0.05);
-  color: #c4cdcf;
+  color: #dad3c8;
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
@@ -273,7 +285,7 @@ input[type='date']::-webkit-calendar-picker-indicator {
 @media print {
   body {
     background: #ffffff;
-    color: #16191a;
+    color: #100c0d;
   }
   .no-print {
     display: none !important;
@@ -307,4 +319,85 @@ input[type='date']::-webkit-calendar-picker-indicator {
     background: #ffffff !important;
     border: 1px solid #d5dbdc;
   }
+}
+
+/* On the bright page, the dark panels go navy so their light text stays readable. */
+.card,
+.card-2,
+.glass-lite,
+.glass {
+  background: linear-gradient(150deg, rgba(0, 36, 71, 0.9), rgba(0, 29, 58, 0.86) 60%);
+}
+
+/* ---- The bus company pages (management, counter, bus staff): light frosted glass, navy text. ---- */
+.light-panel {
+  --ink: #0b2545;
+  --muted: #44526b;
+  --muted-2: #5a677d;
+  --c-ink: #0b2545;
+  --c-muted: #4f5d75;
+  --c-faint: #617086;
+  --c-range: #8a4b00;
+  --c-hover: rgba(11, 37, 69, 0.07);
+  --c-line: rgba(11, 37, 69, 0.12);
+  --c-field: rgba(255, 255, 255, 0.7);
+  --c-pop: #ffffff;
+  color: var(--ink);
+}
+.light-panel .card,
+.light-panel .card-2,
+.light-panel .glass-lite,
+.light-panel .glass {
+  background: linear-gradient(150deg, rgba(255, 255, 255, 0.86), rgba(255, 255, 255, 0.72) 60%);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  box-shadow: 0 10px 30px rgba(11, 37, 69, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+}
+.light-panel .input-dark {
+  border-color: rgba(11, 37, 69, 0.14);
+  background-color: rgba(255, 255, 255, 0.82);
+  color: var(--ink);
+}
+.light-panel .input-dark::placeholder {
+  color: #6b7a90;
+}
+.light-panel select.input-dark {
+  background-image: linear-gradient(45deg, transparent 50%, #4f5d75 50%), linear-gradient(135deg, #4f5d75 50%, transparent 50%);
+}
+.light-panel select.input-dark option {
+  background: #ffffff;
+  color: var(--ink);
+}
+.light-panel input[type='date']::-webkit-calendar-picker-indicator {
+  filter: none;
+}
+.light-panel .label-xs {
+  color: #4f5d75;
+}
+.light-panel .chip {
+  border-color: rgba(11, 37, 69, 0.14);
+  background: rgba(255, 255, 255, 0.7);
+  color: #24344f;
+}
+.light-panel .chip-active {
+  border-color: var(--orange);
+  background: rgba(242, 102, 29, 0.12);
+  color: #b8480f;
+}
+.light-panel .glass-btn {
+  color: var(--ink);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.75));
+  border-color: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 10px 26px rgba(242, 102, 29, 0.22), inset 0 1px 0 rgba(255, 255, 255, 1);
+}
+.light-panel .glass-btn-plain {
+  background: rgba(255, 255, 255, 0.7);
+  border-color: rgba(11, 37, 69, 0.14);
+  box-shadow: none;
+}
+.light-panel .icon-btn {
+  border-color: rgba(11, 37, 69, 0.14);
+  background: rgba(255, 255, 255, 0.7);
+  color: var(--ink);
 }

@@ -12,8 +12,8 @@ const PROMISES = [
     title: 'No account, ever',
     body:
       'You pick a seat, pay, and the ticket is yours. No sign-up form, no password to forget, no phone number verification before you can even see a fare.',
-    accent: 'text-[#f5a524]',
-    bg: 'bg-[#f5a524]/[0.14]',
+    accent: 'text-[#0b7f8c]',
+    bg: 'bg-[#feb249]/[0.14]',
     icon: (
       <>
         <path d="M12 3 4 6v6c0 4.4 3.3 8.3 8 9 4.7-.7 8-4.6 8-9V6z" />
@@ -25,7 +25,7 @@ const PROMISES = [
     title: 'A ticket nobody can fake',
     body:
       'Every ticket carries a QR code. The conductor scans it and our system answers live — valid, already used, or refunded. A Photoshopped screenshot has nothing behind it, so it fails on the spot.',
-    accent: 'text-[#2dd4bf]',
+    accent: 'text-[#0f8f80]',
     bg: 'bg-[#2dd4bf]/[0.14]',
     icon: (
       <>
@@ -55,8 +55,8 @@ const PROMISES = [
     title: 'Ten minutes to pay, then the seat goes back',
     body:
       'Your seat is held while you finish payment. If you walk away, it returns to the map automatically instead of sitting dead for the rest of the day.',
-    accent: 'text-[#8b5cf6]',
-    bg: 'bg-[#8b5cf6]/[0.16]',
+    accent: 'text-[#5eb1bf]',
+    bg: 'bg-[#5eb1bf]/[0.16]',
     icon: (
       <>
         <circle cx="12" cy="12" r="9" />
@@ -76,13 +76,13 @@ export default function About() {
   return (
     <div className="px-5 pb-6 pt-5">
       <section className="flex flex-col gap-3">
-        <span className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#f5a524]">About us</span>
+        <span className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#0b7f8c]">About us</span>
         <h1 className="text-[34px] font-bold leading-[1.1] sm:text-[42px]">
           Bus tickets,
           <br />
           without the queue.
         </h1>
-        <p className="max-w-lg text-sm leading-relaxed text-[#9ba7aa]">
+        <p className="max-w-lg text-sm leading-relaxed text-[#44526b]">
           BusHub is a Bangladeshi ticketing platform. We put the country&apos;s bus operators and their real seat
           availability in one place, so booking a seat takes a minute on your phone instead of a trip to the counter
           or a phone call that nobody answers.
@@ -100,7 +100,7 @@ export default function About() {
             </span>
             <div className="flex flex-col gap-1">
               <span className="text-sm font-bold">{item.title}</span>
-              <span className="text-[12.5px] leading-relaxed text-[#9ba7aa]">{item.body}</span>
+              <span className="text-[12.5px] leading-relaxed text-[#44526b]">{item.body}</span>
             </div>
           </div>
         ))}
@@ -111,11 +111,11 @@ export default function About() {
         <div className="grid gap-2.5 sm:grid-cols-3">
           {STEPS.map((step) => (
             <div key={step.n} className="flex flex-col gap-2 glass-lite p-3.5">
-              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#f5a524]/[0.14] text-sm font-bold text-[#f5a524]">
+              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#feb249]/[0.14] text-sm font-bold text-[#0b7f8c]">
                 {step.n}
               </span>
               <span className="text-sm font-bold">{step.title}</span>
-              <span className="text-[12.5px] leading-relaxed text-[#9ba7aa]">{step.body}</span>
+              <span className="text-[12.5px] leading-relaxed text-[#44526b]">{step.body}</span>
             </div>
           ))}
         </div>
@@ -124,12 +124,12 @@ export default function About() {
       <section className="mt-8 flex flex-col gap-3">
         <h2 className="text-[17px] font-bold">Why we built it</h2>
         <div className="glass-lite p-4">
-          <p className="text-[13px] leading-relaxed text-[#b7c1c3]">
+          <p className="text-[13px] leading-relaxed text-[#2f3f5a]">
             Buying a long-distance bus ticket in Bangladesh usually means going to a counter, calling a number that
             rings out, or trusting a seat map that was last accurate this morning. Passengers turn up to find their
             seat sold twice. Fake tickets get waved through because there is no way to check one at the door.
           </p>
-          <p className="mt-3 text-[13px] leading-relaxed text-[#b7c1c3]">
+          <p className="mt-3 text-[13px] leading-relaxed text-[#2f3f5a]">
             BusHub exists to fix exactly those three things: availability you can trust, a ticket that proves itself,
             and a booking you can finish from wherever you are standing.
           </p>
@@ -138,8 +138,8 @@ export default function About() {
 
       <section className="mt-8 flex flex-col gap-3">
         <h2 className="text-[17px] font-bold">For bus operators</h2>
-        <div className="flex flex-col gap-3.5 rounded-[20px] border border-[#1e4b4f] bg-gradient-to-br from-[#0e3f43]/90 to-[#141a1c]/90 p-4">
-          <p className="text-[13px] leading-relaxed text-[#a9bbbc]">
+        <div className="flex flex-col gap-3.5 rounded-[20px] border border-[#c3d1e0] bg-gradient-to-br from-[#002447]/90 to-[#08324d]/90 p-4">
+          <p className="text-[13px] leading-relaxed text-[#34445f]">
             Listing a bus is free. You get your own dashboard to add trips, mark the seats you sell at your counter,
             and see exactly what BusHub owes you. We take a commission only on the tickets we actually sell for you —
             nothing up front, no monthly fee.
@@ -159,13 +159,13 @@ export default function About() {
       <section className="mt-8 flex flex-col gap-3" id="contact">
         <h2 className="text-[17px] font-bold">Get in touch</h2>
         <div className="flex flex-col gap-3 glass-lite p-4">
-          <p className="text-[13px] leading-relaxed text-[#9ba7aa]">
+          <p className="text-[13px] leading-relaxed text-[#44526b]">
             Question about a booking, a refund, or listing your buses? Write to us and we will come back to you.
           </p>
-          <a href="mailto:info@bushubbd.com" className="text-sm font-bold text-[#f5a524] hover:underline">
+          <a href="mailto:info@bushubbd.com" className="text-sm font-bold text-[#0b7f8c] hover:underline">
             info@bushubbd.com
           </a>
-          <span className="text-[11.5px] text-[#78868a]">BusHub · Bangladesh</span>
+          <span className="text-[11.5px] text-[#5a677d]">BusHub · Bangladesh</span>
         </div>
       </section>
     </div>
