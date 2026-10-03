@@ -22,7 +22,7 @@ const PERIODS = [
   ['finished', 'Finished'],
   ['upcoming', 'Upcoming'],
 ] as const
-type Period = (typeof PERIODS)[number][0]
+export type Period = (typeof PERIODS)[number][0]
 const PERIOD_TEXT: Record<Period, string> = {
   all: 'Trips of the last 30 days and upcoming trips',
   finished: 'Trips that left in the last 30 days',
@@ -74,7 +74,7 @@ const VIEWS = [
   ['total', 'Total money'],
   ['sellers', 'Who sold'],
 ] as const
-type View = (typeof VIEWS)[number][0]
+export type View = (typeof VIEWS)[number][0]
 
 /**
  * The manager's money page: pick a bus, dates or a period, then see it trip by trip, as one total
@@ -89,6 +89,8 @@ export default function MoneyView({
   onChanged,
   onFrom,
   companyName,
+  startView = 'dates',
+  startPeriod = 'all',
 }: {
   trips: CompanyTrip[]
   fleet: FleetOption[]
@@ -98,13 +100,16 @@ export default function MoneyView({
   /** Asks for older trips when the From date is before what is loaded. */
   onFrom: (date: string) => void
   companyName: string
+  /** Where the page opens, e.g. Who sold for the upcoming trips from the Seats sold button. */
+  startView?: View
+  startPeriod?: Period
 }) {
   const [busId, setBusId] = useState('')
-  const [period, setPeriod] = useState<Period>('all')
+  const [period, setPeriod] = useState<Period>(startPeriod)
   const [search, setSearch] = useState('')
   const [from, setFrom] = useState('')
   const [to, setTo] = useState('')
-  const [view, setView] = useState<View>('dates')
+  const [view, setView] = useState<View>(startView)
 
   const shown = useMemo(() => {
     const list = trips.filter(

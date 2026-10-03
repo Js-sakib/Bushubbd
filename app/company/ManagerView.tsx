@@ -31,6 +31,47 @@ function dhakaTime(iso: string | null) {
   return new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Dhaka', hour: '2-digit', minute: '2-digit', day: 'numeric', month: 'short' }).format(new Date(iso))
 }
 
+const STAT_TONES = {
+  navy: 'bg-[#002447] text-[#fbeceb] shadow-[0_10px_24px_rgba(0,36,71,0.3)]',
+  aqua: 'bg-[#53d3d1] text-[#002447] shadow-[0_10px_24px_rgba(83,211,209,0.4)]',
+  pink: 'bg-[#fbeceb] text-[#002447] shadow-[0_10px_24px_rgba(0,36,71,0.12)] border border-[#002447]/10',
+}
+
+/** A number at the top that opens its details when tapped. */
+function StatButton({
+  tone,
+  label,
+  value,
+  sub,
+  small = false,
+  active,
+  onClick,
+}: {
+  tone: keyof typeof STAT_TONES
+  label: string
+  value: string
+  sub?: string
+  small?: boolean
+  active: boolean
+  onClick: () => void
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={active}
+      className={`flex min-w-0 flex-col gap-1 rounded-[18px] p-3.5 text-left transition hover:-translate-y-0.5 ${STAT_TONES[tone]} ${
+        active ? 'ring-2 ring-[#002447] ring-offset-2 ring-offset-transparent' : ''
+      }`}
+    >
+      <span className="text-[11px] font-bold opacity-80">{label}</span>
+      <span className={`display font-bold leading-none ${small ? 'text-[20px]' : 'text-[24px]'}`}>{value}</span>
+      {sub && <span className="text-[10.5px] opacity-80">{sub}</span>}
+      <span className="mt-auto pt-1 text-[10.5px] font-bold opacity-90">Details ›</span>
+    </button>
+  )
+}
+
 /** One trip: how full it is at a glance, and the whole seat map with who sold what when opened. */
 function TripCard({ trip, open, onToggle, onChanged }: { trip: CompanyTrip; open: boolean; onToggle: () => void; onChanged: () => Promise<void> }) {
   const c = tripCounts(trip)
@@ -148,6 +189,9 @@ export default function ManagerView({ companyName }: { companyName: string }) {
   const [busId, setBusId] = useState('')
   const [search, setSearch] = useState('')
   const [when, setWhen] = useState<'upcoming' | 'finished'>('upcoming')
+  // The Seats sold button opens Sales on Who sold for the trips to come; the Sales tab opens on Date by date.
+  const [salesStart, setSalesStart] = useState<'dates' | 'sellers'>('dates')
+  const [salesKey, setSalesKey] = useState(0)
   const [open, setOpen] = useState<string | null>(null)
   const [adding, setAdding] = useState(false)
   const [bookings, setBookings] = useState<SaleBooking[]>([])
@@ -197,28 +241,55 @@ export default function ManagerView({ companyName }: { companyName: string }) {
 
   return (
     <div className="mt-5 flex flex-col gap-4">
+      {/* The three numbers are buttons: each opens the page with its details. */}
       <div className="grid grid-cols-3 gap-2.5">
-        <div className="flex flex-col gap-1 rounded-[18px] bg-gradient-to-br from-[#0dabab] to-[#0a7479] p-3.5">
-          <span className="text-[11px] font-bold text-[#d9fbfa]">Upcoming trips</span>
-          <span className="display text-[24px] font-bold leading-none text-white">{upcoming.length}</span>
-        </div>
-        <div className="flex flex-col gap-1 rounded-[18px] bg-gradient-to-br from-[#4a9aa8] to-[#2c6a78] p-3.5">
-          <span className="text-[11px] font-bold text-[#e0f3f6]">Seats sold</span>
-          <span className="display text-[24px] font-bold leading-none text-white">{sold.online + sold.counter}</span>
-          <span className="text-[10.5px] text-[#e0f3f6]">
-            {sold.online} online · {sold.counter} counter
-          </span>
-        </div>
-        <div className="flex flex-col gap-1 rounded-[18px] bg-gradient-to-br from-[#c77a0e] to-[#a25f06] p-3.5">
-          <span className="text-[11px] font-bold text-[#fae3bc]">BusHub owes</span>
-          <span className="display text-[20px] font-bold leading-tight text-white">{owed === null ? '–' : taka(owed)}</span>
-          {toSign > 0 && <span className="text-[10.5px] font-bold text-white">{toSign} to sign</span>}
-        </div>
+        <StatButton
+          tone="navy"
+          active={tab === 'trips' && when === 'upcoming'}
+          label="Upcoming trips"
+          value={String(upcoming.length)}
+          onClick={() => {
+            setTab('trips')
+            setWhen('upcoming')
+          }}
+        />
+        <StatButton
+          tone="aqua"
+          active={tab === 'sales' && salesStart === 'sellers'}
+          label="Seats sold"
+          value={String(sold.online + sold.counter)}
+          sub={`${sold.online} online · ${sold.counter} counter`}
+          onClick={() => {
+            setSalesStart('sellers')
+            setSalesKey((k) => k + 1)
+            setTab('sales')
+          }}
+        />
+        <StatButton
+          tone="pink"
+          active={tab === 'payments'}
+          label="BusHub owes"
+          value={owed === null ? '–' : taka(owed)}
+          small
+          sub={toSign > 0 ? `${toSign} to sign` : undefined}
+          onClick={() => setTab('payments')}
+        />
       </div>
 
       <div className="flex gap-2 overflow-x-auto">
         {TABS.map(([id, label]) => (
-          <button key={id} type="button" onClick={() => setTab(id)} className={`chip shrink-0 ${tab === id ? 'chip-active' : ''}`}>
+          <button
+            key={id}
+            type="button"
+            onClick={() => {
+              if (id === 'sales' && tab !== 'sales') {
+                setSalesStart('dates')
+                setSalesKey((k) => k + 1)
+              }
+              setTab(id)
+            }}
+            className={`chip shrink-0 ${tab === id ? 'chip-active' : ''}`}
+          >
             {label}
           </button>
         ))}
@@ -278,7 +349,7 @@ export default function ManagerView({ companyName }: { companyName: string }) {
         </div>
       )}
 
-      {tab === 'sales' && <MoneyView trips={trips} fleet={data.fleet} me={data.me} bookings={bookings} onChanged={reload} onFrom={setSince} companyName={companyName} />}
+      {tab === 'sales' && <MoneyView trips={trips} fleet={data.fleet} me={data.me} bookings={bookings} onChanged={reload} onFrom={setSince} companyName={companyName} key={salesKey} startView={salesStart} startPeriod={salesStart === 'sellers' ? 'upcoming' : 'all'} />}
       {tab === 'payments' && <PaymentsPanel data={payments} />}
       {tab === 'scans' && <ScanHistory stats={stats} showScanner />}
       {tab === 'staff' && <StaffPanel />}
