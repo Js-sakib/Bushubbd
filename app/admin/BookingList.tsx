@@ -54,6 +54,13 @@ function Channel({ source }: { source?: string }) {
   )
 }
 
+/** When the ticket was bought, in Dhaka time: "3 Oct, 14:05". */
+function boughtAt(iso: string): string {
+  if (!iso) return ''
+  const d = new Date(iso)
+  return Number.isNaN(d.getTime()) ? '' : new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Dhaka', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }).format(d)
+}
+
 function RefundButton({ booking, onRefund }: { booking: Booking; onRefund: (id: string) => void }) {
   if (bookingStatus(booking) !== 'paid') return null
   return (
@@ -138,6 +145,9 @@ export default function BookingList({
                 <span className="truncate text-[11px] text-[#6e7b7e]">
                   {b.busName} · seats {b.seats.join(', ')}
                 </span>
+                <span className="truncate text-[11px] text-[#6e7b7e]">
+                  {b.passengerPhone} · bought {boughtAt(b.createdAt)}
+                </span>
               </div>
               <div className="flex shrink-0 flex-col items-end gap-1.5">
                 <span className="text-[13.5px] font-bold">{taka(b.totalPrice)}</span>
@@ -169,7 +179,7 @@ export default function BookingList({
               <th className="px-3 py-3 font-bold">Travel</th>
               <th className="px-3 py-3 font-bold">Seats</th>
               <th className="px-3 py-3 text-right font-bold">Paid</th>
-              <th className="px-3 py-3 font-bold">Booked on</th>
+              <th className="px-3 py-3 font-bold">Bought</th>
               <th className="px-3 py-3 font-bold">Status</th>
               <th className="px-5 py-3 text-right font-bold">Action</th>
             </tr>
@@ -208,6 +218,7 @@ export default function BookingList({
                 <td className="px-3 py-3 text-right text-[13px] font-bold tabular-nums">{taka(b.totalPrice)}</td>
                 <td className="px-3 py-3">
                   <Channel source={b.source} />
+                  <span className="block whitespace-nowrap text-[11px] text-[#6e7b7e]">{boughtAt(b.createdAt)}</span>
                 </td>
                 <td className="px-3 py-3">
                   <StatusChip status={bookingStatus(b)} />

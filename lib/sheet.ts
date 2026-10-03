@@ -1,55 +1,222 @@
 /**
- * A small Excel (.xlsx) writer for the "Download sheet" buttons: no library, runs in the browser.
- * The file opens in Excel, Google Sheets (File → Import, or open it from Drive) and phone sheet
- * apps, where it can be edited and copied. Numbers stay numbers, so the sheet can add them up.
+ * A small Excel (.xlsx) writer for the "Download Excel sheet" buttons: no library, runs in the
+ * browser. Each sheet gets a title block (what it is, the dates, when it was made), a coloured
+ * header row with filter arrows, banded rows, real dates and numbers, and a bold TOTAL row whose
+ * sums follow the filter (SUBTOTAL), so filtering by bus or day shows that bus's or day's total.
+ * The file opens in Excel, Google Sheets (open it from Drive) and phone sheet apps.
  */
 
-export type Cell = string | number | null | undefined | { sum: string; value: number }
+export type Cell = string | number | null | undefined
+
+/**
+ * How a column's cells are written: text; wrap (long text, wrapped); int (a count); money (taka,
+ * no decimals); date ('YYYY-MM-DD', a real date the filter groups by year, month and day);
+ * datetime (an ISO time, shown in Dhaka time).
+ */
+export type Kind = 'text' | 'wrap' | 'int' | 'money' | 'date' | 'datetime'
+
+export interface Column {
+  header: string
+  kind?: Kind
+  /** Add this column up in the TOTAL row. */
+  total?: boolean
+  width?: number
+}
 
 export interface Sheet {
   name: string
-  header: string[]
+  /** Big title on top, e.g. "BUSHUB SALES". */
+  title: string
+  /** Lines under the title, e.g. "Date range: 01-Oct-2026 to 03-Oct-2026". The time it was made is added. */
+  notes?: string[]
+  columns: Column[]
   rows: Cell[][]
-  /** A last bold row; use { sum: 'B' } style cells to add a column up. */
-  total?: Cell[]
 }
 
 const esc = (s: string) =>
   s.replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/g, '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
 
-function colName(i: number): string {
+export function colName(i: number): string {
   let s = ''
   for (let n = i + 1; n > 0; n = Math.floor((n - 1) / 26)) s = String.fromCharCode(65 + ((n - 1) % 26)) + s
   return s
 }
 
-function cellXml(value: Cell, ref: string, style: number): string {
-  const s = style ? ` s="${style}"` : ''
-  if (value === null || value === undefined || value === '') return ''
-  if (typeof value === 'number') return Number.isFinite(value) ? `<c r="${ref}"${s}><v>${value}</v></c>` : ''
-  if (typeof value === 'object') return `<c r="${ref}"${s}><f>${esc(value.sum)}</f><v>${value.value}</v></c>`
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+const DHAKA_MS = 6 * 3600 * 1000
+const EXCEL_EPOCH = Date.UTC(1899, 11, 30)
+
+/** 'YYYY-MM-DD' as an Excel day number, or null when it is not a date. */
+function dateSerial(v: string): number | null {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(v)
+  if (!m) return null
+  const ms = Date.UTC(+m[1], +m[2] - 1, +m[3])
+  return Number.isNaN(ms) ? null : (ms - EXCEL_EPOCH) / 86400000
+}
+
+/** An ISO time as an Excel date-and-time in Dhaka. */
+function dateTimeSerial(v: string): number | null {
+  const ms = Date.parse(v)
+  return Number.isNaN(ms) ? null : Math.round(((ms + DHAKA_MS - EXCEL_EPOCH) / 86400000) * 86400) / 86400
+}
+
+/** '2026-10-03' → '03-Oct-2026', for the notes. */
+export function sheetDate(v: string): string {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(v)
+  return m ? `${m[3]}-${MONTHS[+m[2] - 1]}-${m[1]}` : v
+}
+
+function generatedAt(): string {
+  const d = new Date(Date.now() + DHAKA_MS)
+  const p = (n: number) => String(n).padStart(2, '0')
+  return `${p(d.getUTCDate())} ${MONTHS[d.getUTCMonth()].toUpperCase()} ${d.getUTCFullYear()} | ${p(d.getUTCHours())}:${p(d.getUTCMinutes())} (Dhaka)`
+}
+
+// ---- Styles: the order of XF entries below is what the style numbers point at. ----
+const NUM_FMTS = '<numFmts count="3"><numFmt numFmtId="164" formatCode="#,##0;[Red]\\-#,##0"/><numFmt numFmtId="165" formatCode="dd\\-mmm\\-yyyy"/><numFmt numFmtId="166" formatCode="dd\\-mmm\\-yyyy hh:mm"/></numFmts>'
+const FONTS = [
+  '<font><sz val="10.5"/><color rgb="FF1F2A2C"/><name val="Calibri"/></font>', // 0 body
+  '<font><b/><sz val="10.5"/><color rgb="FF1F2A2C"/><name val="Calibri"/></font>', // 1 bold
+  '<font><b/><sz val="16"/><color rgb="FF0E3F43"/><name val="Calibri"/></font>', // 2 title
+  '<font><b/><sz val="10.5"/><color rgb="FFFFFFFF"/><name val="Calibri"/></font>', // 3 header
+  '<font><sz val="10"/><color rgb="FF5B6B6E"/><name val="Calibri"/></font>', // 4 notes
+]
+const FILLS = [
+  '<fill><patternFill patternType="none"/></fill>',
+  '<fill><patternFill patternType="gray125"/></fill>',
+  '<fill><patternFill patternType="solid"><fgColor rgb="FF0E5A5F"/><bgColor indexed="64"/></patternFill></fill>', // 2 header
+  '<fill><patternFill patternType="solid"><fgColor rgb="FFEEF5F6"/><bgColor indexed="64"/></patternFill></fill>', // 3 band
+  '<fill><patternFill patternType="solid"><fgColor rgb="FFFCE7C2"/><bgColor indexed="64"/></patternFill></fill>', // 4 total
+  '<fill><patternFill patternType="solid"><fgColor rgb="FFF5A524"/><bgColor indexed="64"/></patternFill></fill>', // 5 accent
+]
+const BORDERS = [
+  '<border><left/><right/><top/><bottom/><diagonal/></border>',
+  '<border><left style="thin"><color rgb="FFD3DCDE"/></left><right style="thin"><color rgb="FFD3DCDE"/></right><top style="thin"><color rgb="FFD3DCDE"/></top><bottom style="thin"><color rgb="FFD3DCDE"/></bottom><diagonal/></border>',
+  '<border><left style="thin"><color rgb="FFB9C4C6"/></left><right style="thin"><color rgb="FFB9C4C6"/></right><top style="medium"><color rgb="FFF5A524"/></top><bottom style="medium"><color rgb="FFF5A524"/></bottom><diagonal/></border>',
+]
+const KIND_FMT: Record<Kind, number> = { text: 0, wrap: 0, int: 3, money: 164, date: 165, datetime: 166 }
+const KINDS: Kind[] = ['text', 'wrap', 'int', 'money', 'date', 'datetime']
+
+interface Xf {
+  font: number
+  fill: number
+  border: number
+  fmt: number
+  align?: string
+}
+const XFS: Xf[] = [
+  { font: 0, fill: 0, border: 0, fmt: 0 }, // 0 default
+  { font: 2, fill: 0, border: 0, fmt: 0, align: '<alignment vertical="center"/>' }, // 1 title
+  { font: 4, fill: 0, border: 0, fmt: 0, align: '<alignment vertical="center"/>' }, // 2 notes
+  { font: 3, fill: 2, border: 1, fmt: 0, align: '<alignment horizontal="center" vertical="center" wrapText="1"/>' }, // 3 header
+  { font: 1, fill: 4, border: 2, fmt: 0, align: '<alignment vertical="center"/>' }, // 4 total label
+  { font: 0, fill: 5, border: 0, fmt: 0 }, // 5 accent bar
+]
+/** Body styles: per kind, plain and banded; then the total row per kind. */
+function bodyXf(kind: Kind, band: boolean): number {
+  return 6 + KINDS.indexOf(kind) * 2 + (band ? 1 : 0)
+}
+function totalXf(kind: Kind): number {
+  return 6 + KINDS.length * 2 + KINDS.indexOf(kind)
+}
+for (const kind of KINDS) {
+  const align =
+    kind === 'wrap'
+      ? '<alignment vertical="top" wrapText="1"/>'
+      : kind === 'date' || kind === 'datetime'
+        ? '<alignment horizontal="center" vertical="top"/>'
+        : '<alignment vertical="top"/>'
+  XFS.push({ font: 0, fill: 0, border: 1, fmt: KIND_FMT[kind], align }, { font: 0, fill: 3, border: 1, fmt: KIND_FMT[kind], align })
+}
+for (const kind of KINDS) XFS.push({ font: 1, fill: 4, border: 2, fmt: KIND_FMT[kind], align: '<alignment vertical="center"/>' })
+
+const STYLES =
+  '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">' +
+  NUM_FMTS +
+  `<fonts count="${FONTS.length}">${FONTS.join('')}</fonts>` +
+  `<fills count="${FILLS.length}">${FILLS.join('')}</fills>` +
+  `<borders count="${BORDERS.length}">${BORDERS.join('')}</borders>` +
+  '<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>' +
+  `<cellXfs count="${XFS.length}">` +
+  XFS.map(
+    (x) =>
+      `<xf numFmtId="${x.fmt}" fontId="${x.font}" fillId="${x.fill}" borderId="${x.border}" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyNumberFormat="1"${x.align ? ' applyAlignment="1">' + x.align + '</xf>' : '/>'}`
+  ).join('') +
+  '</cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>'
+
+function cellXml(ref: string, style: number, value: Cell | { formula: string; value: number }, kind: Kind = 'text'): string {
+  const s = ` s="${style}"`
+  if (value === null || value === undefined || value === '') return `<c r="${ref}"${s}/>`
+  if (typeof value === 'object') return `<c r="${ref}"${s}><f>${esc(value.formula)}</f><v>${value.value}</v></c>`
+  if (typeof value === 'number') return Number.isFinite(value) ? `<c r="${ref}"${s}><v>${value}</v></c>` : `<c r="${ref}"${s}/>`
+  const serial = kind === 'date' ? dateSerial(value) : kind === 'datetime' ? dateTimeSerial(value) : null
+  if (serial !== null) return `<c r="${ref}"${s}><v>${serial}</v></c>`
   return `<c r="${ref}"${s} t="inlineStr"><is><t xml:space="preserve">${esc(value)}</t></is></c>`
 }
 
-function sheetXml(sheet: Sheet): string {
-  const all: { cells: Cell[]; style: number }[] = [
-    { cells: sheet.header, style: 1 },
-    ...sheet.rows.map((cells) => ({ cells, style: 0 })),
-    ...(sheet.total ? [{ cells: sheet.total, style: 1 }] : []),
-  ]
-  const widths = sheet.header.map((_, c) =>
-    Math.min(45, Math.max(8, ...all.map((r) => String((r.cells[c] as any)?.value ?? r.cells[c] ?? '').length + 2)))
-  )
-  const rows = all
-    .map((r, i) => `<row r="${i + 1}">${r.cells.map((v, c) => cellXml(v, `${colName(c)}${i + 1}`, r.style)).join('')}</row>`)
-    .join('')
-  return (
+/** How wide a column is, from its header and its longest value (wrapped columns stay at a set width). */
+function width(col: Column, rows: Cell[][], c: number): number {
+  if (col.width) return col.width
+  const kind = col.kind || 'text'
+  if (kind === 'wrap') return 42
+  if (kind === 'date') return 13
+  if (kind === 'datetime') return 18
+  const longest = rows.reduce((n, r) => {
+    const v = r[c]
+    const len = typeof v === 'number' ? v.toLocaleString('en-US').length : String(v ?? '').length
+    return Math.max(n, len)
+  }, 0)
+  const head = Math.max(...col.header.split(' ').map((w) => w.length)) // the header can wrap between words
+  return Math.min(40, Math.max(8, head + 3, longest + 3))
+}
+
+function sheetXml(sheet: Sheet, index: number): { xml: string; filter: string } {
+  const cols = sheet.columns
+  const last = colName(Math.max(cols.length - 1, 0))
+  const notes = [...(sheet.notes || []), `Generated: ${generatedAt()}`]
+  const headRow = notes.length + 3 // title, notes, a thin accent bar, then the header
+  const first = headRow + 1
+  const end = headRow + sheet.rows.length
+  const hasTotal = cols.some((c) => c.total)
+  const rows: string[] = []
+
+  rows.push(`<row r="1" ht="26" customHeight="1">${cellXml('A1', 1, sheet.title.toUpperCase())}</row>`)
+  notes.forEach((n, i) => rows.push(`<row r="${i + 2}" ht="16" customHeight="1">${cellXml(`A${i + 2}`, 2, n)}</row>`))
+  const bar = notes.length + 2
+  rows.push(`<row r="${bar}" ht="4" customHeight="1">${cols.map((_, c) => `<c r="${colName(c)}${bar}" s="5"/>`).join('')}</row>`)
+  rows.push(`<row r="${headRow}" ht="44" customHeight="1">${cols.map((col, c) => cellXml(`${colName(c)}${headRow}`, 3, col.header.toUpperCase())).join('')}</row>`)
+  sheet.rows.forEach((r, i) => {
+    const n = first + i
+    rows.push(`<row r="${n}">${cols.map((col, c) => cellXml(`${colName(c)}${n}`, bodyXf(col.kind || 'text', i % 2 === 1), r[c], col.kind)).join('')}</row>`)
+  })
+  if (hasTotal) {
+    const n = end + 1
+    const cells = cols.map((col, c) => {
+      const ref = `${colName(c)}${n}`
+      if (c === 0) return cellXml(ref, 4, 'TOTAL')
+      if (!col.total) return cellXml(ref, totalXf('text'), '')
+      const letter = colName(c)
+      const value = sheet.rows.reduce((t, r) => t + (typeof r[c] === 'number' ? (r[c] as number) : 0), 0)
+      const formula = sheet.rows.length ? `SUBTOTAL(109,${letter}${first}:${letter}${end})` : '0'
+      return cellXml(ref, totalXf(col.kind || 'int'), { formula, value })
+    })
+    rows.push(`<row r="${n}" ht="22" customHeight="1">${cells.join('')}</row>`)
+  }
+
+  const filter = `$A$${headRow}:$${last}$${Math.max(end, headRow)}`
+  const xml =
     '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
-    '<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">' +
-    '<sheetViews><sheetView workbookViewId="0"><pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews>' +
-    `<cols>${widths.map((w, i) => `<col min="${i + 1}" max="${i + 1}" width="${w}" customWidth="1"/>`).join('')}</cols>` +
-    `<sheetData>${rows}</sheetData></worksheet>`
-  )
+    '<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">' +
+    `<sheetPr><tabColor rgb="${index === 0 ? 'FFF5A524' : 'FF0E5A5F'}"/><pageSetUpPr fitToPage="1"/></sheetPr>` +
+    `<sheetViews><sheetView workbookViewId="0"${index === 0 ? ' tabSelected="1"' : ''} showGridLines="0"><pane xSplit="1" ySplit="${headRow}" topLeftCell="B${first}" activePane="bottomRight" state="frozen"/><selection pane="bottomRight" activeCell="B${first}" sqref="B${first}"/></sheetView></sheetViews>` +
+    '<sheetFormatPr defaultRowHeight="15"/>' +
+    `<cols>${cols.map((col, c) => `<col min="${c + 1}" max="${c + 1}" width="${width(col, sheet.rows, c)}" customWidth="1"/>`).join('')}</cols>` +
+    `<sheetData>${rows.join('')}</sheetData>` +
+    `<autoFilter ref="A${headRow}:${last}${Math.max(end, headRow)}"/>` +
+    '<pageMargins left="0.4" right="0.4" top="0.5" bottom="0.5" header="0.3" footer="0.3"/>' +
+    '<pageSetup orientation="landscape" fitToWidth="1" fitToHeight="0"/>' +
+    '</worksheet>'
+  return { xml, filter }
 }
 
 /** Sheet names: at most 31 characters, none of []:*?/\ and each one different. */
@@ -65,6 +232,7 @@ function sheetNames(sheets: Sheet[]): string[] {
 
 export function workbookFiles(sheets: Sheet[]): Record<string, string> {
   const names = sheetNames(sheets)
+  const built = sheets.map((s, i) => sheetXml(s, i))
   const files: Record<string, string> = {
     '[Content_Types].xml':
       '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">' +
@@ -79,22 +247,16 @@ export function workbookFiles(sheets: Sheet[]): Record<string, string> {
     'xl/workbook.xml':
       '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets>' +
       names.map((n, i) => `<sheet name="${esc(n)}" sheetId="${i + 1}" r:id="rId${i + 1}"/>`).join('') +
-      '</sheets><calcPr fullCalcOnLoad="1"/></workbook>',
+      '</sheets><definedNames>' +
+      names.map((n, i) => `<definedName name="_xlnm._FilterDatabase" localSheetId="${i}" hidden="1">'${esc(n.replace(/'/g, "''"))}'!${built[i].filter}</definedName>`).join('') +
+      '</definedNames><calcPr fullCalcOnLoad="1"/></workbook>',
     'xl/_rels/workbook.xml.rels':
       '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
       names.map((_, i) => `<Relationship Id="rId${i + 1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet${i + 1}.xml"/>`).join('') +
       `<Relationship Id="rId${names.length + 1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>`,
-    'xl/styles.xml':
-      '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">' +
-      '<fonts count="2"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="11"/><name val="Calibri"/></font></fonts>' +
-      '<fills count="2"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill></fills>' +
-      '<borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders>' +
-      '<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>' +
-      '<cellXfs count="2"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0" applyFont="1"/></cellXfs>' +
-      '<cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles>' +
-      '</styleSheet>',
+    'xl/styles.xml': STYLES,
   }
-  sheets.forEach((s, i) => (files[`xl/worksheets/sheet${i + 1}.xml`] = sheetXml(s)))
+  built.forEach((b, i) => (files[`xl/worksheets/sheet${i + 1}.xml`] = b.xml))
   return files
 }
 
@@ -161,13 +323,6 @@ export function zip(files: Record<string, string>): Uint8Array<ArrayBuffer> {
     at += p.length
   }
   return out
-}
-
-/** Adds up a column for a sheet's total row: an Excel SUM, with the value for apps that don't recalculate. */
-export function sumCell(sheet: { rows: Cell[][] }, col: number): Cell {
-  const letter = colName(col)
-  const value = sheet.rows.reduce((n, r) => n + (typeof r[col] === 'number' ? (r[col] as number) : 0), 0)
-  return sheet.rows.length ? { sum: `SUM(${letter}2:${letter}${sheet.rows.length + 1})`, value } : 0
 }
 
 /** Builds the .xlsx and starts the download. */

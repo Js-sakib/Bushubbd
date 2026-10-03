@@ -59,6 +59,19 @@ export interface Booking {
   source?: string
   checkedIn?: boolean
   createdAt: string
+  /** Full details, from /api/admin/bookings (the date-range list and its Excel sheet). */
+  passengerEmail?: string
+  paymentMethod?: string
+  paidAt?: string
+  checkedInAt?: string
+  refundedAt?: string
+  boardingPoint?: string
+  busType?: string
+  bags?: number
+  pricePerSeat?: number
+  commissionRate?: number
+  invoiceNumber?: string
+  invoiceStatus?: string
 }
 
 export interface CompanyRow {
