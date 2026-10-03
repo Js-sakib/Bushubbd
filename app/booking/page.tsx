@@ -212,11 +212,11 @@ function BookingContent() {
               Available
             </span>
             <span className="inline-flex items-center gap-2 text-[11.5px] font-semibold text-[#24344f]">
-              <span className="h-3.5 w-3.5 rounded bg-[#16a34a]" />
+              <span className="h-3.5 w-3.5 rounded bg-[#166534]" />
               Yours
             </span>
             <span className="inline-flex items-center gap-2 text-[11.5px] font-semibold text-[#24344f]">
-              <span className="h-3.5 w-3.5 rounded bg-[#c8102e]" />
+              <span className="h-3.5 w-3.5 rounded bg-[#7f1d1d]" />
               Booked
             </span>
           </div>
@@ -248,10 +248,10 @@ function BookingContent() {
                         onClick={() => toggleSeat(seat)}
                         className={`h-9 min-w-0 grow basis-0 rounded-[9px] text-[11.5px] font-bold transition ${
                           isBooked
-                            ? 'cursor-not-allowed border border-[#9b0a24] bg-[#c8102e] text-white/90'
+                            ? 'cursor-not-allowed border border-[#5c0f12] bg-[#7f1d1d] text-white/85'
                             : isSelected
-                            ? 'border border-[#15803d] bg-[#16a34a] text-white shadow-[0_4px_12px_rgba(22,163,74,0.35)]'
-                            : 'border border-[#c9d6e4] bg-white text-[#0b2545] shadow-[0_1px_2px_rgba(11,37,69,0.08)] hover:border-[#16a34a]'
+                            ? 'border border-[#0f3d22] bg-[#166534] text-white shadow-[0_4px_12px_rgba(22,101,52,0.35)]'
+                            : 'border border-[#c9d6e4] bg-white text-[#0b2545] shadow-[0_1px_2px_rgba(11,37,69,0.08)] hover:border-[#166534]'
                         }`}
                       >
                         {seat}
@@ -270,10 +270,10 @@ function BookingContent() {
                         onClick={() => toggleSeat(seat)}
                         className={`h-9 min-w-0 grow basis-0 rounded-[9px] text-[11.5px] font-bold transition ${
                           isBooked
-                            ? 'cursor-not-allowed border border-[#9b0a24] bg-[#c8102e] text-white/90'
+                            ? 'cursor-not-allowed border border-[#5c0f12] bg-[#7f1d1d] text-white/85'
                             : isSelected
-                            ? 'border border-[#15803d] bg-[#16a34a] text-white shadow-[0_4px_12px_rgba(22,163,74,0.35)]'
-                            : 'border border-[#c9d6e4] bg-white text-[#0b2545] shadow-[0_1px_2px_rgba(11,37,69,0.08)] hover:border-[#16a34a]'
+                            ? 'border border-[#0f3d22] bg-[#166534] text-white shadow-[0_4px_12px_rgba(22,101,52,0.35)]'
+                            : 'border border-[#c9d6e4] bg-white text-[#0b2545] shadow-[0_1px_2px_rgba(11,37,69,0.08)] hover:border-[#166534]'
                         }`}
                       >
                         {seat}
