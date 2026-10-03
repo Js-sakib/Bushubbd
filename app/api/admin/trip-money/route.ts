@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { ObjectId } from 'mongodb'
 import { connectToDatabase } from '@/lib/db'
 import { getAdminFromCookies } from '@/lib/auth'
@@ -12,19 +12,26 @@ export const revalidate = 0
 export const fetchCache = 'force-no-store'
 
 const HISTORY_DAYS = 30
+/** How far back ?since=YYYY-MM-DD can reach, for the money sheet. */
+const MAX_HISTORY_DAYS = 400
 
 /**
  * Every company's trips from the last 30 days and to come: seats sold (BusHub and counter), the
  * ticket money, BusHub's commission, and what BusHub owes the company for the trip and whether
  * that is paid. A company's own costs are its business and are not shown here.
  */
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
     if (!getAdminFromCookies()) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
     const { db } = await connectToDatabase()
-    const since = dhakaDate(new Date(startOfDhakaDay(dhakaDate()).getTime() - HISTORY_DAYS * 86400000))
+    const daysBack = (n: number) => dhakaDate(new Date(startOfDhakaDay(dhakaDate()).getTime() - n * 86400000))
+    const asked = req.nextUrl.searchParams.get('since') || ''
+    let since = daysBack(HISTORY_DAYS)
+    if (/^\d{4}-\d{2}-\d{2}$/.test(asked) && asked < since) {
+      since = asked < daysBack(MAX_HISTORY_DAYS) ? daysBack(MAX_HISTORY_DAYS) : asked
+    }
     const trips = await db
       .collection('buses')
       .find({ status: 'active', date: { $gte: since } })

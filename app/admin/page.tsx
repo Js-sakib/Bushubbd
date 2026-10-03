@@ -172,6 +172,24 @@ export default function AdminDashboard() {
     loadAll()
   }
 
+  const handleDeleteMany = async (list: Booking[]) => {
+    if (list.length === 0) return
+    const seats = list.reduce((n, b) => n + b.seats.length, 0)
+    if (!confirm(`Delete ${list.length} booking${list.length === 1 ? '' : 's'} (${seats} seat${seats === 1 ? '' : 's'})?\n\nThey are removed from every list and their seats go back on sale. A copy is kept in the archive.`)) return
+    const failed: string[] = []
+    for (const b of list) {
+      const res = await fetch(`/api/bookings/${b._id}`, { method: 'DELETE' }).catch(() => null)
+      if (!res?.ok) {
+        const data = res ? await res.json().catch(() => null) : null
+        failed.push(`${b.bookingCode}: ${data?.error || 'failed'}`)
+      }
+    }
+    const done = list.length - failed.length
+    if (done) toast.success(`${done} booking${done === 1 ? '' : 's'} deleted`)
+    if (failed.length) toast.error(`${failed.length} not deleted\n${failed.slice(0, 3).join('\n')}`, { duration: 8000 })
+    loadAll()
+  }
+
   const go = (next: Section) => {
     setSection(next)
     window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -300,7 +318,7 @@ export default function AdminDashboard() {
           {section === 'dashboard' && (
             <Overview stats={stats} bookings={bookings} buses={buses} onRefund={handleRefund} onSeeAllBookings={() => go('bookings')} />
           )}
-          {section === 'bookings' && <BookingsSection bookings={bookings} query={query} onQuery={setQuery} onRefund={handleRefund} onDelete={handleDelete} />}
+          {section === 'bookings' && <BookingsSection bookings={bookings} query={query} onQuery={setQuery} onRefund={handleRefund} onDelete={handleDelete} onDeleteMany={handleDeleteMany} />}
           {section === 'buses' && <BusesSection buses={buses} bookings={bookings} companies={companies} fleet={fleet} places={places} onChanged={loadAll} />}
           {section === 'costs' && <CostsSection />}
           {section === 'companies' && (

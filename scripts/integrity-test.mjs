@@ -428,6 +428,25 @@ const afterOff = await call('/api/company/trips', { cookie: counter2 })
 const loginOff = await call('/api/company/login', { method: 'POST', body: { email: c2.data.staff.email, password: c2.data.password } })
 check('a switched-off login stops working at once and cannot sign in', afterOff.status === 401 && loginOff.status === 403, `${afterOff.status} ${loginOff.status}`)
 
+// ---- Sales sheet: older trips on request ----
+const dayShift = (n) => new Date(Date.parse(`${dhakaToday}T00:00:00Z`) - n * 86400000).toISOString().slice(0, 10)
+const oldTripDoc = (date) => ({
+  fleetId: fleetBus._id, companyId: green.id, companyName: green.name, busName: fleetBus.name, busType: 'AC',
+  from: 'Dhaka', to: 'Sylhet', date, departureTime: '08:00', arrivalTime: '', price: 900,
+  totalSeats: 36, bookedSeats: [], blockedSeats: [], commissionRate: 10, status: 'active', createdAt: new Date().toISOString(),
+})
+const oldTrip = (await db.collection('buses').insertOne(oldTripDoc(dayShift(60)))).insertedId.toString()
+const ancientTrip = (await db.collection('buses').insertOne(oldTripDoc(dayShift(500)))).insertedId.toString()
+const hasTrip = (res, id) => (res.data?.trips || []).some((t) => t._id === id)
+check('the manager\'s trips stop at 30 days unless an older date is asked for', !hasTrip(await call('/api/company/trips', { cookie: green.cookie }), oldTrip))
+const since90 = await call(`/api/company/trips?since=${dayShift(90)}`, { cookie: green.cookie })
+check('picking an older From date brings older trips', hasTrip(since90, oldTrip) && !hasTrip(since90, ancientTrip))
+check('no further back than 400 days', !hasTrip(await call(`/api/company/trips?since=${dayShift(900)}`, { cookie: green.cookie }), ancientTrip))
+const counterOld = await call(`/api/company/trips?since=${dayShift(90)}`, { cookie: counter1 })
+check('a counter login still gets only trips to come', counterOld.status === 200 && !hasTrip(counterOld, oldTrip))
+check('admin money reaches older trips when asked', hasTrip(await call(`/api/admin/trip-money?since=${dayShift(90)}`, { cookie: admin }), oldTrip) && !hasTrip(await call('/api/admin/trip-money', { cookie: admin }), oldTrip))
+check('a bad date is ignored', !hasTrip(await call('/api/company/trips?since=x', { cookie: green.cookie }), oldTrip))
+
 // ---- Trip costs: bus staff and the manager enter them; the money adds up ----
 const addCost = (cookie, tripId, type, amount, note = '') => call('/api/company/costs', { method: 'POST', cookie, body: { tripId, type, amount, note } })
 const fuel = await addCost(green.scan, ct, 'fuel', 3500, 'Meghna pump')

@@ -4,14 +4,17 @@ import { useCallback, useEffect, useState } from 'react'
 import toast from 'react-hot-toast'
 import type { CompanyTrip, TripsData } from './types'
 
-/** The company's trips, refreshed every 20 seconds so online and counter sales show up live. */
-export function useTrips() {
+/**
+ * The company's trips, refreshed every 20 seconds so online and counter sales show up live.
+ * The manager gets the last 30 days; `since` (a date) reaches further back.
+ */
+export function useTrips(since = '') {
   const [data, setData] = useState<TripsData | null>(null)
   const load = useCallback(async () => {
-    const res = await fetch('/api/company/trips', { cache: 'no-store' }).catch(() => null)
+    const res = await fetch(`/api/company/trips${since ? `?since=${since}` : ''}`, { cache: 'no-store' }).catch(() => null)
     const json = res ? await res.json().catch(() => null) : null
     if (json && !json.error) setData(json)
-  }, [])
+  }, [since])
   useEffect(() => {
     load()
     const id = setInterval(load, 20_000)

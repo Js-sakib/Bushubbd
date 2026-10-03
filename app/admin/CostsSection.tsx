@@ -7,6 +7,7 @@ import { taka } from '@/lib/tripMoney'
 import PayoutsPanel from './PayoutsPanel'
 import Plate from '../Plate'
 import SearchBox from '../SearchBox'
+import { downloadSheet, sumCell, type Sheet } from '@/lib/sheet'
 import { matches } from '@/lib/search'
 
 interface MoneyTrip {
@@ -26,6 +27,39 @@ interface MoneyTrip {
   online: { tickets: number; seats: number; total: number; commission: number; payout: number }
   /** What BusHub owes the company for this trip: not invoiced yet, invoiced but unpaid, paid. */
   pay: { owed: number; invoiced: number; paid: number; invoiceId: string | null; invoiceNumber: string | null }
+}
+
+/** The trips shown, as an Excel sheet: tickets, commission and what BusHub owes per trip. */
+function moneySheet(trips: MoneyTrip[]): Sheet {
+  const sheet: Sheet = {
+    name: 'Money by trip',
+    header: ['Company', 'Date', 'Time', 'From', 'To', 'Bus', 'Number plate', 'Seats', 'Counter seats', 'Counter money', 'BusHub seats', 'BusHub ticket money', 'BusHub commission', 'Company gets', 'Not paid yet', 'In unpaid invoice', 'Paid', 'Invoice', 'Status'],
+    rows: [...trips]
+      .sort((a, b) => a.date.localeCompare(b.date) || a.departureTime.localeCompare(b.departureTime))
+      .map((t) => [
+        t.companyName,
+        t.date,
+        t.departureTime,
+        t.from,
+        t.to,
+        t.busName,
+        t.plateNumber,
+        t.totalSeats,
+        t.counter.seats,
+        t.counter.total,
+        t.online.seats,
+        t.online.total,
+        t.online.commission,
+        t.online.payout,
+        t.pay.owed,
+        t.pay.invoiced,
+        t.pay.paid,
+        t.pay.invoiceNumber || '',
+        t.departed ? 'Finished' : 'Upcoming',
+      ]),
+  }
+  sheet.total = sheet.header.map((_, c) => (c === 0 ? 'Total' : c >= 7 && c <= 16 ? sumCell(sheet, c) : ''))
+  return sheet
 }
 
 const PERIODS = [
@@ -101,14 +135,16 @@ function TripsMoney() {
   const [bus, setBus] = useState('')
   const [search, setSearch] = useState('')
   const [period, setPeriod] = useState<Period>('all')
+  const [from, setFrom] = useState('')
+  const [to, setTo] = useState('')
   const [busy, setBusy] = useState<string | null>(null)
 
   const load = useCallback(() => {
-    fetch('/api/admin/trip-money', { cache: 'no-store' })
+    fetch(`/api/admin/trip-money${from ? `?since=${from}` : ''}`, { cache: 'no-store' })
       .then((r) => r.json())
       .then((d) => d.trips && setData(d))
       .catch(() => undefined)
-  }, [])
+  }, [from])
   useEffect(() => load(), [load])
 
   const buses = useMemo(() => {
@@ -123,10 +159,12 @@ function TripsMoney() {
         (!companyId || t.companyId === companyId) &&
         (!bus || t.busName === bus) &&
         (period === 'all' || (period === 'finished' ? t.departed : !t.departed)) &&
+        (!from || t.date >= from) &&
+        (!to || t.date <= to) &&
         matches(search, t.companyName, t.from, t.to, t.busName, t.plateNumber, t.date, formatTripDate(t.date), t.departureTime, t.pay.invoiceNumber)
     )
     return period === 'upcoming' ? list : [...list].reverse()
-  }, [data, companyId, bus, period, search])
+  }, [data, companyId, bus, period, from, to, search])
   const total = useMemo(() => sum(shown), [shown])
 
   const pay = async (trip: MoneyTrip) => {
@@ -176,6 +214,23 @@ function TripsMoney() {
             </option>
           ))}
         </select>
+      </div>
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-[1fr_1fr_auto]">
+        <label className="flex min-w-0 flex-col gap-1">
+          <span className="label-xs">From date</span>
+          <input type="date" value={from} max={to || undefined} onChange={(e) => setFrom(e.target.value)} className="input-dark" aria-label="From date" />
+        </label>
+        <label className="flex min-w-0 flex-col gap-1">
+          <span className="label-xs">To date</span>
+          <input type="date" value={to} min={from || undefined} onChange={(e) => setTo(e.target.value)} className="input-dark" aria-label="To date" />
+        </label>
+        <button
+          type="button"
+          onClick={() => (shown.length ? downloadSheet(`BusHub money ${from || 'start'} to ${to || 'now'}`, [moneySheet(shown)]) : toast.error('No trips to put in the sheet'))}
+          className="glass-btn glass-btn-plain col-span-2 h-12 self-end px-4 text-[12.5px] sm:col-span-1"
+        >
+          ⬇ Excel sheet
+        </button>
       </div>
       <div className="flex gap-1 self-start rounded-full border border-white/10 bg-black/30 p-1">
         {PERIODS.map(([id, label]) => (

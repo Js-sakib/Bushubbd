@@ -12,13 +12,15 @@ export const dynamic = 'force-dynamic'
 const NO_STORE = { 'Cache-Control': 'no-store, max-age=0, must-revalidate' }
 /** How far back the manager's trip list reaches. */
 const HISTORY_DAYS = 30
+/** How far back the manager can ask for (?since=YYYY-MM-DD), for the sales sheet. */
+const MAX_HISTORY_DAYS = 400
 
 /**
  * The company's trips with every seat accounted for: sold on BusHub, being bought on BusHub right
  * now (a 10-minute hold), or sold at the counter and by whom. The manager also gets the BusHub
  * tickets (code and seats; never the passenger's name or phone), payout and costs per trip, and trips from the last month; the counter only trips to come.
  */
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
     const { db } = await connectToDatabase()
     const user = await getCompanyUser(db)
@@ -27,7 +29,15 @@ export async function GET() {
     }
     const manager = user.role === 'manager'
     const today = dhakaDate()
-    const since = manager ? dhakaDate(new Date(startOfDhakaDay(today).getTime() - HISTORY_DAYS * 86400000)) : today
+    const daysBack = (n: number) => dhakaDate(new Date(startOfDhakaDay(today).getTime() - n * 86400000))
+    const asked = req.nextUrl.searchParams.get('since') || ''
+    let since = today
+    if (manager) {
+      since = daysBack(HISTORY_DAYS)
+      if (/^\d{4}-\d{2}-\d{2}$/.test(asked) && asked < since) {
+        since = asked < daysBack(MAX_HISTORY_DAYS) ? daysBack(MAX_HISTORY_DAYS) : asked
+      }
+    }
 
     const [fleet, found, places] = await Promise.all([
       db.collection('fleet').find({ companyId: user.companyId }).sort({ nameKey: 1 }).toArray(),
