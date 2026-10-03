@@ -16,11 +16,23 @@ export interface DayMoney {
   m: TripMoney
 }
 
-/** The trips' money added up day by day, earliest day first. */
-export function moneyByDate(trips: CompanyTrip[]): DayMoney[] {
-  const days = new Map<string, TripMoney[]>()
-  for (const t of trips) days.set(t.date, [...(days.get(t.date) || []), companyTripMoney(t)])
-  return Array.from(days, ([date, list]) => ({ date, trips: list.length, m: addMoney(list) })).sort((a, b) => a.date.localeCompare(b.date))
+export interface DayBusMoney extends DayMoney {
+  busName: string
+  plateNumber: string
+}
+
+/** The trips' money added up per day and per bus, earliest day first, then by number plate. */
+export function moneyByDateAndBus(trips: CompanyTrip[]): DayBusMoney[] {
+  const rows = new Map<string, { date: string; busName: string; plateNumber: string; list: TripMoney[] }>()
+  for (const t of trips) {
+    const key = `${t.date}|${t.fleetId || t.busName}`
+    const row = rows.get(key) || { date: t.date, busName: t.busName, plateNumber: t.plateNumber, list: [] }
+    row.list.push(companyTripMoney(t))
+    rows.set(key, row)
+  }
+  return Array.from(rows.values())
+    .map((r) => ({ date: r.date, busName: r.busName, plateNumber: r.plateNumber, trips: r.list.length, m: addMoney(r.list) }))
+    .sort((a, b) => a.date.localeCompare(b.date) || (a.plateNumber || a.busName).localeCompare(b.plateNumber || b.busName))
 }
 
 /** "Date range: 01-Oct-2026 to 03-Oct-2026", from the dates in the list. */
@@ -45,11 +57,13 @@ export function companySalesSheets(trips: CompanyTrip[], companyName: string, fi
 
   const daySheet: Sheet = {
     name: 'Date by date',
-    title: 'BusHub sales · date by date',
-    notes,
+    title: 'BusHub sales · date by date, bus by bus',
+    notes: [...notes, 'Filter Date for one day\'s total, or Number plate for one bus.'],
     columns: [
       { header: 'Date', kind: 'date' },
       { header: 'Day' },
+      { header: 'Number plate' },
+      { header: 'Bus' },
       int('Trips'),
       int('Seats'),
       int('Seats sold'),
@@ -69,9 +83,11 @@ export function companySalesSheets(trips: CompanyTrip[], companyName: string, fi
       money('You receive'),
       money('Left after costs'),
     ],
-    rows: moneyByDate(sorted).map(({ date, trips: n, m }) => [
+    rows: moneyByDateAndBus(sorted).map(({ date, busName, plateNumber, trips: n, m }) => [
       date,
       formatTripDate(date).split(' ')[0],
+      plateNumber || '—',
+      busName,
       n,
       m.seats.total,
       m.seats.online + m.seats.counter,
