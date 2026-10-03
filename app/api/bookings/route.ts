@@ -19,6 +19,7 @@ import { getCompanyUser } from '@/lib/staff'
 import { cleanBags } from '@/lib/luggage'
 import { phoneKey } from '@/lib/phone'
 import { purchaseLimitError } from '@/lib/purchaseLimits'
+import { platesByTrip } from '@/lib/plates'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -177,7 +178,9 @@ export async function GET(req: NextRequest) {
     }
     // A bus company sees its tickets, never who bought them: no name, phone or email.
     const projection = company ? { passengerName: 0, passengerPhone: 0, passengerEmail: 0, phoneKey: 0, qrCode: 0 } : {}
-    const bookings = await db.collection('bookings').find(query, { projection }).sort({ createdAt: -1 }).limit(200).toArray()
+    const found = await db.collection('bookings').find(query, { projection }).sort({ createdAt: -1 }).limit(200).toArray()
+    const plates = await platesByTrip(db, found.map((b) => String(b.busId || '')))
+    const bookings = found.map((b) => ({ ...b, plateNumber: plates.get(String(b.busId || '')) || '' }))
     return NextResponse.json({ bookings }, { headers: { 'Cache-Control': 'no-store, max-age=0, must-revalidate' } })
   } catch (err) {
     console.error(err)

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { ObjectId } from 'mongodb'
 import { connectToDatabase } from '@/lib/db'
 import { getCompanyUser } from '@/lib/staff'
+import { platesByFleet } from '@/lib/plates'
 import { costRow, costTrip, costsForTrips, staffCostWindow } from '@/lib/tripCosts'
 import { COST_TYPES, MAX_COST_AMOUNT, MAX_COSTS_PER_TRIP, type CostType } from '@/lib/tripMoney'
 
@@ -26,9 +27,9 @@ export async function GET() {
       .find({ companyId: user.companyId, status: 'active', date: { $gte: window.from, $lte: window.to } })
       .sort({ date: 1, departureTime: 1 })
       .toArray()
-    const costs = await costsForTrips(db, trips.map((t) => t._id.toString()))
+    const [costs, plates] = await Promise.all([costsForTrips(db, trips.map((t) => t._id.toString())), platesByFleet(db, trips.map((t) => t.fleetId))])
     return NextResponse.json(
-      { me: { name: user.name, role: user.role, staffId: user.staffId || null }, trips: trips.map(costTrip), costs },
+      { me: { name: user.name, role: user.role, staffId: user.staffId || null }, trips: trips.map((t) => costTrip(t, t.fleetId ? plates.get(String(t.fleetId)) : '')), costs },
       { headers: NO_STORE }
     )
   } catch (err) {

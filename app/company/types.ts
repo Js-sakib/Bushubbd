@@ -34,6 +34,8 @@ export interface CompanyTrip {
   fleetId: string | null
   busName: string
   busType: string
+  /** Number plate of the bus; empty until the admin adds it. */
+  plateNumber: string
   from: string
   to: string
   date: string

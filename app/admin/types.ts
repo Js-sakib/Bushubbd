@@ -14,6 +14,8 @@ export interface FleetBus {
 
 export interface Bus {
   _id: string
+  /** Number plate (from the bus list); admin lists only. */
+  plateNumber?: string
   fleetId?: string
   companyId: string
   companyName: string
@@ -36,6 +38,8 @@ export interface Bus {
 
 export interface Booking {
   _id: string
+  /** Number plate of the bus (from the bus list). */
+  plateNumber?: string
   bookingCode: string
   busId: string
   busName: string

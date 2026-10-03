@@ -8,6 +8,7 @@ import MoneyCard, { Line } from './MoneyCard'
 import SalesBreakdown, { type SaleBooking } from './SalesBreakdown'
 import StaffSales from './StaffSales'
 import { busLabel, companyTripMoney, type CompanyTrip, type FleetOption } from './types'
+import Plate from '../Plate'
 
 const PERIODS = [
   ['all', 'All'],
@@ -27,8 +28,11 @@ function TripRow({ trip, me, onChanged }: { trip: CompanyTrip; me: { role: strin
     <details className="group border-b border-[#1a2123] last:border-b-0">
       <summary className="flex cursor-pointer list-none items-start gap-3 px-4 py-3 marker:hidden">
         <div className="flex min-w-0 grow flex-col gap-0.5">
-          <span className="truncate text-[13.5px] font-bold">
-            {trip.from} → {trip.to} · {trip.departureTime}
+          <span className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-[13.5px] font-bold">
+            <span className="truncate">
+              {trip.from} → {trip.to} · {trip.departureTime}
+            </span>
+            <Plate plate={trip.plateNumber} />
           </span>
           <span className="truncate text-[11.5px] text-[#9ba7aa]">
             {formatTripDate(trip.date)} · {trip.busName}

@@ -33,10 +33,11 @@ export async function costsForTrips(db: Db, tripIds: string[]): Promise<TripCost
 }
 
 /** A trip as the bus staff's cost page lists it. */
-export function costTrip(t: any) {
+export function costTrip(t: any, plate?: string) {
   return {
     _id: t._id.toString(),
     busName: t.busName,
+    plateNumber: plate || '',
     from: t.from,
     to: t.to,
     date: t.date,

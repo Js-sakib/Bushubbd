@@ -3,6 +3,7 @@
 import { formatTripDate } from '@/lib/dates'
 import { taka } from './charts'
 import type { Booking } from './types'
+import Plate from '../Plate'
 
 type StatusKey = 'boarded' | 'paid' | 'pending' | 'refunded' | 'expired'
 
@@ -105,8 +106,11 @@ export default function BookingList({
               <Avatar name={b.passengerName} />
               <div className="flex min-w-0 grow flex-col gap-0.5">
                 <span className="truncate text-[13.5px] font-semibold">{b.passengerName}</span>
-                <span className="truncate text-[11.5px] text-[#8e9a9d]">
-                  {b.from} → {b.to} · {formatTripDate(b.date)}
+                <span className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-[11.5px] text-[#8e9a9d]">
+                  <span className="truncate">
+                    {b.from} → {b.to} · {formatTripDate(b.date)}
+                  </span>
+                  <Plate plate={b.plateNumber} />
                 </span>
                 <span className="truncate text-[11px] text-[#6e7b7e]">
                   {b.busName} · seats {b.seats.join(', ')}
@@ -155,8 +159,11 @@ export default function BookingList({
                   </div>
                 </td>
                 <td className="px-3 py-3">
-                  <span className="block whitespace-nowrap text-[13px] font-semibold">
-                    {b.from} → {b.to}
+                  <span className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-[13px] font-semibold">
+                    <span className="truncate">
+                      {b.from} → {b.to}
+                    </span>
+                    <Plate plate={b.plateNumber} />
                   </span>
                   <span className="text-[11.5px] text-[#6e7b7e]">{b.busName}</span>
                 </td>

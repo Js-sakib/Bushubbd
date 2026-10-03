@@ -58,6 +58,7 @@ export async function GET() {
         cities: places.cities,
         trips: trips.map((t) => {
           const id = t._id.toString()
+          const fleetBus = fleet.find((f) => f._id.toString() === String(t.fleetId || ''))
           const mine = bookings.filter((b) => b.busId === id)
           const paid = mine.filter((b) => b.status === 'confirmed' && b.paymentStatus === 'paid')
           const held = mine.filter((b) => b.status === 'pending' && b.holdExpiresAt > now)
@@ -67,6 +68,7 @@ export async function GET() {
             fleetId: t.fleetId || null,
             busName: t.busName,
             busType: t.busType,
+            plateNumber: fleetBus?.plateNumber || '',
             from: t.from,
             to: t.to,
             date: t.date,

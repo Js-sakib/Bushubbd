@@ -5,10 +5,12 @@ import { formatTripDate } from '@/lib/dates'
 import { dhakaDate } from '@/lib/scan'
 import { taka, type TripCost } from '@/lib/tripMoney'
 import CostEditor from './CostEditor'
+import Plate from '../Plate'
 
 interface CostTrip {
   _id: string
   busName: string
+  plateNumber: string
   from: string
   to: string
   date: string
@@ -75,8 +77,11 @@ export default function StaffCosts() {
         <div className="card-2 flex flex-col gap-4 px-4 py-4">
           <div className="flex items-start justify-between gap-3">
             <div className="flex min-w-0 flex-col">
-              <span className="truncate text-[14px] font-bold">
-                {trip.from} → {trip.to} · {trip.departureTime}
+              <span className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-[14px] font-bold">
+                <span className="truncate">
+                  {trip.from} → {trip.to} · {trip.departureTime}
+                </span>
+                <Plate plate={trip.plateNumber} />
               </span>
               <span className="truncate text-[11.5px] text-[#9ba7aa]">
                 {formatTripDate(trip.date)} · {trip.busName}

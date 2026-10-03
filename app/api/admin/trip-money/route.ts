@@ -4,6 +4,7 @@ import { connectToDatabase } from '@/lib/db'
 import { getAdminFromCookies } from '@/lib/auth'
 import { dhakaDate, startOfDhakaDay } from '@/lib/scan'
 import { ticketLine } from '@/lib/payouts'
+import { platesByFleet } from '@/lib/plates'
 import { tripDeparted } from '@/lib/trips'
 
 export const dynamic = 'force-dynamic'
@@ -39,6 +40,7 @@ export async function GET() {
         .project({ name: 1 })
         .toArray(),
     ])
+    const plates = await platesByFleet(db, trips.map((t) => t.fleetId))
     const payoutIds = Array.from(new Set(bookings.map((b) => b.payoutId).filter((id) => id && ObjectId.isValid(id))))
     const payouts = await db
       .collection('payouts')
@@ -77,6 +79,7 @@ export async function GET() {
             companyName: companyName.get(String(t.companyId || '')) || t.companyName || 'No company',
             fleetId: t.fleetId || null,
             busName: t.busName,
+            plateNumber: t.fleetId ? plates.get(String(t.fleetId)) || '' : '',
             from: t.from,
             to: t.to,
             date: t.date,

@@ -8,6 +8,7 @@ import TripPicker from './TripPicker'
 import { changeSeat, useTrips } from './useTrips'
 import { tripCounts } from './types'
 import toast from 'react-hot-toast'
+import Plate from '../Plate'
 
 const TABS = [
   ['sell', 'Sell seats'],
@@ -80,8 +81,11 @@ export default function CounterView() {
           {trip && c && (
             <div className="glass-lite flex flex-col gap-4 p-4">
               <div className="flex flex-col gap-0.5">
-                <span className="display text-[17px] font-bold">
-                  {trip.from} → {trip.to} · {trip.departureTime}
+                <span className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 display text-[17px] font-bold">
+                  <span className="truncate">
+                    {trip.from} → {trip.to} · {trip.departureTime}
+                  </span>
+                  <Plate plate={trip.plateNumber} />
                 </span>
                 <span className="text-[12px] text-[#9ba7aa]">
                   {formatTripDate(trip.date)} · {trip.busName} · ৳{trip.price}

@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react'
 import { formatTripDate } from '@/lib/dates'
+import Plate from '../Plate'
 
 export interface SaleBooking {
   _id: string
@@ -16,6 +17,7 @@ export interface SaleBooking {
   companyPayout: number
   bookingCode: string
   checkedIn?: boolean
+  plateNumber?: string
   paymentStatus: string
   status: string
 }
@@ -23,6 +25,7 @@ export interface SaleBooking {
 interface Trip {
   busId: string
   busName: string
+  plateNumber: string
   from: string
   to: string
   date: string
@@ -54,8 +57,11 @@ function TripRow({ trip, showBus }: { trip: Trip; showBus: boolean }) {
       <summary className="flex cursor-pointer list-none items-start gap-3 px-4 py-3 marker:hidden">
         <div className="flex min-w-0 grow flex-col gap-0.5">
           {showBus && <span className="truncate text-[13px] font-bold">{trip.busName}</span>}
-          <span className={showBus ? 'text-[12px] text-[#b7c1c3]' : 'text-[13px] font-semibold'}>
-            {trip.from} → {trip.to}
+          <span className={`flex flex-wrap items-center gap-x-2 gap-y-1 ${showBus ? 'text-[12px] text-[#b7c1c3]' : 'text-[13px] font-semibold'}`}>
+            <span>
+              {trip.from} → {trip.to}
+            </span>
+            <Plate plate={trip.plateNumber} />
           </span>
           <span className="text-[11.5px] text-[#78868a]">
             {formatTripDate(trip.date)} · {trip.departureTime}
@@ -101,7 +107,7 @@ export default function SalesBreakdown({ bookings }: { bookings: SaleBooking[] }
       const key = b.busId || `${b.busName}|${b.date}|${b.departureTime}`
       let trip = map.get(key)
       if (!trip) {
-        trip = { busId: key, busName: b.busName, from: b.from, to: b.to, date: b.date, departureTime: b.departureTime, sold: [], refunded: [], seats: 0, payout: 0 }
+        trip = { busId: key, busName: b.busName, plateNumber: b.plateNumber || '', from: b.from, to: b.to, date: b.date, departureTime: b.departureTime, sold: [], refunded: [], seats: 0, payout: 0 }
         map.set(key, trip)
       }
       if (isSold(b)) {

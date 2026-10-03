@@ -2,6 +2,7 @@
 
 import { formatTripDate } from '@/lib/dates'
 import { busLabel, tripCounts, type CompanyTrip, type FleetOption } from './types'
+import Plate from '../Plate'
 
 /** Bus drop-down, then the trips of that bus as cards to pick from. */
 export default function TripPicker({
@@ -45,8 +46,11 @@ export default function TripPicker({
               }`}
             >
               <div className="flex min-w-0 grow flex-col gap-0.5">
-                <span className="truncate text-[13.5px] font-bold">
-                  {t.from} → {t.to} · {t.departureTime}
+                <span className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-[13.5px] font-bold">
+                  <span className="truncate">
+                    {t.from} → {t.to} · {t.departureTime}
+                  </span>
+                  <Plate plate={t.plateNumber} />
                 </span>
                 <span className="truncate text-[11.5px] text-[#9ba7aa]">
                   {formatTripDate(t.date)} · {t.busName}
