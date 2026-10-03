@@ -11,7 +11,7 @@ import SeatMap, { type SeatKind } from './SeatMap'
 import StaffPanel from './StaffPanel'
 import TripForm from './TripForm'
 import { changeSeat, useTrips } from './useTrips'
-import { tripCounts, type CompanyTrip } from './types'
+import { busLabel, tripCounts, type CompanyTrip } from './types'
 
 const TABS = [
   ['trips', 'Trips'],
@@ -221,7 +221,7 @@ export default function ManagerView() {
               <option value="">All buses</option>
               {data.fleet.map((f) => (
                 <option key={f._id} value={f._id}>
-                  {f.name} · {f.busType}
+                  {busLabel(f)}
                 </option>
               ))}
             </select>

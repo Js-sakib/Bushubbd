@@ -85,6 +85,18 @@ const dupFleet = await call('/api/fleet', {
 })
 check('the same bus name cannot be listed twice', dupFleet.status === 409, `status ${dupFleet.status}`)
 
+// Number plates: one bus each, however they are typed.
+const plateNo = `DHAKA METRO-BA ${run.replace(/\D/g, '').slice(-2).padStart(2, '1')}-${String(Date.now()).slice(-4)}`
+const platedBus = await call('/api/fleet', { method: 'POST', cookie: admin, body: { name: `GL Hino ${run}`, plateNumber: plateNo.toLowerCase(), companyId: green.id, busType: 'Non-AC', totalSeats: 40 } })
+check('a bus is listed with its number plate (tidied to capitals)', platedBus.status === 201 && platedBus.data.bus.plateNumber === plateNo, JSON.stringify(platedBus.data))
+const samePlate = await call('/api/fleet', { method: 'POST', cookie: admin, body: { name: `GL Other ${run}`, plateNumber: plateNo.replace(/-/g, ' '), companyId: hanif.id, busType: 'AC', totalSeats: 36 } })
+check('the same number plate cannot be on two buses, however it is typed', samePlate.status === 409, JSON.stringify(samePlate.data))
+check('nonsense is refused as a number plate', (await call('/api/fleet', { method: 'POST', cookie: admin, body: { name: `GL Bad ${run}`, plateNumber: '!!', companyId: green.id, busType: 'AC', totalSeats: 36 } })).status === 400)
+const plateSet = await call(`/api/fleet/${fleetBus._id}`, { method: 'PATCH', cookie: admin, body: { plateNumber: `CHATTA METRO-HA ${String(Date.now()).slice(-4)}` } })
+check('the admin adds a plate to an existing bus', plateSet.status === 200 && /^CHATTA METRO-HA \d{4}$/.test(plateSet.data.plateNumber))
+check('a plate already on another bus cannot be given again', (await call(`/api/fleet/${fleetBus._id}`, { method: 'PATCH', cookie: admin, body: { plateNumber: plateNo } })).status === 409)
+check('only the admin changes plates', (await call(`/api/fleet/${fleetBus._id}`, { method: 'PATCH', cookie: green.cookie, body: { plateNumber: 'X 1234' } })).status === 403)
+
 const typedTrip = await call('/api/buses', {
   method: 'POST',
   cookie: admin,
@@ -378,6 +390,7 @@ check('another company\'s counter cannot touch this trip', foreignSell.status ==
 const undoOther = await sell(counter2, ['4D'], 'unsell')
 check('a counter cannot undo another counter\'s sale', undoOther.status === 403, `status ${undoOther.status}`)
 const managerView = await call('/api/company/trips', { cookie: green.cookie })
+check('the company sees its buses with their number plates', managerView.data.fleet.some((f) => f._id === fleetBus._id && /^CHATTA METRO-HA/.test(f.plateNumber)) && managerView.data.fleet.some((f) => f.plateNumber === plateNo))
 const seenTrip = managerView.data.trips.find((t) => t._id === ct)
 check('the manager sees who sold 4D and the BusHub seat', seenTrip?.counterSeats.some((c) => c.seat === '4D' && c.soldBy === `Dampara counter ${run}`) && seenTrip.onlineSeats.includes('2B'), JSON.stringify(seenTrip))
 const managerUndo = await sell(green.cookie, ['4D'], 'unsell')

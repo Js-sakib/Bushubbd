@@ -55,6 +55,8 @@ export interface CompanyTrip {
 export interface FleetOption {
   _id: string
   name: string
+  /** Number plate; older buses may not have one yet. */
+  plateNumber?: string
   busType: string
   totalSeats: number
 }
@@ -84,4 +86,9 @@ export function companyTripMoney(trip: CompanyTrip) {
     online: (trip.onlineTickets || []).map((t) => ({ seats: t.seats.length, total: t.total, payout: t.payout })),
     costs: trip.costs || [],
   })
+}
+
+/** How a bus reads in a list: number plate first (it never changes), then name and type. */
+export function busLabel(f: { name: string; plateNumber?: string; busType: string }) {
+  return f.plateNumber ? `${f.plateNumber} · ${f.name} · ${f.busType}` : `${f.name} · ${f.busType}`
 }

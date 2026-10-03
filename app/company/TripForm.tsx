@@ -4,7 +4,7 @@ import { useState } from 'react'
 import toast from 'react-hot-toast'
 import { dhakaDate } from '@/lib/scan'
 import { dhakaClock } from '@/lib/trips'
-import type { CompanyTrip, FleetOption } from './types'
+import { busLabel, type CompanyTrip, type FleetOption } from './types'
 
 const EMPTY = { fleetId: '', from: '', to: '', date: '', departureTime: '', arrivalTime: '', price: '', boardingPoint: '', boardingMapUrl: '' }
 
@@ -93,7 +93,7 @@ export default function TripForm({
           <option value="">Choose bus…</option>
           {fleet.map((f) => (
             <option key={f._id} value={f._id}>
-              {f.name} · {f.busType} · {f.totalSeats} seats
+              {busLabel(f)} · {f.totalSeats} seats
             </option>
           ))}
         </select>

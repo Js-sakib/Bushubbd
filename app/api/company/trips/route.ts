@@ -54,7 +54,7 @@ export async function GET() {
     return NextResponse.json(
       {
         me: { name: user.name, role: user.role, staffId: user.staffId || null },
-        fleet: fleet.map((f) => ({ _id: f._id.toString(), name: f.name, busType: f.busType, totalSeats: f.totalSeats })),
+        fleet: fleet.map((f) => ({ _id: f._id.toString(), name: f.name, plateNumber: f.plateNumber || '', busType: f.busType, totalSeats: f.totalSeats })),
         cities: places.cities,
         trips: trips.map((t) => {
           const id = t._id.toString()
