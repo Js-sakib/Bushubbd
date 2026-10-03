@@ -190,6 +190,15 @@ export default function AdminDashboard() {
     loadAll()
   }
 
+  // A dashboard number can open Bookings already filtered (e.g. Refunds opens the refunded ones).
+  const [bookingsStart, setBookingsStart] = useState<'all' | 'refunded'>('all')
+  const [bookingsKey, setBookingsKey] = useState(0)
+  const openBookings = (filter: 'all' | 'refunded') => {
+    setBookingsStart(filter)
+    setBookingsKey((k) => k + 1)
+    go('bookings')
+  }
+
   const go = (next: Section) => {
     setSection(next)
     window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -316,9 +325,16 @@ export default function AdminDashboard() {
             </div>
           )}
           {section === 'dashboard' && (
-            <Overview stats={stats} bookings={bookings} buses={buses} onRefund={handleRefund} onSeeAllBookings={() => go('bookings')} />
+            <Overview
+              stats={stats}
+              bookings={bookings}
+              buses={buses}
+              onRefund={handleRefund}
+              onSeeAllBookings={() => openBookings('all')}
+              onOpen={(next, filter) => (next === 'bookings' ? openBookings(filter ?? 'all') : go(next))}
+            />
           )}
-          {section === 'bookings' && <BookingsSection bookings={bookings} query={query} onQuery={setQuery} onRefund={handleRefund} onDelete={handleDelete} onDeleteMany={handleDeleteMany} />}
+          {section === 'bookings' && <BookingsSection key={bookingsKey} startFilter={bookingsStart} bookings={bookings} query={query} onQuery={setQuery} onRefund={handleRefund} onDelete={handleDelete} onDeleteMany={handleDeleteMany} />}
           {section === 'buses' && <BusesSection buses={buses} bookings={bookings} companies={companies} fleet={fleet} places={places} onChanged={loadAll} />}
           {section === 'costs' && <CostsSection />}
           {section === 'companies' && (

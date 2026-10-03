@@ -24,6 +24,7 @@ export default function BookingsSection({
   onRefund,
   onDelete,
   onDeleteMany,
+  startFilter = 'all',
 }: {
   bookings: Booking[]
   query: string
@@ -32,8 +33,10 @@ export default function BookingsSection({
   onDelete: (b: Booking) => void
   /** Deletes several bookings; resolves when done so the ticks can be cleared. */
   onDeleteMany: (list: Booking[]) => Promise<void>
+  /** The status filter the list opens with. */
+  startFilter?: (typeof FILTERS)[number]['key']
 }) {
-  const [filter, setFilter] = useState<(typeof FILTERS)[number]['key']>('all')
+  const [filter, setFilter] = useState<(typeof FILTERS)[number]['key']>(startFilter)
   const [from, setFrom] = useState('')
   const [to, setTo] = useState('')
   const [by, setBy] = useState<'travel' | 'booked'>('travel')

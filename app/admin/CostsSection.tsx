@@ -145,12 +145,12 @@ function PayState({ trip, onPay, busy }: { trip: MoneyTrip; onPay: (t: MoneyTrip
  * Every company's trips, bus by bus: the BusHub tickets sold, BusHub's commission
  * and what BusHub owes the company, with a button to pay each trip once the bus has left.
  */
-function TripsMoney() {
+function TripsMoney({ startPeriod = 'all' }: { startPeriod?: Period }) {
   const [data, setData] = useState<{ companies: { _id: string; name: string }[]; trips: MoneyTrip[] } | null>(null)
   const [companyId, setCompanyId] = useState('')
   const [bus, setBus] = useState('')
   const [search, setSearch] = useState('')
-  const [period, setPeriod] = useState<Period>('all')
+  const [period, setPeriod] = useState<Period>(startPeriod)
   const [from, setFrom] = useState('')
   const [to, setTo] = useState('')
   const [busy, setBusy] = useState<string | null>(null)
@@ -299,10 +299,20 @@ function TripsMoney() {
           <Line label="Already paid to companies" value={taka(total.paid)} tone="text-[#0a8a84]" />
           <Line label="Pay later" sub="Trips still to leave" value={taka(total.later)} tone="text-[#2563eb]" />
         </div>
-        <div className="flex items-center justify-between gap-3 rounded-2xl bg-gradient-to-br from-[#f2661d] to-[#feb249] px-3.5 py-3 text-[#1a0d03] shadow-[0_10px_24px_rgba(242,102,29,0.3)]">
-          <span className="text-[13.5px] font-bold">To pay now</span>
+        <button
+          type="button"
+          onClick={() => setPeriod('finished')}
+          aria-pressed={period === 'finished'}
+          className={`flex items-center justify-between gap-3 rounded-2xl bg-gradient-to-br from-[#f2661d] to-[#feb249] px-3.5 py-3 text-left text-[#1a0d03] shadow-[0_10px_24px_rgba(242,102,29,0.3)] transition hover:-translate-y-0.5 ${
+            period === 'finished' ? 'ring-[3px] ring-[#002447] ring-offset-2 ring-offset-transparent' : ''
+          }`}
+        >
+          <span className="flex flex-col">
+            <span className="text-[13.5px] font-bold">To pay now</span>
+            <span className="text-[10.5px] font-bold opacity-80">Show these trips ›</span>
+          </span>
           <span className="display text-[20px] font-bold text-[#1a0d03]">{taka(total.toPay)}</span>
-        </div>
+        </button>
       </div>
 
       <div className="card-2 overflow-hidden">
@@ -362,6 +372,14 @@ function TripsMoney() {
 /** The admin's Money page: every trip's sales and payment, and paying each company in one go. */
 export default function CostsSection() {
   const [view, setView] = useState<'trips' | 'pay'>('trips')
+  // The By company numbers open By trip on the trips behind them.
+  const [tripsStart, setTripsStart] = useState<Period>('all')
+  const [tripsKey, setTripsKey] = useState(0)
+  const showTrips = (period: Period) => {
+    setTripsStart(period)
+    setTripsKey((k) => k + 1)
+    setView('trips')
+  }
   return (
     <div className="mx-auto flex max-w-6xl flex-col gap-3">
       <div className="flex gap-1 self-start rounded-full border border-[#111111]/10 bg-white/60 p-1">
@@ -374,14 +392,14 @@ export default function CostsSection() {
           <button
             key={id}
             type="button"
-            onClick={() => setView(id)}
+            onClick={() => (id === 'trips' ? showTrips('all') : setView(id))}
             className={`h-9 rounded-full px-4 text-[12.5px] font-bold ${view === id ? 'bg-[#53d3d1] text-[#002447]' : 'text-[#3f3f3f]'}`}
           >
             {label}
           </button>
         ))}
       </div>
-      {view === 'pay' ? <PayoutsPanel /> : <TripsMoney />}
+      {view === 'pay' ? <PayoutsPanel onShowTrips={showTrips} /> : <TripsMoney key={tripsKey} startPeriod={tripsStart} />}
     </div>
   )
 }

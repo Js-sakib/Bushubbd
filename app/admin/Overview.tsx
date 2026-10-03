@@ -14,7 +14,7 @@ const count = (v: number) => Math.round(v).toLocaleString('en-IN')
 function DeltaChip({ delta, upIsGood = true }: { delta: Delta; upIsGood?: boolean }) {
   if (delta.pct === null) {
     return (
-      <span className="rounded-full bg-[#111111]/[0.05] px-2 py-0.5 text-[11px] font-semibold text-[#3f3f3f]">
+      <span className="rounded-full bg-white/40 px-2 py-0.5 text-[11px] font-semibold">
         {delta.current > 0 ? 'New this week' : 'None yet'}
       </span>
     )
@@ -25,7 +25,7 @@ function DeltaChip({ delta, upIsGood = true }: { delta: Delta; upIsGood?: boolea
   return (
     <span
       className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-bold ${
-        good === null ? 'bg-[#111111]/[0.05] text-[#3f3f3f]' : good ? 'bg-[#3fd0c9]/[0.14] text-[#0a8a84]' : 'bg-[#f87171]/[0.14] text-[#c13b3b]'
+        good === null ? 'bg-white/40' : good ? 'bg-white/85 text-[#0a6f72]' : 'bg-white/85 text-[#c13b3b]'
       }`}
     >
       <svg viewBox="0 0 12 12" className={`h-2.5 w-2.5 ${flat ? 'hidden' : up ? '' : 'rotate-180'}`} fill="currentColor" aria-hidden>
@@ -37,6 +37,15 @@ function DeltaChip({ delta, upIsGood = true }: { delta: Delta; upIsGood?: boolea
   )
 }
 
+/** Button colours from the palette, each with a line colour that shows on it. */
+const TONES = {
+  navy: { card: 'bg-[#002447] text-[#fbeceb] shadow-[0_12px_28px_rgba(0,36,71,0.3)]', line: '#53d3d1' },
+  aqua: { card: 'bg-[#53d3d1] text-[#002447] shadow-[0_12px_28px_rgba(83,211,209,0.4)]', line: '#002447' },
+  orange: { card: 'bg-gradient-to-br from-[#f2661d] to-[#feb249] text-[#1a0d03] shadow-[0_12px_28px_rgba(242,102,29,0.35)]', line: '#002447' },
+  pink: { card: 'border border-[#002447]/10 bg-[#fbeceb] text-[#002447] shadow-[0_12px_28px_rgba(0,36,71,0.12)]', line: '#f2661d' },
+}
+
+/** A number on the dashboard: a button that opens the page with its details. */
 function StatTile({
   label,
   value,
@@ -46,8 +55,9 @@ function StatTile({
   series,
   labels,
   format,
-  glow,
+  tone,
   icon,
+  onOpen,
 }: {
   label: string
   value: string
@@ -57,27 +67,34 @@ function StatTile({
   series: number[]
   labels: string[]
   format: (v: number) => string
-  glow: string
+  tone: keyof typeof TONES
   icon: React.ReactNode
+  onOpen: () => void
 }) {
   return (
-    <div className="glass relative flex min-w-0 flex-col gap-2.5 overflow-hidden p-3.5 sm:gap-3 sm:p-5">
-      {/* Colour glow in the corner: decoration only, it carries no data. */}
-      <span className="pointer-events-none absolute -right-10 -top-12 h-32 w-32 rounded-full opacity-40 blur-3xl" style={{ background: glow }} />
+    <div
+      role="button"
+      tabIndex={0}
+      onClick={onOpen}
+      onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), onOpen())}
+      className={`relative flex min-w-0 cursor-pointer flex-col gap-2.5 overflow-hidden rounded-[22px] p-3.5 text-left transition hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-[#f2661d] sm:gap-3 sm:p-5 ${TONES[tone].card}`}
+    >
       <div className="flex items-center gap-2.5">
-        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-white shadow-lg sm:h-9 sm:w-9" style={{ background: glow }}>
-          {icon}
-        </span>
-        <span className="truncate text-[12px] font-semibold text-[#2b2b2b] sm:text-[12.5px]">{label}</span>
+        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-white/25 sm:h-9 sm:w-9">{icon}</span>
+        <span className="truncate text-[12px] font-bold opacity-90 sm:text-[12.5px]">{label}</span>
       </div>
       <div className="flex flex-col gap-1.5">
         <span className="display truncate text-[21px] font-bold leading-none sm:text-[30px]">{value}</span>
-        {note && <span className="truncate text-[11px] text-[#4a4a4a] sm:text-[11.5px]">{note}</span>}
+        {note && <span className="truncate text-[11px] opacity-80 sm:text-[11.5px]">{note}</span>}
       </div>
       <div className="flex flex-wrap items-center gap-2">
         <DeltaChip delta={delta} upIsGood={upIsGood} />
       </div>
-      <Sparkline values={series} labels={labels} format={format} currentFrom={Math.floor(series.length / 2)} />
+      {/* Touching the line shows that day's number; it does not open the page. */}
+      <div onClick={(e) => e.stopPropagation()}>
+        <Sparkline values={series} labels={labels} format={format} currentFrom={Math.floor(series.length / 2)} color={TONES[tone].line} />
+      </div>
+      <span className="text-[11px] font-bold opacity-90">Details ›</span>
     </div>
   )
 }
@@ -131,12 +148,15 @@ export default function Overview({
   buses,
   onRefund,
   onSeeAllBookings,
+  onOpen,
 }: {
   stats: SalesSummary | null
   bookings: Booking[]
   buses: Bus[]
   onRefund: (id: string) => void
   onSeeAllBookings: () => void
+  /** Opens a section from a number: Bookings (optionally only refunded ones) or Money. */
+  onOpen: (section: 'bookings' | 'costs', filter?: 'refunded') => void
 }) {
   if (!stats) {
     return (
@@ -167,7 +187,8 @@ export default function Overview({
           series={series.map((d) => d.tickets)}
           labels={labels}
           format={(v) => `${count(v)} tickets`}
-          glow="linear-gradient(135deg,#f2661d,#feb249)"
+          tone="navy"
+          onOpen={() => onOpen('bookings')}
           icon={icons.ticket}
         />
         <StatTile
@@ -178,7 +199,8 @@ export default function Overview({
           series={series.map((d) => d.revenue)}
           labels={labels}
           format={taka}
-          glow="linear-gradient(135deg,#2563eb,#60a5fa)"
+          tone="aqua"
+          onOpen={() => onOpen('costs')}
           icon={icons.money}
         />
         <StatTile
@@ -189,7 +211,8 @@ export default function Overview({
           series={series.map((d) => d.commission)}
           labels={labels}
           format={taka}
-          glow="linear-gradient(135deg,#0f9f8f,#2dd4bf)"
+          tone="orange"
+          onOpen={() => onOpen('costs')}
           icon={icons.earn}
         />
         <StatTile
@@ -201,7 +224,8 @@ export default function Overview({
           series={series.map((d) => d.refunds)}
           labels={labels}
           format={(v) => `${count(v)} refunds`}
-          glow="linear-gradient(135deg,#be3a5a,#f87171)"
+          tone="pink"
+          onOpen={() => onOpen('bookings', 'refunded')}
           icon={icons.refund}
         />
       </div>

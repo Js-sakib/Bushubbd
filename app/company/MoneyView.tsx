@@ -197,7 +197,14 @@ export default function MoneyView({
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-2 rounded-2xl border border-[#111111]/10 bg-white/60 px-4 py-3">
+      <button
+        type="button"
+        onClick={() => setView('total')}
+        aria-pressed={view === 'total'}
+        className={`grid grid-cols-3 gap-2 rounded-2xl border border-[#002447]/10 bg-[#fbeceb] px-4 py-3 text-left shadow-[0_10px_24px_rgba(0,36,71,0.12)] transition hover:-translate-y-0.5 ${
+          view === 'total' ? '!shadow-[0_10px_26px_rgba(242,102,29,0.4)] ring-[3px] ring-[#f2661d] ring-offset-2 ring-offset-transparent' : ''
+        }`}
+      >
         <div className="flex min-w-0 flex-col">
           <span className="text-[10.5px] text-[#4a4a4a]">
             {shown.length} trip{shown.length === 1 ? '' : 's'} · {total.seats.online + total.seats.counter} seats
@@ -215,7 +222,7 @@ export default function MoneyView({
           <span className={`truncate text-[15px] font-bold ${total.left < 0 ? 'text-[#d23c3c]' : 'text-[#0a8a84]'}`}>{taka(total.left)}</span>
           <span className="truncate text-[10.5px] text-[#5e5e5e]">{dates || PERIODS.find(([id]) => id === period)?.[1]}</span>
         </div>
-      </div>
+      </button>
 
       {view === 'dates' && <DateTable trips={shown} />}
       {view === 'total' && <MoneyCard m={total} trips={shown.length} />}
