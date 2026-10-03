@@ -44,8 +44,10 @@ function dhakaClock(iso: string): string {
 
 /** Boardings by day and the latest scans; the manager also sees which scanner did each. */
 export default function ScanHistory({ stats, showScanner = false }: { stats: ScanStats | null; showScanner?: boolean }) {
+  // The manager's page is wide on a computer: counts on the left, the latest scans on the right.
   return (
-    <div className="mt-5 flex flex-col gap-4">
+    <div className={`mt-5 flex flex-col gap-4 ${showScanner ? 'lg:grid lg:grid-cols-2 lg:items-start' : ''}`}>
+      <div className="flex flex-col gap-4">
           {showScanner && stats?.byScanner && (
             <div className="card-2 overflow-hidden">
               <div className="border-b border-[#1a2123] px-4 py-3">
@@ -91,6 +93,7 @@ export default function ScanHistory({ stats, showScanner = false }: { stats: Sca
             {!stats && <div className="px-4 py-8 text-center text-sm text-[#8e9a9d]">Loading...</div>}
           </div>
 
+      </div>
           <div className="card-2 overflow-hidden">
             <div className="border-b border-[#1a2123] px-4 py-3">
               <span className="label-xs">Recent scans</span>

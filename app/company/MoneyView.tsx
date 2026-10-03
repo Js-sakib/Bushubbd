@@ -111,8 +111,10 @@ export default function MoneyView({
         </div>
       </div>
 
-      <MoneyCard m={total} trips={shown.length} />
-      <StaffSales trips={shown} period={PERIOD_TEXT[period]} />
+      <div className="grid gap-3 lg:grid-cols-2 lg:items-start">
+        <MoneyCard m={total} trips={shown.length} />
+        <StaffSales trips={shown} period={PERIOD_TEXT[period]} />
+      </div>
 
       <div className="card-2 overflow-hidden">
         <div className="flex flex-col gap-0.5 border-b border-[#1a2123] px-4 py-3">

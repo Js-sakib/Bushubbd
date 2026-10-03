@@ -259,9 +259,11 @@ export default function ManagerView() {
               {when === 'upcoming' ? 'No upcoming trips.' : 'No finished trips in the last 30 days.'}
             </p>
           )}
-          {shown.map((t) => (
-            <TripCard key={t._id} trip={t} open={open === t._id} onToggle={() => setOpen(open === t._id ? null : t._id)} onChanged={reload} />
-          ))}
+          <div className="grid gap-3 lg:grid-cols-2 lg:items-start">
+            {shown.map((t) => (
+              <TripCard key={t._id} trip={t} open={open === t._id} onToggle={() => setOpen(open === t._id ? null : t._id)} onChanged={reload} />
+            ))}
+          </div>
         </div>
       )}
 

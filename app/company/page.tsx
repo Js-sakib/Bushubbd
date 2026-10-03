@@ -45,7 +45,7 @@ export default function OperatorPanel() {
   if (!me) return <div className="py-16 text-center text-sm text-[#8e9a9d]">Checking access...</div>
 
   return (
-    <div className={`mx-auto pb-10 ${me.role === 'manager' ? 'max-w-3xl' : 'max-w-xl'}`}>
+    <div className={`mx-auto pb-10 ${me.role === 'manager' ? 'max-w-6xl' : me.role === 'counter' ? 'max-w-5xl' : 'max-w-xl'}`}>
       <div className="flex items-center gap-3 border-b border-[#1b2325] pb-4">
         <LogoMark className="h-9 w-9 shrink-0" />
         <div className="flex min-w-0 grow flex-col gap-0.5">

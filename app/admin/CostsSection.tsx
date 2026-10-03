@@ -184,7 +184,9 @@ function TripsMoney() {
       </div>
       <p className="px-1 text-[11.5px] text-[#6e7b7e]">Trips of the last 30 days and upcoming trips.</p>
 
-      <div className="card-2 flex flex-col gap-3 px-4 py-4">
+      {/* On a computer: the totals stay on the left while the trips scroll on the right. */}
+      <div className="flex flex-col gap-3 lg:grid lg:grid-cols-[minmax(0,380px)_minmax(0,1fr)] lg:items-start">
+      <div className="card-2 flex flex-col gap-3 px-4 py-4 lg:sticky lg:top-28">
         <div className="flex items-end justify-between gap-3">
           <div className="flex flex-col">
             <span className="label-xs">Total earnings</span>
@@ -259,6 +261,7 @@ function TripsMoney() {
         })}
         {shown.length === 0 && <div className="px-4 py-8 text-center text-sm text-[#8e9a9d]">No trips here.</div>}
       </div>
+      </div>
     </div>
   )
 }
@@ -267,7 +270,7 @@ function TripsMoney() {
 export default function CostsSection() {
   const [view, setView] = useState<'trips' | 'pay'>('trips')
   return (
-    <div className="mx-auto flex max-w-3xl flex-col gap-3">
+    <div className="mx-auto flex max-w-6xl flex-col gap-3">
       <div className="flex gap-1 self-start rounded-full border border-white/10 bg-black/30 p-1">
         {(
           [
