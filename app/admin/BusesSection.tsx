@@ -12,11 +12,10 @@ import type { Booking, Bus, CompanyRow, FleetBus } from './types'
 import { dhakaDate } from '@/lib/scan'
 import { dhakaClock, tripDeparted } from '@/lib/trips'
 
-const EMPTY_FLEET_FORM = { name: '', plateNumber: '', companyId: '', busType: 'AC', totalSeats: '40', logoUrl: '', commissionRate: '10' }
+const EMPTY_FLEET_FORM = { name: '', plateNumber: '', companyId: '', busType: 'AC', totalSeats: '40', logoUrl: '' }
 const EMPTY_TRIP_FORM = {
   fleetId: '', from: '', to: '', date: '', departureTime: '', arrivalTime: '', price: '', boardingPoint: '', boardingMapUrl: '',
 }
-const DEFAULT_RATE = 10
 const HISTORY_PAGE = 20
 
 /** The current time, refreshed every half minute, so trips move to history as they leave. */
@@ -213,7 +212,6 @@ export default function BusesSection({
     setTripForm(next)
   }
   const boardingCopied = Boolean(tripForm.boardingPoint) && tripForm.boardingPoint === autoBoarding.current.point
-  const rateOf = (f: FleetBus) => f.commissionRate ?? DEFAULT_RATE
 
   const upcoming = useMemo(() => buses.filter((b) => !tripDeparted(b.date, b.departureTime, now)).sort(byTime), [buses, now])
   const finished = useMemo(
@@ -237,7 +235,6 @@ export default function BusesSection({
     const { ok, error } = await send('/api/fleet', 'POST', {
       ...fleetForm,
       totalSeats: Number(fleetForm.totalSeats),
-      commissionRate: Number(fleetForm.commissionRate),
     })
     setBusy(false)
     if (!ok) {
@@ -245,7 +242,7 @@ export default function BusesSection({
       return
     }
     toast.success(`${fleetForm.name.trim()} is on your bus list`)
-    setFleetForm({ ...EMPTY_FLEET_FORM, companyId: fleetForm.companyId, commissionRate: fleetForm.commissionRate })
+    setFleetForm({ ...EMPTY_FLEET_FORM, companyId: fleetForm.companyId })
     onChanged()
   }
 
@@ -257,26 +254,6 @@ export default function BusesSection({
       return
     }
     toast.success(`${bus.name} deleted`)
-    onChanged()
-  }
-
-  const handleCommission = async (bus: FleetBus) => {
-    const next = prompt(
-      `BusHub commission for ${bus.name}, in % (0 to 50).\n\nUpcoming trips use it for new tickets. Tickets already sold keep their old split.`,
-      String(rateOf(bus))
-    )
-    if (next === null) return
-    const rate = Number(next.replace('%', '').trim())
-    if (next.trim() === '' || !Number.isFinite(rate) || rate < 0 || rate > 50) {
-      toast.error('Commission must be between 0 and 50%')
-      return
-    }
-    const { ok, error } = await send(`/api/fleet/${bus._id}`, 'PATCH', { commissionRate: rate })
-    if (!ok) {
-      toast.error(error || 'Could not save the commission')
-      return
-    }
-    toast.success(`${bus.name}: ${rate}% commission`)
     onChanged()
   }
 
@@ -416,14 +393,7 @@ export default function BusesSection({
                   <option>Sleeper</option>
                 </select>
                 <input required type="number" min={1} max={60} placeholder="Seats" value={fleetForm.totalSeats} onChange={(e) => setFleetForm({ ...fleetForm, totalSeats: e.target.value })} className="input-dark" aria-label="Total seats" />
-                <label className="relative flex sm:col-span-2 lg:col-span-1">
-                  <input required type="number" min={0} max={50} step="0.5" inputMode="decimal" placeholder="Commission" value={fleetForm.commissionRate} onChange={(e) => setFleetForm({ ...fleetForm, commissionRate: e.target.value })} className="input-dark w-full pr-28" aria-label="BusHub commission percent" />
-                  <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[12px] font-semibold text-[#8e9a9d]">% commission</span>
-                </label>
                 <input placeholder="Logo link (optional)" value={fleetForm.logoUrl} onChange={(e) => setFleetForm({ ...fleetForm, logoUrl: e.target.value })} className="input-dark sm:col-span-2 lg:col-span-3" aria-label="Logo link" />
-                <p className="-mt-1 text-[11.5px] text-[#78868a] sm:col-span-2 lg:col-span-4">
-                  Set BusHub&apos;s commission once here. Every trip of this bus uses it.
-                </p>
                 <button type="submit" disabled={busy} className="glass-btn h-12 sm:col-span-2 lg:col-span-4">
                   Add to bus list
                 </button>
@@ -446,13 +416,10 @@ export default function BusesSection({
                           {f.companyName} · {f.busType} · {f.totalSeats} seats
                         </span>
                         <span className="text-[11.5px] text-[#78868a]">
-                          <b className="text-[#f5a524]">{rateOf(f)}% commission</b> · {next} upcoming trip{next === 1 ? '' : 's'}
+                          {next} upcoming trip{next === 1 ? '' : 's'}
                         </span>
                       </div>
                       <div className="flex shrink-0 flex-wrap gap-2">
-                        <button type="button" onClick={() => handleCommission(f)} className="h-8 rounded-full border border-white/10 bg-white/[0.05] px-3 text-[11.5px] font-bold text-[#f5a524]">
-                          Edit %
-                        </button>
                         <button type="button" onClick={() => handlePlate(f)} className="h-8 rounded-full border border-white/10 bg-white/[0.05] px-3 text-[11.5px] font-bold text-[#c4cdcf]">
                           {f.plateNumber ? 'Plate ✓' : 'Add plate'}
                         </button>
@@ -506,9 +473,6 @@ export default function BusesSection({
                     </span>
                     <span>
                       Seats: <b className="text-[#f6f4ef]">{chosen.totalSeats}</b>
-                    </span>
-                    <span>
-                      Commission: <b className="text-[#f5a524]">{rateOf(chosen)}%</b>
                     </span>
                   </div>
                 )}
@@ -600,7 +564,6 @@ export default function BusesSection({
                     {linked ? (
                       <span className="truncate text-[11.5px] text-[#6e7b7e]">
                         {b.companyName}
-                        {b.commissionRate !== undefined ? ` · ${b.commissionRate}% commission` : ''}
                       </span>
                     ) : (
                       <span className="text-[11.5px] font-bold text-[#f5a524]">{b.companyName} · old trip, link it to a bus below</span>

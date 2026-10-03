@@ -97,6 +97,31 @@ check('the admin adds a plate to an existing bus', plateSet.status === 200 && /^
 check('a plate already on another bus cannot be given again', (await call(`/api/fleet/${fleetBus._id}`, { method: 'PATCH', cookie: admin, body: { plateNumber: plateNo } })).status === 409)
 check('only the admin changes plates', (await call(`/api/fleet/${fleetBus._id}`, { method: 'PATCH', cookie: green.cookie, body: { plateNumber: 'X 1234' } })).status === 403)
 
+// ---- Commission is set once per company; the admin can change it per company ----
+const rateCo = await call('/api/companies', { method: 'POST', cookie: admin, body: { name: `Rate Co ${run}`, ownerName: 'Owner', email: `rateco${run.toLowerCase()}@test.local`, phone: '01700000009', commissionRate: 12 } })
+check('the admin sets the commission when adding a company', rateCo.status === 201 && rateCo.data.company.commissionRate === 12, JSON.stringify(rateCo.data))
+check('a commission outside 0–50% is refused', (await call('/api/companies', { method: 'POST', cookie: admin, body: { name: `Bad Rate ${run}`, ownerName: 'O', email: `badrate${run.toLowerCase()}@test.local`, phone: '01700000010', commissionRate: 80 } })).status === 400)
+const rateBus = (await call('/api/fleet', { method: 'POST', cookie: admin, body: { name: `Rate Bus ${run}`, companyId: rateCo.data.company._id, busType: 'AC', totalSeats: 36, commissionRate: 40 } })).data.bus
+check("a new bus takes its company's commission, whatever is sent for the bus", rateBus.commissionRate === 12)
+check('commission cannot be changed on a single bus', (await call(`/api/fleet/${rateBus._id}`, { method: 'PATCH', cookie: admin, body: { commissionRate: 30 } })).status === 400)
+const rateDay = new Date(Date.now() + 30 * 3600e3).toISOString().slice(0, 10)
+const rateTrip = (await call('/api/buses', { method: 'POST', cookie: admin, body: { fleetId: rateBus._id, from: 'Dhaka', to: 'Sylhet', date: rateDay, departureTime: '10:35', price: 1000 } })).data.bus
+const rateBuy = async (seat) => (await call('/api/bookings', { method: 'POST', body: { busId: rateTrip._id, seats: [seat], passengerName: 'Rate Test', passengerPhone: '0194' + String(Math.floor(Math.random() * 1e7)).padStart(7, '0') } })).data.booking
+const at12 = await rateBuy('1A')
+check('tickets use the company commission', rateTrip.commissionRate === 12 && at12.commissionRate === 12 && at12.commissionAmount === 120 && at12.companyPayout === 880, JSON.stringify(at12))
+check('only the admin changes a company commission', (await call(`/api/companies/${rateCo.data.company._id}`, { method: 'PATCH', cookie: green.cookie, body: { commissionRate: 1 } })).status === 401)
+check('a bad commission is refused when editing', (await call(`/api/companies/${rateCo.data.company._id}`, { method: 'PATCH', cookie: admin, body: { commissionRate: 'abc' } })).status === 400)
+const rateEdit = await call(`/api/companies/${rateCo.data.company._id}`, { method: 'PATCH', cookie: admin, body: { commissionRate: 15 } })
+const at15 = await rateBuy('2A')
+const at12After = await db.collection('bookings').findOne({ _id: new ObjectId(at12._id) })
+const rateBusAfter = await db.collection('fleet').findOne({ _id: new ObjectId(rateBus._id) })
+const listed = (await call('/api/companies', { cookie: admin })).data.companies.find((c) => c._id === rateCo.data.company._id)
+check(
+  'changing a company commission: its buses and trips to come use it; tickets already sold keep theirs',
+  rateEdit.status === 200 && listed.commissionRate === 15 && rateBusAfter.commissionRate === 15 && at15.commissionRate === 15 && at15.commissionAmount === 150 && at12After.commissionRate === 12 && at12After.commissionAmount === 120,
+  JSON.stringify({ at15, listed: listed.commissionRate })
+)
+
 const typedTrip = await call('/api/buses', {
   method: 'POST',
   cookie: admin,

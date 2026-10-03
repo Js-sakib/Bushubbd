@@ -56,7 +56,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     }
 
     const body = await req.json().catch(() => ({}))
-    const allowedFields = ['from', 'to', 'date', 'departureTime', 'arrivalTime', 'price', 'status', 'commissionRate']
+    const allowedFields = ['from', 'to', 'date', 'departureTime', 'arrivalTime', 'price', 'status']
     const update: Record<string, any> = {}
     for (const key of allowedFields) {
       if (body[key] !== undefined) update[key] = body[key]

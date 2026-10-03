@@ -9,9 +9,9 @@ import { tripDeparted } from '@/lib/trips'
 export const dynamic = 'force-dynamic'
 
 /**
- * Only the logo, the number plate and BusHub's commission can change once a bus is listed. Its
- * name, owner and seats are what tickets were sold under, so changing them would make old tickets
- * disagree with the bus.
+ * Only the logo and the number plate can change once a bus is listed (BusHub's commission is the
+ * company's, set in Admin → Companies). Its name, owner and seats are what tickets were sold under,
+ * so changing them would make old tickets disagree with the bus.
  */
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
   try {
@@ -46,21 +46,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     }
 
     if (body.commissionRate !== undefined) {
-      const commissionRate = Number(body.commissionRate)
-      if (body.commissionRate === '' || !Number.isFinite(commissionRate) || commissionRate < 0 || commissionRate > 50) {
-        return NextResponse.json({ error: 'Commission must be between 0 and 50%' }, { status: 400 })
-      }
-      const { db } = await connectToDatabase()
-      const result = await db.collection('fleet').updateOne({ _id: new ObjectId(params.id) }, { $set: { commissionRate } })
-      if (result.matchedCount === 0) {
-        return NextResponse.json({ error: 'Bus not found' }, { status: 404 })
-      }
-      // Trips still to come use the new rate from their next sale. Tickets already sold keep
-      // the split they were sold with, and finished trips keep theirs.
-      await db
-        .collection('buses')
-        .updateMany({ fleetId: params.id, date: { $gte: dhakaDate() } }, { $set: { commissionRate } })
-      return NextResponse.json({ success: true })
+      return NextResponse.json({ error: 'Commission is set once per company, in Admin → Companies' }, { status: 400 })
     }
 
     const logoUrl = cleanLogoUrl(body.logoUrl)

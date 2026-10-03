@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import bcrypt from 'bcryptjs'
 import { connectToDatabase } from '@/lib/db'
+import { DEFAULT_COMMISSION_RATE } from '@/lib/tickets'
 import { Company } from '@/lib/models'
 import { EMAIL_COLLATION } from '@/lib/auth'
 import { findCompanyByName } from '@/lib/companies'
@@ -40,6 +41,7 @@ export async function POST(req: NextRequest) {
       phone,
       passwordHash,
       status: 'pending',
+      commissionRate: DEFAULT_COMMISSION_RATE,
       createdAt: new Date().toISOString(),
     }
 

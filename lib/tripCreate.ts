@@ -1,7 +1,7 @@
 import { ObjectId, type Db } from 'mongodb'
 import { isDuplicateKeyError } from './db'
 import type { Bus } from './models'
-import { DEFAULT_COMMISSION_RATE } from './tickets'
+import { effectiveRate } from './commission'
 import { getPlaces } from './places'
 import { dhakaDate } from './scan'
 import { dhakaClock, tripDeparted } from './trips'
@@ -44,12 +44,12 @@ export async function createTrip(db: Db, input: Record<string, any>, onlyCompany
   const fleetBus = await db.collection('fleet').findOne({ _id: new ObjectId(fleetId) })
   if (!fleetBus) return fail(400, 'That bus is not on the bus list')
   if (onlyCompanyId && fleetBus.companyId !== onlyCompanyId) return fail(403, 'That bus belongs to another company')
-  // BusHub's commission is set once on the bus, not typed for every trip.
-  const commissionRate = Number.isFinite(fleetBus.commissionRate) ? Number(fleetBus.commissionRate) : DEFAULT_COMMISSION_RATE
   const company = ObjectId.isValid(fleetBus.companyId)
     ? await db.collection('companies').findOne({ _id: new ObjectId(fleetBus.companyId) })
     : null
   if (!company || company.status !== 'approved') return fail(400, `${fleetBus.companyName} is not an approved company right now`)
+  // BusHub's commission is set once for the company, not typed for every trip.
+  const commissionRate = effectiveRate(company, fleetBus.commissionRate)
 
   // One bus can't leave twice at the same moment.
   const clash = await db

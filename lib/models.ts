@@ -101,6 +101,8 @@ export interface Company {
   phone: string
   passwordHash: string
   status: 'pending' | 'approved' | 'suspended'
+  /** BusHub's commission on all of the company's tickets, in percent (lib/commission). */
+  commissionRate?: number
   createdAt: string
   /** Set by "Forgot password" on the operator login; cleared when the admin issues a new one. */
   passwordResetRequestedAt?: Date
