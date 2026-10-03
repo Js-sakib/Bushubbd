@@ -7,6 +7,7 @@ import type { Delta, SalesSummary } from '@/lib/stats'
 import BookingList from './BookingList'
 import { BarList, ColumnChart, Meter, Sparkline, TEAL, taka } from './charts'
 import type { Booking, Bus } from './types'
+import Plate from '../Plate'
 
 const count = (v: number) => Math.round(v).toLocaleString('en-IN')
 
@@ -305,8 +306,11 @@ export default function Overview({
                     <span className="truncate text-[13px] font-semibold">
                       {b.busName} · {b.departureTime}
                     </span>
-                    <span className="truncate text-[11.5px] text-[#78868a]">
-                      {b.from} → {b.to} · {b.companyName}
+                    <span className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-[11.5px] text-[#78868a]">
+                      <span className="truncate">
+                        {b.from} → {b.to} · {b.companyName}
+                      </span>
+                      <Plate plate={b.plateNumber} />
                     </span>
                     <span className="h-1.5 w-full overflow-hidden rounded-full" style={{ background: `${TEAL}33` }}>
                       <span className="block h-full rounded-full" style={{ width: `${(taken / Math.max(1, b.totalSeats)) * 100}%`, background: TEAL }} />

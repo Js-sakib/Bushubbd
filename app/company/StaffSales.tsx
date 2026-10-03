@@ -4,6 +4,7 @@ import { useMemo } from 'react'
 import { formatTripDate } from '@/lib/dates'
 import { dhakaDate } from '@/lib/scan'
 import { taka as fmt } from '@/lib/tripMoney'
+import Plate from '../Plate'
 import type { CompanyTrip } from './types'
 
 interface SellerTrip {
@@ -138,7 +139,7 @@ export default function StaffSales({ trips, period }: { trips: CompanyTrip[]; pe
             {s.trips.map(({ trip, seats }) => (
               <div key={trip._id} className="flex items-start justify-between gap-3 text-[12px]">
                 <span className="min-w-0">
-                  {trip.from} → {trip.to}
+                  {trip.from} → {trip.to} <Plate plate={trip.plateNumber} className="mx-0.5 align-middle" />
                   <span className="text-[#78868a]">
                     {' '}
                     · {formatTripDate(trip.date)} · {trip.departureTime} · {trip.busName}

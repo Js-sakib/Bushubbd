@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { platesByFleet } from '@/lib/plates'
 import { connectToDatabase } from '@/lib/db'
 import { getAdminFromCookies } from '@/lib/auth'
 import { dhakaDate } from '@/lib/scan'
@@ -33,7 +34,12 @@ export async function GET(req: NextRequest) {
       if (!date) query.date = { $gte: today }
     }
     const found = await db.collection('buses').find(query).sort({ departureTime: 1 }).toArray()
-    const buses = all ? found : found.filter((bus) => !tripDeparted(bus.date, bus.departureTime))
+    let buses: any[] = all ? found : found.filter((bus) => !tripDeparted(bus.date, bus.departureTime))
+    // The admin sees each trip's number plate.
+    if (all) {
+      const plates = await platesByFleet(db, buses.map((b) => b.fleetId))
+      buses = buses.map((b) => ({ ...b, plateNumber: b.fleetId ? plates.get(String(b.fleetId)) || '' : '' }))
+    }
     return NextResponse.json({ buses }, { headers: { 'Cache-Control': 'no-store, max-age=0, must-revalidate' } })
   } catch (err) {
     console.error(err)

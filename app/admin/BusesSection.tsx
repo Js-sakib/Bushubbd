@@ -11,6 +11,7 @@ import PlacesPanel from './PlacesPanel'
 import type { Booking, Bus, CompanyRow, FleetBus } from './types'
 import { dhakaDate } from '@/lib/scan'
 import { dhakaClock, tripDeparted } from '@/lib/trips'
+import Plate from '../Plate'
 
 const EMPTY_FLEET_FORM = { name: '', plateNumber: '', companyId: '', busType: 'AC', totalSeats: '40', logoUrl: '' }
 const EMPTY_TRIP_FORM = {
@@ -552,8 +553,11 @@ export default function BusesSection({
                 <div className="flex items-start gap-3">
                   <div className="flex min-w-0 grow flex-col gap-0.5">
                     <span className="truncate text-[14px] font-semibold">{b.busName}</span>
-                    <span className="truncate text-[12px] text-[#9ba7aa]">
-                      {b.from} → {b.to} · {formatTripDate(b.date)}
+                    <span className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-[12px] text-[#9ba7aa]">
+                      <span className="truncate">
+                        {b.from} → {b.to} · {formatTripDate(b.date)}
+                      </span>
+                      <Plate plate={b.plateNumber} />
                     </span>
                     <span className="truncate text-[12px] font-semibold text-[#e7e2da]">{tripTimes(b)}</span>
                     {b.boardingPoint ? (
@@ -672,8 +676,11 @@ export default function BusesSection({
                               <span className="truncate text-[14px] font-semibold">{b.busName}</span>
                               <span className="shrink-0 rounded-full bg-white/[0.07] px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[#9ba7aa]">Closed</span>
                             </span>
-                            <span className="truncate text-[12px] text-[#9ba7aa]">
-                              {b.from} → {b.to} · {formatTripDate(b.date)}
+                            <span className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-[12px] text-[#9ba7aa]">
+                              <span className="truncate">
+                                {b.from} → {b.to} · {formatTripDate(b.date)}
+                              </span>
+                              <Plate plate={b.plateNumber} />
                             </span>
                             <span className="truncate text-[12px] font-semibold text-[#e7e2da]">{tripTimes(b)}</span>
                             <span className="truncate text-[11.5px] text-[#6e7b7e]">{b.companyName}</span>

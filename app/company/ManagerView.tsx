@@ -12,6 +12,7 @@ import StaffPanel from './StaffPanel'
 import TripForm from './TripForm'
 import { changeSeat, useTrips } from './useTrips'
 import { busLabel, tripCounts, type CompanyTrip } from './types'
+import Plate from '../Plate'
 
 const TABS = [
   ['trips', 'Trips'],
@@ -56,8 +57,11 @@ function TripCard({ trip, open, onToggle, onChanged }: { trip: CompanyTrip; open
       <button type="button" onClick={onToggle} className="flex w-full flex-col gap-2.5 px-4 py-3.5 text-left">
         <div className="flex items-start gap-3">
           <div className="flex min-w-0 grow flex-col gap-0.5">
-            <span className="truncate text-[14px] font-bold">
-              {trip.from} → {trip.to} · {trip.departureTime}
+            <span className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-[14px] font-bold">
+              <span className="truncate">
+                {trip.from} → {trip.to} · {trip.departureTime}
+              </span>
+              <Plate plate={trip.plateNumber} />
             </span>
             <span className="truncate text-[11.5px] text-[#9ba7aa]">
               {formatTripDate(trip.date)} · {trip.busName}

@@ -5,6 +5,7 @@ import toast from 'react-hot-toast'
 import { formatTripDate } from '@/lib/dates'
 import { taka } from '@/lib/tripMoney'
 import PayoutsPanel from './PayoutsPanel'
+import Plate from '../Plate'
 
 interface MoneyTrip {
   _id: string
@@ -12,6 +13,7 @@ interface MoneyTrip {
   companyName: string
   fleetId: string | null
   busName: string
+  plateNumber: string
   from: string
   to: string
   date: string
@@ -224,8 +226,11 @@ function TripsMoney() {
               <summary className="flex cursor-pointer list-none items-start gap-3 px-4 py-3 marker:hidden">
                 <div className="flex min-w-0 grow flex-col gap-0.5">
                   <span className="truncate text-[13.5px] font-bold">{t.companyName}</span>
-                  <span className="truncate text-[12px] text-[#c4cdcf]">
-                    {t.from} → {t.to} · {t.departureTime} · {t.busName}
+                  <span className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-[12px] text-[#c4cdcf]">
+                    <span className="truncate">
+                      {t.from} → {t.to} · {t.departureTime} · {t.busName}
+                    </span>
+                    <Plate plate={t.plateNumber} />
                   </span>
                   <span className="text-[11.5px] text-[#78868a]">
                     {formatTripDate(t.date)} · {t.counter.seats + t.online.seats}/{t.totalSeats} sold · earned {taka(t.counter.total + t.online.total)}
