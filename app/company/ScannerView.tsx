@@ -78,9 +78,9 @@ export default function ScannerView() {
           </span>
         </div>
         <div className="flex flex-col gap-1.5 rounded-[18px] bg-gradient-to-br from-[#2f5bc4] to-[#24479b] p-4">
-          <span className="text-[11.5px] font-bold text-[#c9d8fa]">Last 7 days</span>
+          <span className="text-[11.5px] font-bold text-[#dbe6ff]">Last 7 days</span>
           <span className="display text-3xl font-bold leading-none text-white">{stats?.week.passengers ?? '–'}</span>
-          <span className="text-[11.5px] text-[#c9d8fa]">
+          <span className="text-[11.5px] text-[#dbe6ff]">
             {stats ? `${stats.week.tickets} ticket${stats.week.tickets === 1 ? '' : 's'} scanned` : 'passengers'}
           </span>
         </div>
@@ -97,7 +97,7 @@ export default function ScannerView() {
       {tab === 'scan' && (
         <div className="mt-5 flex flex-col gap-4">
           {verifying && (
-            <div className="flex aspect-[4/3] w-full items-center justify-center glass-lite text-sm text-[#b8b2a6]">
+            <div className="flex aspect-[4/3] w-full items-center justify-center glass-lite text-sm text-[#44526b]">
               Checking ticket...
             </div>
           )}
@@ -138,7 +138,7 @@ export default function ScannerView() {
                 </svg>
               </span>
               <span className="display text-[20px] font-bold">Tap to scan a ticket</span>
-              <span className="text-[12.5px] text-[#b8b2a6]">Point the camera at the passenger&apos;s QR code</span>
+              <span className="text-[12.5px] text-[#44526b]">Point the camera at the passenger&apos;s QR code</span>
             </button>
           )}
 
@@ -171,10 +171,10 @@ export default function ScannerView() {
             </form>
           )}
 
-          <p className="rounded-2xl border border-[#24546e] bg-[#002447]/40 px-4 py-3 text-[12px] leading-relaxed text-[#c4beb2]">
+          <p className="rounded-2xl border border-[#c3d1e0] bg-white/70 px-4 py-3 text-[12px] leading-relaxed text-[#34445f]">
             Seats sold at the counter and new trips are handled by your company&apos;s counter and manager logins. For help,
             write to{' '}
-            <a href="mailto:info@bushubbd.com" className="font-bold text-[#2dd4bf]">
+            <a href="mailto:info@bushubbd.com" className="font-bold text-[#0f8f80]">
               info@bushubbd.com
             </a>
             .

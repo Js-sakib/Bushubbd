@@ -208,7 +208,7 @@ function BookingContent() {
         <div className="mt-5 flex flex-col gap-4">
           <div className="flex items-center gap-4 rounded-[14px] border border-white/[0.08] bg-white/[0.04] px-3.5 py-2.5">
             <span className="inline-flex items-center gap-2 text-[11.5px] font-semibold text-[#dad3c8]">
-              <span className="h-3.5 w-3.5 rounded border border-[#0dabab] bg-[#0a4f5a]" />
+              <span className="h-3.5 w-3.5 rounded border border-[#e3dcd2] bg-[#fbeceb]" />
               Available
             </span>
             <span className="inline-flex items-center gap-2 text-[11.5px] font-semibold text-[#dad3c8]">
@@ -251,7 +251,7 @@ function BookingContent() {
                             ? 'cursor-not-allowed border border-dashed border-[#7a3230] bg-[#3a1a1a] text-[#d98a86]'
                             : isSelected
                             ? 'border border-[#cc8b65] bg-gradient-to-br from-[#f2661d] to-[#feb249] text-[#170b02]'
-                            : 'border border-[#0dabab] bg-[#0a4f5a] text-[#8ee8e4] hover:border-[#3fd0c9] hover:bg-[#0a4550]'
+                            : 'border border-[#e3dcd2] bg-[#fbeceb] text-[#0b2545] hover:border-[#53d3d1] hover:bg-white'
                         }`}
                       >
                         {seat}
@@ -273,7 +273,7 @@ function BookingContent() {
                             ? 'cursor-not-allowed border border-dashed border-[#7a3230] bg-[#3a1a1a] text-[#d98a86]'
                             : isSelected
                             ? 'border border-[#cc8b65] bg-gradient-to-br from-[#f2661d] to-[#feb249] text-[#170b02]'
-                            : 'border border-[#0dabab] bg-[#0a4f5a] text-[#8ee8e4] hover:border-[#3fd0c9] hover:bg-[#0a4550]'
+                            : 'border border-[#e3dcd2] bg-[#fbeceb] text-[#0b2545] hover:border-[#53d3d1] hover:bg-white'
                         }`}
                       >
                         {seat}

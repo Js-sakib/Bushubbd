@@ -11,9 +11,9 @@ const EMPTY = { fleetId: '', from: '', to: '', date: '', departureTime: '', arri
 function Field({ label, note, children }: { label: string; note?: string; children: React.ReactNode }) {
   return (
     <label className="flex flex-col gap-1.5">
-      <span className="flex items-baseline gap-1.5 px-1 text-[12px] font-bold text-[#e3dcd2]">
+      <span className="flex items-baseline gap-1.5 px-1 text-[12px] font-bold text-[#1b2b45]">
         {label}
-        {note && <span className="text-[11px] font-semibold text-[#aaa598]">{note}</span>}
+        {note && <span className="text-[11px] font-semibold text-[#4f5d75]">{note}</span>}
       </span>
       {children}
     </label>
@@ -80,7 +80,7 @@ export default function TripForm({
 
   if (fleet.length === 0) {
     return (
-      <p className="glass-lite p-4 text-[13px] text-[#dad3c8]">
+      <p className="glass-lite p-4 text-[13px] text-[#24344f]">
         Your company has no buses on BusHub yet. Ask the BusHub team to add your buses first.
       </p>
     )
@@ -137,7 +137,7 @@ export default function TripForm({
         <input type="url" inputMode="url" placeholder="Paste the share link" value={form.boardingMapUrl} onChange={(e) => setForm({ ...form, boardingMapUrl: e.target.value })} className="input-dark" aria-label="Google Maps link" />
       </Field>
       {pastTime && (
-        <p className="rounded-xl bg-[#f87171]/[0.1] px-3 py-2 text-[12px] font-semibold text-[#fca5a5] sm:col-span-2">
+        <p className="rounded-xl bg-[#f87171]/[0.1] px-3 py-2 text-[12px] font-semibold text-[#c13b3b] sm:col-span-2">
           It is {clock} now in Bangladesh. Pick a later time, or another day.
         </p>
       )}

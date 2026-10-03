@@ -116,7 +116,7 @@ export default function QrCamera({ onDetected }: { onDetected: (text: string) =>
 
   if (error) {
     return (
-      <div className="flex aspect-square w-full flex-col items-center justify-center gap-3 rounded-[22px] border border-[#3a2c10] bg-[#1a1508] p-6 text-center">
+      <div className="flex aspect-square w-full flex-col items-center justify-center gap-3 rounded-[22px] border border-[#3a2c10] bg-[#fff6dc] p-6 text-center">
         <svg viewBox="0 0 24 24" fill="none" stroke="#feb249" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-9 w-9">
           <path d="M3 7.5A1.5 1.5 0 0 1 4.5 6H7l1.5-2h7L17 6h2.5A1.5 1.5 0 0 1 21 7.5v10a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 17.5z" />
           <path d="M3 3l18 18" />

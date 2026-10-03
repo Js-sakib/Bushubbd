@@ -48,7 +48,7 @@ export default function CounterView() {
     setBusySeat(null)
   }
 
-  if (!data) return <div className="py-16 text-center text-sm text-[#aaa598]">Loading trips...</div>
+  if (!data) return <div className="py-16 text-center text-sm text-[#4f5d75]">Loading trips...</div>
   const c = trip ? tripCounts(trip) : null
   const mine = trip ? trip.counterSeats.filter((s) => s.staffId === data.me.staffId).map((s) => s.seat) : []
 
@@ -87,29 +87,29 @@ export default function CounterView() {
                   </span>
                   <Plate plate={trip.plateNumber} />
                 </span>
-                <span className="text-[12px] text-[#b8b2a6]">
+                <span className="text-[12px] text-[#44526b]">
                   {formatTripDate(trip.date)} · {trip.busName} · ৳{trip.price}
                   {trip.boardingPoint ? ` · ${trip.boardingPoint}` : ''}
                 </span>
               </div>
               <div className="grid grid-cols-3 gap-2 text-center">
-                <div className="rounded-xl bg-black/25 py-2">
-                  <div className="display text-[18px] font-bold text-[#3fd0c9]">{c.free}</div>
-                  <div className="text-[10.5px] text-[#aaa598]">Free</div>
+                <div className="rounded-xl bg-white/60 py-2">
+                  <div className="display text-[18px] font-bold text-[#0a8a84]">{c.free}</div>
+                  <div className="text-[10.5px] text-[#4f5d75]">Free</div>
                 </div>
-                <div className="rounded-xl bg-black/25 py-2">
-                  <div className="display text-[18px] font-bold text-[#53d3d1]">{c.online + c.held}</div>
-                  <div className="text-[10.5px] text-[#aaa598]">BusHub</div>
+                <div className="rounded-xl bg-white/60 py-2">
+                  <div className="display text-[18px] font-bold text-[#0b7f8c]">{c.online + c.held}</div>
+                  <div className="text-[10.5px] text-[#4f5d75]">BusHub</div>
                 </div>
-                <div className="rounded-xl bg-black/25 py-2">
-                  <div className="display text-[18px] font-bold text-[#86c6d1]">{c.counter}</div>
-                  <div className="text-[10.5px] text-[#aaa598]">Counter</div>
+                <div className="rounded-xl bg-white/60 py-2">
+                  <div className="display text-[18px] font-bold text-[#2d7886]">{c.counter}</div>
+                  <div className="text-[10.5px] text-[#4f5d75]">Counter</div>
                 </div>
               </div>
-              <p className="text-[12px] text-[#dad3c8]">Tap a free seat as soon as you sell it. Tap your own purple seat to undo.</p>
+              <p className="text-[12px] text-[#24344f]">Tap a free seat as soon as you sell it. Tap your own purple seat to undo.</p>
               <SeatMap trip={trip} myStaffId={data.me.staffId} busySeat={busySeat} onTap={tap} />
               {mine.length > 0 && (
-                <p className="text-[12px] text-[#dad3c8]">
+                <p className="text-[12px] text-[#24344f]">
                   You sold <b>{mine.length}</b> on this trip: {mine.join(', ')}
                 </p>
               )}
@@ -118,7 +118,7 @@ export default function CounterView() {
           {!trip && (
             <div className="glass-lite hidden flex-col items-center justify-center gap-1 p-10 text-center lg:flex">
               <span className="display text-[16px] font-bold">Choose a trip</span>
-              <span className="text-[12.5px] text-[#b8b2a6]">Its seats show here. Tap a free seat as soon as you sell it.</span>
+              <span className="text-[12.5px] text-[#44526b]">Its seats show here. Tap a free seat as soon as you sell it.</span>
             </div>
           )}
         </div>

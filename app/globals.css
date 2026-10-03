@@ -18,6 +18,16 @@
   --ink: #fbeceb;
   --muted: #b8b2a6;
   --muted-2: #959488;
+  /* Shared widgets (search box, calendar) take their colours from these, so they suit both the
+     dark panels and the light counter pages. */
+  --c-ink: #fbeceb;
+  --c-muted: #b8b2a6;
+  --c-faint: #88908a;
+  --c-range: #fde7c0;
+  --c-hover: rgba(255, 255, 255, 0.08);
+  --c-line: rgba(255, 255, 255, 0.1);
+  --c-field: rgba(0, 0, 0, 0.3);
+  --c-pop: #100c0d;
 }
 
 * {
@@ -31,7 +41,8 @@ html {
 }
 
 body {
-  background: linear-gradient(160deg, #002447 0%, #022c40 45%, #042a2b 80%, #013328 100%) fixed;
+  /* Pink -> blue -> aqua, to the top right. */
+  background: linear-gradient(to right top, #d16ba5, #c777b9, #ba83ca, #aa8fd8, #9a9ae1, #8aa7ec, #79b3f4, #69bff8, #52cffe, #41dfff, #46eefa, #5ffbf1) fixed;
   background-color: var(--bg);
   color: var(--ink);
   font-family: var(--font-body), 'Inter', system-ui, -apple-system, sans-serif;
@@ -308,4 +319,85 @@ input[type='date']::-webkit-calendar-picker-indicator {
     background: #ffffff !important;
     border: 1px solid #d5dbdc;
   }
+}
+
+/* On the bright page, the dark panels go navy so their light text stays readable. */
+.card,
+.card-2,
+.glass-lite,
+.glass {
+  background: linear-gradient(150deg, rgba(0, 36, 71, 0.9), rgba(0, 29, 58, 0.86) 60%);
+}
+
+/* ---- The bus company pages (management, counter, bus staff): light frosted glass, navy text. ---- */
+.light-panel {
+  --ink: #0b2545;
+  --muted: #44526b;
+  --muted-2: #5a677d;
+  --c-ink: #0b2545;
+  --c-muted: #4f5d75;
+  --c-faint: #617086;
+  --c-range: #8a4b00;
+  --c-hover: rgba(11, 37, 69, 0.07);
+  --c-line: rgba(11, 37, 69, 0.12);
+  --c-field: rgba(255, 255, 255, 0.7);
+  --c-pop: #ffffff;
+  color: var(--ink);
+}
+.light-panel .card,
+.light-panel .card-2,
+.light-panel .glass-lite,
+.light-panel .glass {
+  background: linear-gradient(150deg, rgba(255, 255, 255, 0.86), rgba(255, 255, 255, 0.72) 60%);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  box-shadow: 0 10px 30px rgba(11, 37, 69, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+}
+.light-panel .input-dark {
+  border-color: rgba(11, 37, 69, 0.14);
+  background-color: rgba(255, 255, 255, 0.82);
+  color: var(--ink);
+}
+.light-panel .input-dark::placeholder {
+  color: #6b7a90;
+}
+.light-panel select.input-dark {
+  background-image: linear-gradient(45deg, transparent 50%, #4f5d75 50%), linear-gradient(135deg, #4f5d75 50%, transparent 50%);
+}
+.light-panel select.input-dark option {
+  background: #ffffff;
+  color: var(--ink);
+}
+.light-panel input[type='date']::-webkit-calendar-picker-indicator {
+  filter: none;
+}
+.light-panel .label-xs {
+  color: #4f5d75;
+}
+.light-panel .chip {
+  border-color: rgba(11, 37, 69, 0.14);
+  background: rgba(255, 255, 255, 0.7);
+  color: #24344f;
+}
+.light-panel .chip-active {
+  border-color: var(--orange);
+  background: rgba(242, 102, 29, 0.12);
+  color: #b8480f;
+}
+.light-panel .glass-btn {
+  color: var(--ink);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.75));
+  border-color: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 10px 26px rgba(242, 102, 29, 0.22), inset 0 1px 0 rgba(255, 255, 255, 1);
+}
+.light-panel .glass-btn-plain {
+  background: rgba(255, 255, 255, 0.7);
+  border-color: rgba(11, 37, 69, 0.14);
+  box-shadow: none;
+}
+.light-panel .icon-btn {
+  border-color: rgba(11, 37, 69, 0.14);
+  background: rgba(255, 255, 255, 0.7);
+  color: var(--ink);
 }

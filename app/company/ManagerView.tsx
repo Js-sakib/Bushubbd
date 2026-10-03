@@ -65,42 +65,42 @@ function TripCard({ trip, open, onToggle, onChanged }: { trip: CompanyTrip; open
               </span>
               <Plate plate={trip.plateNumber} />
             </span>
-            <span className="truncate text-[11.5px] text-[#b8b2a6]">
+            <span className="truncate text-[11.5px] text-[#44526b]">
               {formatTripDate(trip.date)} · {trip.busName}
             </span>
-            {trip.boardingPoint && <span className="truncate text-[11px] text-[#88908a]">📍 {trip.boardingPoint}</span>}
+            {trip.boardingPoint && <span className="truncate text-[11px] text-[#617086]">📍 {trip.boardingPoint}</span>}
           </div>
           <div className="flex shrink-0 flex-col items-end">
             <span className="display text-[17px] font-bold">
               {c.online + c.counter}
-              <span className="text-[12px] font-semibold text-[#aaa598]">/{trip.totalSeats}</span>
+              <span className="text-[12px] font-semibold text-[#4f5d75]">/{trip.totalSeats}</span>
             </span>
-            <span className="text-[10.5px] text-[#aaa598]">sold</span>
+            <span className="text-[10.5px] text-[#4f5d75]">sold</span>
           </div>
         </div>
-        <div className="flex h-2.5 overflow-hidden rounded-full bg-[#0a4f5a]">
+        <div className="flex h-2.5 overflow-hidden rounded-full bg-[#dff6f5]">
           <span style={{ width: pct(c.online) }} className="bg-gradient-to-r from-[#f2661d] to-[#feb249]" />
           <span style={{ width: pct(c.held) }} className="bg-[#feb249]/40" />
           <span style={{ width: pct(c.counter) }} className="bg-[#5eb1bf]" />
         </div>
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11.5px]">
-          <span className="text-[#53d3d1]">BusHub {c.online}</span>
-          {c.held > 0 && <span className="text-[#53d3d1]/70">Buying now {c.held}</span>}
-          <span className="text-[#86c6d1]">Counter {c.counter}</span>
-          <span className="text-[#3fd0c9]">Free {c.free}</span>
-          <span className="ml-auto text-[#53d3d1]">{open ? 'Hide seats ‹' : 'Seat map ›'}</span>
+          <span className="text-[#0b7f8c]">BusHub {c.online}</span>
+          {c.held > 0 && <span className="text-[#0b7f8c]/70">Buying now {c.held}</span>}
+          <span className="text-[#2d7886]">Counter {c.counter}</span>
+          <span className="text-[#0a8a84]">Free {c.free}</span>
+          <span className="ml-auto text-[#0b7f8c]">{open ? 'Hide seats ‹' : 'Seat map ›'}</span>
         </div>
       </button>
       {open && (
-        <div className="flex flex-col gap-4 border-t border-[#1b4560] bg-black/15 px-4 py-4">
+        <div className="flex flex-col gap-4 border-t border-[#c9d6e4] bg-white/60 px-4 py-4">
           <SeatMap trip={trip} busySeat={busySeat} onTap={trip.departed ? undefined : tap} />
           {bySeller.size > 0 && (
             <div className="flex flex-col gap-1.5">
               <span className="label-xs">Sold at the counter</span>
               {Array.from(bySeller).map(([seller, seats]) => (
                 <div key={seller} className="flex items-start justify-between gap-3 text-[12.5px]">
-                  <span className="font-semibold text-[#a9d8e0]">{seller}</span>
-                  <span className="text-right text-[#dad3c8]">
+                  <span className="font-semibold text-[#2d7886]">{seller}</span>
+                  <span className="text-right text-[#24344f]">
                     {seats.length} · {seats.join(', ')}
                   </span>
                 </div>
@@ -114,20 +114,20 @@ function TripCard({ trip, open, onToggle, onChanged }: { trip: CompanyTrip; open
                 <div key={t.code} className="flex items-start justify-between gap-3 text-[12.5px]">
                   <span className="flex min-w-0 flex-col">
                     <span>
-                      Seats {t.seats.join(', ')} <span className="text-[#959488]">· sold by BusHub</span>
+                      Seats {t.seats.join(', ')} <span className="text-[#5a677d]">· sold by BusHub</span>
                     </span>
-                    <span className="truncate font-mono text-[11px] text-[#959488]">
+                    <span className="truncate font-mono text-[11px] text-[#5a677d]">
                       {t.code}
                       {t.bookedAt ? ` · ${dhakaTime(t.bookedAt)}` : ''}
                     </span>
                   </span>
-                  <span className={`shrink-0 font-semibold ${t.boarded ? 'text-[#3fd0c9]' : 'text-[#b8b2a6]'}`}>{t.boarded ? 'Boarded ✓' : taka(t.payout)}</span>
+                  <span className={`shrink-0 font-semibold ${t.boarded ? 'text-[#0a8a84]' : 'text-[#44526b]'}`}>{t.boarded ? 'Boarded ✓' : taka(t.payout)}</span>
                 </div>
               ))}
             </div>
           )}
           {trip.counterSeats.some((s) => s.soldAt) && (
-            <p className="text-[11px] text-[#88908a]">
+            <p className="text-[11px] text-[#617086]">
               Last counter sale: {dhakaTime(trip.counterSeats.map((s) => s.soldAt || '').sort().pop() || null)}
             </p>
           )}
@@ -193,7 +193,7 @@ export default function ManagerView({ companyName }: { companyName: string }) {
     : null
   const toSign = payments?.invoices.filter((i) => i.status === 'paid').length ?? 0
 
-  if (!data) return <div className="py-16 text-center text-sm text-[#aaa598]">Loading...</div>
+  if (!data) return <div className="py-16 text-center text-sm text-[#4f5d75]">Loading...</div>
 
   return (
     <div className="mt-5 flex flex-col gap-4">
@@ -236,13 +236,13 @@ export default function ManagerView({ companyName }: { companyName: string }) {
                 </option>
               ))}
             </select>
-            <div className="flex gap-1 self-start rounded-full border border-white/10 bg-black/30 p-1">
+            <div className="flex gap-1 self-start rounded-full border border-[#0b2545]/10 bg-white/60 p-1">
               {(['upcoming', 'finished'] as const).map((w) => (
                 <button
                   key={w}
                   type="button"
                   onClick={() => setWhen(w)}
-                  className={`h-9 rounded-full px-4 text-[12.5px] font-bold capitalize ${when === w ? 'bg-[#e3dcd2] text-[#100c0d]' : 'text-[#b8b2a6]'}`}
+                  className={`h-9 rounded-full px-4 text-[12.5px] font-bold capitalize ${when === w ? 'bg-[#0b2545] text-[#ffffff]' : 'text-[#44526b]'}`}
                 >
                   {w}
                 </button>
@@ -266,7 +266,7 @@ export default function ManagerView({ companyName }: { companyName: string }) {
             />
           )}
           {shown.length === 0 && (
-            <p className="glass-lite p-5 text-center text-[13px] text-[#aaa598]">
+            <p className="glass-lite p-5 text-center text-[13px] text-[#4f5d75]">
               {search ? 'No trips match your search.' : when === 'upcoming' ? 'No upcoming trips.' : 'No finished trips in the last 30 days.'}
             </p>
           )}
