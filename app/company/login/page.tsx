@@ -41,7 +41,7 @@ export default function CompanyLogin() {
           <LogoMark className="h-12 w-12" />
           <div>
             <h1 className="display text-xl font-bold">Operator login</h1>
-            <p className="mt-1 text-[12.5px] text-[#4f5d75]">Management, counter and scanner logins</p>
+            <p className="mt-1 text-[12.5px] text-[#4a4a4a]">Management, counter and scanner logins</p>
           </div>
         </div>
 
@@ -72,7 +72,7 @@ export default function CompanyLogin() {
           </button>
         </form>
 
-        <p className="text-center text-[12.5px] text-[#4f5d75]">
+        <p className="text-center text-[12.5px] text-[#4a4a4a]">
           New operator?{' '}
           <button type="button" onClick={() => router.push(companyPath('/company/register'))} className="font-semibold text-[#0b7f8c] hover:underline">
             Register here

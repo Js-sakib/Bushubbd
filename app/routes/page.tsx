@@ -26,21 +26,21 @@ export default async function RoutesIndex() {
         <span className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#0b7f8c]">Bus routes</span>
         <h1 className="text-[32px] font-bold leading-[1.1] sm:text-[42px]">Bus routes across Bangladesh</h1>
         <p className="text-[17px] font-semibold text-[#d6dcdd]">বাংলাদেশের বাস রুট · অনলাইনে টিকেট</p>
-        <p className="max-w-lg text-sm leading-relaxed text-[#44526b]">
+        <p className="max-w-lg text-sm leading-relaxed text-[#3f3f3f]">
           Choose a route to see its buses, fares and seats. Book from home, pay with bKash or Nagad, and get a QR ticket
           on WhatsApp.
         </p>
       </section>
 
       {groups.length === 0 ? (
-        <p className="mt-8 text-sm text-[#44526b]">Routes are being added. Check back soon.</p>
+        <p className="mt-8 text-sm text-[#3f3f3f]">Routes are being added. Check back soon.</p>
       ) : (
         groups.map((group) => (
           <section key={group.city} className="mt-8 flex flex-col gap-3">
             <h2 className="text-[17px] font-bold">
               From {group.city}
               {banglaCity(group.city) && (
-                <span className="ml-2 text-[14px] font-semibold text-[#4f5d75]">{banglaCity(group.city)} থেকে</span>
+                <span className="ml-2 text-[14px] font-semibold text-[#4a4a4a]">{banglaCity(group.city)} থেকে</span>
               )}
             </h2>
             <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-4">
@@ -53,7 +53,7 @@ export default async function RoutesIndex() {
                   <span className="text-sm font-bold">
                     {r.from} → {r.to}
                   </span>
-                  <span className="text-xs text-[#44526b]">
+                  <span className="text-xs text-[#3f3f3f]">
                     {r.minPrice ? `From ৳${r.minPrice.toLocaleString('en-US')}` : 'See buses'}
                   </span>
                 </a>

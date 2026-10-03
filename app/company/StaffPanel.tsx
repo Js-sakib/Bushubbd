@@ -97,12 +97,12 @@ export default function StaffPanel() {
       {shown && (
         <div className="flex flex-col gap-3 rounded-2xl border border-[#3fd0c9]/40 bg-[#3fd0c9]/[0.08] p-4 lg:col-span-2">
           <span className="text-[13.5px] font-bold text-[#0a8a84]">Login ready for {shown.name}</span>
-          <div className="rounded-xl bg-white/60 p-3 font-mono text-[12.5px] leading-relaxed text-[#1b2b45]">
+          <div className="rounded-xl bg-white/60 p-3 font-mono text-[12.5px] leading-relaxed text-[#1b1b1b]">
             Email: {shown.email}
             <br />
             Password: {shown.password}
           </div>
-          <p className="text-[11.5px] text-[#44526b]">Pass these on now. The password is not shown again (you can make a new one any time).</p>
+          <p className="text-[11.5px] text-[#3f3f3f]">Pass these on now. The password is not shown again (you can make a new one any time).</p>
           <div className="flex flex-wrap gap-2">
             <a
               href={`https://wa.me/?text=${encodeURIComponent(loginMessage(shown.name, shown.email, shown.password, shown.role))}`}
@@ -138,11 +138,11 @@ export default function StaffPanel() {
               type="button"
               onClick={() => setForm({ ...form, role })}
               className={`flex flex-col items-start gap-0.5 rounded-2xl border px-3.5 py-2.5 text-left ${
-                form.role === role ? 'border-[#cc8b65] bg-[#feb249]/[0.08]' : 'border-[#0b2545]/10 bg-white/60'
+                form.role === role ? 'border-[#cc8b65] bg-[#feb249]/[0.08]' : 'border-[#111111]/10 bg-white/60'
               }`}
             >
               <span className="text-[13.5px] font-bold">{ROLE_INFO[role].label}</span>
-              <span className="text-[11px] leading-snug text-[#4f5d75]">{ROLE_INFO[role].hint}</span>
+              <span className="text-[11px] leading-snug text-[#4a4a4a]">{ROLE_INFO[role].hint}</span>
             </button>
           ))}
         </div>
@@ -163,19 +163,19 @@ export default function StaffPanel() {
             <SearchBox value={search} onChange={setSearch} placeholder="Search name, email, counter or scanner" />
           </div>
         )}
-        {staff === null && <div className="px-4 py-8 text-center text-sm text-[#4f5d75]">Loading...</div>}
+        {staff === null && <div className="px-4 py-8 text-center text-sm text-[#4a4a4a]">Loading...</div>}
         {staff?.length === 0 && (
-          <div className="px-4 py-8 text-center text-sm text-[#4f5d75]">No staff logins yet. Add one for each counter and each scanner phone.</div>
+          <div className="px-4 py-8 text-center text-sm text-[#4a4a4a]">No staff logins yet. Add one for each counter and each scanner phone.</div>
         )}
         {staff?.filter((row) => matches(search, row.name, row.email, ROLE_INFO[row.role].label, row.status === 'disabled' ? 'off' : 'active')).map((row) => (
           <div key={row._id} className="flex flex-col gap-2.5 border-b border-[#c9d6e4] px-4 py-3 last:border-b-0">
             <div className="flex items-center gap-2.5">
               <div className="flex min-w-0 grow flex-col">
-                <span className={`truncate text-[14px] font-semibold ${row.status === 'disabled' ? 'text-[#617086] line-through' : ''}`}>{row.name}</span>
-                <span className="truncate text-[11.5px] text-[#4f5d75]">{row.email}</span>
+                <span className={`truncate text-[14px] font-semibold ${row.status === 'disabled' ? 'text-[#5e5e5e] line-through' : ''}`}>{row.name}</span>
+                <span className="truncate text-[11.5px] text-[#4a4a4a]">{row.email}</span>
               </div>
               <span className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] font-bold ${ROLE_INFO[row.role].badge}`}>{ROLE_INFO[row.role].label}</span>
-              {row.status === 'disabled' && <span className="shrink-0 rounded-full bg-[#0b2545]/[0.05] px-2.5 py-1 text-[11px] font-bold text-[#44526b]">Off</span>}
+              {row.status === 'disabled' && <span className="shrink-0 rounded-full bg-[#111111]/[0.05] px-2.5 py-1 text-[11px] font-bold text-[#3f3f3f]">Off</span>}
             </div>
             <div className="flex flex-wrap gap-2">
               <button
@@ -184,14 +184,14 @@ export default function StaffPanel() {
                   const json = await patch(row, { resetPassword: true })
                   if (json?.password) setShown({ name: row.name, email: row.email, password: json.password, role: ROLE_INFO[row.role].label })
                 }}
-                className="h-8 rounded-full border border-[#0b2545]/10 bg-[#0b2545]/[0.05] px-3 text-[11.5px] font-bold text-[#0b7f8c]"
+                className="h-8 rounded-full border border-[#111111]/10 bg-[#111111]/[0.05] px-3 text-[11.5px] font-bold text-[#0b7f8c]"
               >
                 New password
               </button>
               <button
                 type="button"
                 onClick={() => patch(row, { status: row.status === 'active' ? 'disabled' : 'active' })}
-                className="h-8 rounded-full border border-[#0b2545]/10 bg-[#0b2545]/[0.05] px-3 text-[11.5px] font-bold text-[#24344f]"
+                className="h-8 rounded-full border border-[#111111]/10 bg-[#111111]/[0.05] px-3 text-[11.5px] font-bold text-[#222222]"
               >
                 {row.status === 'active' ? 'Switch off' : 'Switch on'}
               </button>

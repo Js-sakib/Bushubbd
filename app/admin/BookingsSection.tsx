@@ -108,13 +108,13 @@ export default function BookingsSection({
       <div className="flex flex-col gap-3 px-4 pb-3 pt-4 sm:px-5">
         <div className="flex items-baseline justify-between gap-3">
           <h2 className="display text-[15.5px] font-bold">All bookings</h2>
-          <span className="text-[11.5px] text-[#5a677d]">
+          <span className="text-[11.5px] text-[#555555]">
             {visible.length} of {source.length}
             {!ranged && bookings.length >= 200 ? ' latest' : ''}
           </span>
         </div>
         <div className="relative">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#617086]">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#5e5e5e]">
             <circle cx="11" cy="11" r="7" />
             <path d="m20 20-3.5-3.5" />
           </svg>
@@ -129,13 +129,13 @@ export default function BookingsSection({
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-[auto_minmax(0,1fr)_auto]">
           <div className="col-span-2 flex flex-col gap-1 sm:col-span-1">
             <span className="label-xs">Dates are</span>
-            <div className="flex h-12 gap-1 rounded-[14px] border border-[#0b2545]/10 bg-white/60 p-1">
+            <div className="flex h-12 gap-1 rounded-[14px] border border-[#111111]/10 bg-white/60 p-1">
               {(['travel', 'booked'] as const).map((k) => (
                 <button
                   key={k}
                   type="button"
                   onClick={() => setBy(k)}
-                  className={`grow rounded-[10px] px-3 text-[12px] font-bold ${by === k ? 'bg-[#0b2545] text-[#ffffff]' : 'text-[#44526b]'}`}
+                  className={`grow rounded-[10px] px-3 text-[12px] font-bold ${by === k ? 'bg-[#111111] text-[#ffffff]' : 'text-[#3f3f3f]'}`}
                 >
                   {k === 'travel' ? 'Travel date' : 'Day bought'}
                 </button>
@@ -175,12 +175,12 @@ export default function BookingsSection({
           ))}
         </div>
       </div>
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-[#0b2545]/10 px-4 py-2.5 text-[12px] text-[#44526b] sm:px-5">
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-[#111111]/10 px-4 py-2.5 text-[12px] text-[#3f3f3f] sm:px-5">
         <span>
-          Paid: <b className="text-[#1b2b45]">{taka(sold.reduce((n, b) => n + b.totalPrice, 0))}</b>
+          Paid: <b className="text-[#1b1b1b]">{taka(sold.reduce((n, b) => n + b.totalPrice, 0))}</b>
         </span>
         <span>
-          Seats: <b className="text-[#1b2b45]">{sold.reduce((n, b) => n + b.seats.length, 0)}</b>
+          Seats: <b className="text-[#1b1b1b]">{sold.reduce((n, b) => n + b.seats.length, 0)}</b>
         </span>
         <span>
           BusHub commission: <b className="text-[#0b7f8c]">{taka(sold.reduce((n, b) => n + (b.commissionAmount || 0), 0))}</b>
@@ -194,7 +194,7 @@ export default function BookingsSection({
       {ticked.length > 0 && (
         <div className="sticky top-2 z-20 mx-3 mb-2 flex items-center gap-2 rounded-2xl border border-[#f87171]/30 bg-[#fdeaea]/95 px-4 py-2.5 backdrop-blur">
           <span className="grow text-[13px] font-bold">{ticked.length} selected</span>
-          <button type="button" onClick={() => setSelected(new Set())} className="h-9 rounded-full border border-[#0b2545]/10 px-3.5 text-[12px] font-bold text-[#24344f]">
+          <button type="button" onClick={() => setSelected(new Set())} className="h-9 rounded-full border border-[#111111]/10 px-3.5 text-[12px] font-bold text-[#222222]">
             Clear
           </button>
           <button

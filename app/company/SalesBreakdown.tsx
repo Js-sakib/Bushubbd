@@ -57,19 +57,19 @@ function TripRow({ trip, showBus }: { trip: Trip; showBus: boolean }) {
       <summary className="flex cursor-pointer list-none items-start gap-3 px-4 py-3 marker:hidden">
         <div className="flex min-w-0 grow flex-col gap-0.5">
           {showBus && <span className="truncate text-[13px] font-bold">{trip.busName}</span>}
-          <span className={`flex flex-wrap items-center gap-x-2 gap-y-1 ${showBus ? 'text-[12px] text-[#2f3f5a]' : 'text-[13px] font-semibold'}`}>
+          <span className={`flex flex-wrap items-center gap-x-2 gap-y-1 ${showBus ? 'text-[12px] text-[#2b2b2b]' : 'text-[13px] font-semibold'}`}>
             <span>
               {trip.from} → {trip.to}
             </span>
             <Plate plate={trip.plateNumber} />
           </span>
-          <span className="text-[11.5px] text-[#5a677d]">
+          <span className="text-[11.5px] text-[#555555]">
             {formatTripDate(trip.date)} · {trip.departureTime}
           </span>
         </div>
         <div className="flex shrink-0 flex-col items-end gap-0.5">
           <span className="text-[13px] font-bold text-[#0a8a84]">{taka(trip.payout)}</span>
-          <span className="text-[11px] text-[#44526b]">
+          <span className="text-[11px] text-[#3f3f3f]">
             {trip.seats} seat{trip.seats === 1 ? '' : 's'} · {trip.sold.length} ticket{trip.sold.length === 1 ? '' : 's'}
           </span>
           <span className="text-[10.5px] text-[#0b7f8c] group-open:hidden">Show tickets ›</span>
@@ -80,10 +80,10 @@ function TripRow({ trip, showBus }: { trip: Trip; showBus: boolean }) {
         {[...trip.sold, ...trip.refunded].map((b) => (
           <div key={b._id} className="flex items-center justify-between gap-3 text-[12px]">
             <span className="min-w-0 truncate">
-              Seats {b.seats.join(', ')} <span className="font-mono text-[11px] text-[#5a677d]">· {b.bookingCode}</span>
+              Seats {b.seats.join(', ')} <span className="font-mono text-[11px] text-[#555555]">· {b.bookingCode}</span>
               {b.checkedIn && <span className="text-[#0a8a84]"> · boarded</span>}
             </span>
-            <span className={`shrink-0 font-semibold ${isSold(b) ? 'text-[#24344f]' : 'text-[#d23c3c]'}`}>
+            <span className={`shrink-0 font-semibold ${isSold(b) ? 'text-[#222222]' : 'text-[#d23c3c]'}`}>
               {isSold(b) ? taka(b.companyPayout ?? b.totalPrice) : 'Refunded'}
             </span>
           </div>
@@ -137,19 +137,19 @@ export default function SalesBreakdown({ bookings }: { bookings: SaleBooking[] }
   }, [trips])
 
   if (trips.length === 0) {
-    return <div className="card-2 px-4 py-8 text-center text-sm text-[#4f5d75]">No tickets sold yet.</div>
+    return <div className="card-2 px-4 py-8 text-center text-sm text-[#4a4a4a]">No tickets sold yet.</div>
   }
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="flex gap-1 self-start rounded-full border border-[#0b2545]/10 bg-white/60 p-1">
+      <div className="flex gap-1 self-start rounded-full border border-[#111111]/10 bg-white/60 p-1">
         {(['trip', 'bus'] as const).map((v) => (
           <button
             key={v}
             type="button"
             onClick={() => setView(v)}
             className={`h-9 rounded-full px-4 text-[12.5px] font-bold transition ${
-              view === v ? 'bg-[#0b2545] text-[#ffffff]' : 'text-[#44526b]'
+              view === v ? 'bg-[#111111] text-[#ffffff]' : 'text-[#3f3f3f]'
             }`}
           >
             {v === 'trip' ? 'By trip' : 'By bus'}
@@ -166,10 +166,10 @@ export default function SalesBreakdown({ bookings }: { bookings: SaleBooking[] }
       ) : (
         buses.map((bus) => (
           <div key={bus.busName} className="card-2 overflow-hidden">
-            <div className="flex items-center justify-between gap-3 border-b border-[#c9d6e4] bg-[#0b2545]/[0.05] px-4 py-3">
+            <div className="flex items-center justify-between gap-3 border-b border-[#c9d6e4] bg-[#111111]/[0.05] px-4 py-3">
               <div className="flex min-w-0 flex-col">
                 <span className="truncate text-[14px] font-bold">{bus.busName}</span>
-                <span className="text-[11.5px] text-[#44526b]">
+                <span className="text-[11.5px] text-[#3f3f3f]">
                   {bus.trips.length} trip{bus.trips.length === 1 ? '' : 's'} · {bus.seats} seat{bus.seats === 1 ? '' : 's'} sold
                 </span>
               </div>

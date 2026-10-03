@@ -49,7 +49,7 @@ export default function PayoutsPanel() {
     window.location.href = `/invoice/${json.invoice._id}?as=admin`
   }
 
-  if (!data) return <div className="py-16 text-center text-sm text-[#4f5d75]">Loading...</div>
+  if (!data) return <div className="py-16 text-center text-sm text-[#4a4a4a]">Loading...</div>
 
   const owedNow = data.companies.reduce((n, c) => n + Math.max(0, c.owed.payout + c.invoiced - c.refunds), 0)
   const later = data.companies.reduce((n, c) => n + c.later.payout, 0)
@@ -84,11 +84,11 @@ export default function PayoutsPanel() {
             <div className="flex items-start justify-between gap-3">
               <div className="flex min-w-0 flex-col">
                 <span className="truncate text-[14px] font-bold">{c.name}</span>
-                <span className="text-[11.5px] text-[#44526b]">
+                <span className="text-[11.5px] text-[#3f3f3f]">
                   {c.owed.tickets} ticket{c.owed.tickets === 1 ? '' : 's'} · {c.owed.seats} seats · price {taka(c.owed.ticketTotal)} · commission {taka(c.owed.commission)}
                 </span>
                 {c.invoiced > 0 && <span className="text-[11.5px] text-[#8a6d00]">Already invoiced, not paid: {taka(c.invoiced)}</span>}
-                {c.later.tickets > 0 && <span className="text-[11.5px] text-[#617086]">Later: {taka(c.later.payout)} for trips still to leave</span>}
+                {c.later.tickets > 0 && <span className="text-[11.5px] text-[#5e5e5e]">Later: {taka(c.later.payout)} for trips still to leave</span>}
                 {c.refunds > 0 && <span className="text-[11.5px] text-[#c13b3b]">Refunds to take back: −{taka(c.refunds)} (from the next payment)</span>}
               </div>
               <span className="shrink-0 text-[17px] font-bold text-[#0b7f8c]">{taka(c.owed.payout)}</span>
@@ -100,7 +100,7 @@ export default function PayoutsPanel() {
             )}
           </div>
         ))}
-        {companies.length === 0 && <div className="px-4 py-8 text-center text-sm text-[#4f5d75]">Nothing owed to any company.</div>}
+        {companies.length === 0 && <div className="px-4 py-8 text-center text-sm text-[#4a4a4a]">Nothing owed to any company.</div>}
       </div>
 
       </div>
@@ -110,12 +110,12 @@ export default function PayoutsPanel() {
           <span className="label-xs">Invoices</span>
         </div>
         {invoices.map((i) => (
-          <a key={i._id} href={`/invoice/${i._id}?as=admin`} className="flex items-start gap-3 border-b border-[#c9d6e4] px-4 py-3 last:border-b-0 hover:bg-[#0b2545]/[0.05]">
+          <a key={i._id} href={`/invoice/${i._id}?as=admin`} className="flex items-start gap-3 border-b border-[#c9d6e4] px-4 py-3 last:border-b-0 hover:bg-[#111111]/[0.05]">
             <div className="flex min-w-0 grow flex-col gap-0.5">
               <span className="truncate text-[13.5px] font-bold">
                 <span className="font-mono">{i.number}</span> · {i.companyName}
               </span>
-              <span className="text-[11.5px] text-[#44526b]">
+              <span className="text-[11.5px] text-[#3f3f3f]">
                 {range(i.from, i.to)} · {i.totals.tickets} tickets
               </span>
               <span className={`self-start rounded-full px-2 py-0.5 text-[10.5px] font-bold ${statusOf(i).dark}`}>{statusOf(i).label}</span>
@@ -126,7 +126,7 @@ export default function PayoutsPanel() {
             </div>
           </a>
         ))}
-        {data.invoices.length === 0 && <div className="px-4 py-8 text-center text-sm text-[#4f5d75]">No invoices yet.</div>}
+        {data.invoices.length === 0 && <div className="px-4 py-8 text-center text-sm text-[#4a4a4a]">No invoices yet.</div>}
       </div>
     </div>
   )

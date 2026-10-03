@@ -129,12 +129,12 @@ export default async function RoutePage({ params }: { params: { slug: string } }
       <JsonLd data={breadcrumb} />
       <JsonLd data={faqData} />
 
-      <nav aria-label="Breadcrumb" className="flex flex-wrap items-center gap-1.5 text-[12px] text-[#5a677d]">
+      <nav aria-label="Breadcrumb" className="flex flex-wrap items-center gap-1.5 text-[12px] text-[#555555]">
         <a href="/" className="hover:text-[#0b7f8c]">Home</a>
         <span aria-hidden>›</span>
         <a href="/routes" className="hover:text-[#0b7f8c]">Bus routes</a>
         <span aria-hidden>›</span>
-        <span className="text-[#2f3f5a]">
+        <span className="text-[#2b2b2b]">
           {from} to {to}
         </span>
       </nav>
@@ -145,7 +145,7 @@ export default async function RoutePage({ params }: { params: { slug: string } }
           {from} to {to} bus tickets
         </h1>
         {bn && <p className="text-[17px] font-semibold text-[#d6dcdd]">{bn}</p>}
-        <p className="max-w-lg text-sm leading-relaxed text-[#44526b]">
+        <p className="max-w-lg text-sm leading-relaxed text-[#3f3f3f]">
           Book your {from} to {to} bus ticket from home. Compare buses, pick your seat on the live seat map, pay with
           bKash or Nagad and get a QR ticket on WhatsApp. No counter, no line, no serial.
         </p>
@@ -191,7 +191,7 @@ export default async function RoutePage({ params }: { params: { slug: string } }
         </h2>
         {trips.length === 0 ? (
           <div className="flex flex-col gap-2 glass-lite p-4">
-            <p className="text-[13px] leading-relaxed text-[#2f3f5a]">
+            <p className="text-[13px] leading-relaxed text-[#2b2b2b]">
               No trips are on sale for this route right now. New buses are added often, so check again soon, or message
               us and we will tell you when seats open.
             </p>
@@ -209,18 +209,18 @@ export default async function RoutePage({ params }: { params: { slug: string } }
                 >
                   <div className="flex min-w-0 flex-col gap-1">
                     <span className="truncate text-sm font-bold">{trip.busName}</span>
-                    <span className="text-[12px] text-[#44526b]">
+                    <span className="text-[12px] text-[#3f3f3f]">
                       {trip.companyName}
                       {trip.busType ? ` · ${trip.busType}` : ''}
                     </span>
-                    <span className="text-[12px] text-[#2f3f5a]">
+                    <span className="text-[12px] text-[#2b2b2b]">
                       {formatTripDate(trip.date)} · {clock(trip.departureTime)}
                       {trip.arrivalTime ? ` → ${clock(trip.arrivalTime)}` : ''}
                     </span>
                   </div>
                   <div className="flex shrink-0 flex-col items-end gap-1">
                     <span className="text-base font-bold text-[#0b7f8c]">{taka(trip.price)}</span>
-                    <span className={`text-[11.5px] ${trip.seatsLeft > 0 ? 'text-[#0f8f80]' : 'text-[#5a677d]'}`}>
+                    <span className={`text-[11.5px] ${trip.seatsLeft > 0 ? 'text-[#0f8f80]' : 'text-[#555555]'}`}>
                       {trip.seatsLeft > 0 ? `${trip.seatsLeft} seats left` : 'Sold out'}
                     </span>
                   </div>
@@ -244,7 +244,7 @@ export default async function RoutePage({ params }: { params: { slug: string } }
                 {i + 1}
               </span>
               <span className="text-sm font-bold">{step.t}</span>
-              <span className="text-[12.5px] leading-relaxed text-[#44526b]">{step.b}</span>
+              <span className="text-[12.5px] leading-relaxed text-[#3f3f3f]">{step.b}</span>
             </li>
           ))}
         </ol>
@@ -261,7 +261,7 @@ export default async function RoutePage({ params }: { params: { slug: string } }
                   <span aria-hidden className="text-[#0b7f8c] transition group-open:rotate-45">+</span>
                 </span>
               </summary>
-              <p className="mt-2 text-[12.5px] leading-relaxed text-[#44526b]">{f.a}</p>
+              <p className="mt-2 text-[12.5px] leading-relaxed text-[#3f3f3f]">{f.a}</p>
             </details>
           ))}
         </div>
@@ -280,7 +280,7 @@ export default async function RoutePage({ params }: { params: { slug: string } }
                 <span className="text-sm font-bold">
                   {r.from} → {r.to}
                 </span>
-                <span className="text-xs text-[#44526b]">{r.minPrice ? `From ${taka(r.minPrice)}` : 'See buses'}</span>
+                <span className="text-xs text-[#3f3f3f]">{r.minPrice ? `From ${taka(r.minPrice)}` : 'See buses'}</span>
               </a>
             ))}
           </div>

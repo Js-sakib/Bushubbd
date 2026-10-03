@@ -182,7 +182,7 @@ function ConfirmationContent() {
   }
 
   if (loading) {
-    return <div className="py-16 text-center text-sm text-[#4f5d75]">Loading your ticket...</div>
+    return <div className="py-16 text-center text-sm text-[#4a4a4a]">Loading your ticket...</div>
   }
 
   if (error || !booking) {
@@ -190,7 +190,7 @@ function ConfirmationContent() {
       <div className="px-5 py-16">
         <div className="card mx-auto flex max-w-sm flex-col items-center gap-4 p-8 text-center">
           <h1 className="text-xl font-bold text-[#d23c3c]">Booking not found</h1>
-          <p className="text-[13px] text-[#44526b]">{error}</p>
+          <p className="text-[13px] text-[#3f3f3f]">{error}</p>
           <a href="/" className="glass-btn glass-btn-plain h-11 text-sm">
             Back to home
           </a>
@@ -235,7 +235,7 @@ function ConfirmationContent() {
             Valid {remaining}
           </span>
         ) : (
-          <span className="inline-flex h-[30px] items-center rounded-full bg-[#0b2545]/[0.05] px-3 text-xs font-bold text-[#24344f]">
+          <span className="inline-flex h-[30px] items-center rounded-full bg-[#111111]/[0.05] px-3 text-xs font-bold text-[#222222]">
             Expired
           </span>
         )}
@@ -313,7 +313,7 @@ function ConfirmationContent() {
           </button>
         </div>
 
-        <p className="text-center text-[11.5px] leading-snug text-[#5a677d]">
+        <p className="text-center text-[11.5px] leading-snug text-[#555555]">
           Keep the PDF or image on your phone so you can board without internet.
         </p>
 
@@ -333,7 +333,7 @@ function ConfirmationContent() {
           </button>
         )}
         {paid && booking.status !== 'refunded' && (
-          <p className="text-center text-[11px] leading-snug text-[#5a677d]">
+          <p className="text-center text-[11px] leading-snug text-[#555555]">
             The story picture shows your trip only. The QR code and ticket number stay private.
           </p>
         )}
@@ -350,7 +350,7 @@ function ConfirmationContent() {
             </span>
             <div className="flex flex-col gap-0.5">
               <span className="text-sm font-bold">One leg to go</span>
-              <span className="text-[12px] leading-snug text-[#34445f]">
+              <span className="text-[12px] leading-snug text-[#303030]">
                 Your return from {booking.to} is still waiting. Pick those seats now.
               </span>
             </div>
@@ -379,7 +379,7 @@ function ConfirmationContent() {
 
 export default function Confirmation() {
   return (
-    <Suspense fallback={<div className="py-16 text-center text-sm text-[#4f5d75]">Loading...</div>}>
+    <Suspense fallback={<div className="py-16 text-center text-sm text-[#4a4a4a]">Loading...</div>}>
       <ConfirmationContent />
     </Suspense>
   )

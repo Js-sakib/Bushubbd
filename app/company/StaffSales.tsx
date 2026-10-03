@@ -71,13 +71,13 @@ export default function StaffSales({ trips, period }: { trips: CompanyTrip[]; pe
     <div className="card-2 overflow-hidden">
       <div className="flex flex-col gap-0.5 border-b border-[#c9d6e4] px-4 py-3">
         <span className="label-xs">Who sold seats</span>
-        <span className="text-[11px] text-[#617086]">{period}</span>
+        <span className="text-[11px] text-[#5e5e5e]">{period}</span>
       </div>
 
       <div className="flex flex-col gap-2.5 border-b border-[#c9d6e4] px-4 py-3.5">
         <div className="flex items-end justify-between gap-3">
-          <span className="text-[13px] text-[#24344f]">
-            <span className="display text-[22px] font-bold text-[#0b2545]">{sold}</span> of {totalSeats} seats sold
+          <span className="text-[13px] text-[#222222]">
+            <span className="display text-[22px] font-bold text-[#111111]">{sold}</span> of {totalSeats} seats sold
           </span>
           <span className="text-[12px] font-semibold text-[#0a8a84]">{notSold} not sold</span>
         </div>
@@ -90,7 +90,7 @@ export default function StaffSales({ trips, period }: { trips: CompanyTrip[]; pe
       <div className="flex items-center gap-3 border-b border-[#c9d6e4] px-4 py-3">
         <div className="flex min-w-0 grow flex-col">
           <span className="text-[13.5px] font-semibold text-[#0b7f8c]">BusHub online</span>
-          <span className="text-[11.5px] text-[#5a677d]">Tickets bought on bushubbd.com · {taka(onlineMoney)}</span>
+          <span className="text-[11.5px] text-[#555555]">Tickets bought on bushubbd.com · {taka(onlineMoney)}</span>
         </div>
         <span className="display shrink-0 text-[20px] font-bold">{online}</span>
       </div>
@@ -98,7 +98,7 @@ export default function StaffSales({ trips, period }: { trips: CompanyTrip[]; pe
       <div className="flex items-center gap-3 border-b border-[#c9d6e4] px-4 py-3">
         <div className="flex min-w-0 grow flex-col">
           <span className="text-[13.5px] font-semibold text-[#2d7886]">Counter total</span>
-          <span className="text-[11.5px] text-[#5a677d]">
+          <span className="text-[11.5px] text-[#555555]">
             All counters · {taka(counterMoney)} · {counterToday} today
           </span>
         </div>
@@ -108,13 +108,13 @@ export default function StaffSales({ trips, period }: { trips: CompanyTrip[]; pe
       <div className="flex items-center gap-3 border-b border-[#c9d6e4] px-4 py-3">
         <div className="flex min-w-0 grow flex-col">
           <span className="text-[13.5px] font-semibold text-[#0a8a84]">Not sold</span>
-          <span className="text-[11.5px] text-[#5a677d]">Empty seats on these trips</span>
+          <span className="text-[11.5px] text-[#555555]">Empty seats on these trips</span>
         </div>
         <span className="display shrink-0 text-[20px] font-bold">{notSold}</span>
       </div>
 
       {sellers.length > 0 && (
-        <div className="border-b border-[#c9d6e4] bg-[#0b2545]/[0.05] px-4 py-2">
+        <div className="border-b border-[#c9d6e4] bg-[#111111]/[0.05] px-4 py-2">
           <span className="label-xs">Each counter</span>
         </div>
       )}
@@ -124,7 +124,7 @@ export default function StaffSales({ trips, period }: { trips: CompanyTrip[]; pe
           <summary className="flex cursor-pointer list-none items-center gap-3 px-4 py-3 marker:hidden">
             <div className="flex min-w-0 grow flex-col">
               <span className="truncate text-[13.5px] font-semibold text-[#2d7886]">{s.name}</span>
-              <span className="text-[11.5px] text-[#5a677d]">
+              <span className="text-[11.5px] text-[#555555]">
                 {s.seats} seat{s.seats === 1 ? '' : 's'} · {taka(s.value)} at ticket price
               </span>
               <span className="text-[10.5px] text-[#0b7f8c] group-open:hidden">Show trips ›</span>
@@ -132,7 +132,7 @@ export default function StaffSales({ trips, period }: { trips: CompanyTrip[]; pe
             </div>
             <div className="flex shrink-0 flex-col items-end">
               <span className="display text-[20px] font-bold leading-none text-[#2d7886]">{s.today}</span>
-              <span className="text-[10.5px] text-[#4f5d75]">today</span>
+              <span className="text-[10.5px] text-[#4a4a4a]">today</span>
             </div>
           </summary>
           <div className="flex flex-col gap-1.5 bg-white/60 px-4 pb-3 pt-1">
@@ -140,12 +140,12 @@ export default function StaffSales({ trips, period }: { trips: CompanyTrip[]; pe
               <div key={trip._id} className="flex items-start justify-between gap-3 text-[12px]">
                 <span className="min-w-0">
                   {trip.from} → {trip.to} <Plate plate={trip.plateNumber} className="mx-0.5 align-middle" />
-                  <span className="text-[#5a677d]">
+                  <span className="text-[#555555]">
                     {' '}
                     · {formatTripDate(trip.date)} · {trip.departureTime} · {trip.busName}
                   </span>
                 </span>
-                <span className="max-w-[45%] shrink-0 text-right font-semibold text-[#24344f]">
+                <span className="max-w-[45%] shrink-0 text-right font-semibold text-[#222222]">
                   {seats.length} · {seats.join(', ')}
                 </span>
               </div>
@@ -155,7 +155,7 @@ export default function StaffSales({ trips, period }: { trips: CompanyTrip[]; pe
       ))}
 
       {sellers.length === 0 && (
-        <div className="px-4 py-6 text-center text-sm text-[#4f5d75]">No seats sold at the counter yet.</div>
+        <div className="px-4 py-6 text-center text-sm text-[#4a4a4a]">No seats sold at the counter yet.</div>
       )}
     </div>
   )

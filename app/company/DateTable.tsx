@@ -27,13 +27,13 @@ const COLUMNS: { label: string; tone?: string; value: (m: ReturnType<typeof addM
 export default function DateTable({ trips }: { trips: CompanyTrip[] }) {
   const rows = moneyByDateAndBus(trips)
   const total = addMoney(rows.map((r) => r.m))
-  if (rows.length === 0) return <div className="card-2 px-4 py-8 text-center text-sm text-[#4f5d75]">No trips here.</div>
+  if (rows.length === 0) return <div className="card-2 px-4 py-8 text-center text-sm text-[#4a4a4a]">No trips here.</div>
   const days = Array.from(new Set(rows.map((r) => r.date))).sort().reverse()
 
   const cells = (m: typeof total, n: number) => (
     <>
       {COLUMNS.map((c) => (
-        <td key={c.label} className={`whitespace-nowrap px-2.5 py-2.5 text-right text-[12.5px] tabular-nums ${c.tone || 'text-[#24344f]'}`}>
+        <td key={c.label} className={`whitespace-nowrap px-2.5 py-2.5 text-right text-[12.5px] tabular-nums ${c.tone || 'text-[#222222]'}`}>
           {c.value(m, n)}
         </td>
       ))}
@@ -41,10 +41,10 @@ export default function DateTable({ trips }: { trips: CompanyTrip[] }) {
     </>
   )
   const sumRow = (key: string, label: string, sub: string, list: DayBusMoney[], strong: boolean) => (
-    <tr key={key} className={`border-t border-[#c9d6e4] font-bold ${strong ? 'bg-[#feb249]/[0.08]' : 'bg-[#0b2545]/[0.05]'}`}>
+    <tr key={key} className={`border-t border-[#c9d6e4] font-bold ${strong ? 'bg-[#feb249]/[0.08]' : 'bg-[#111111]/[0.05]'}`}>
       <th scope="row" className={`sticky left-0 z-10 px-3 py-2.5 text-left ${strong ? 'bg-[#f6efe6]' : 'bg-[#eef3f8]'}`}>
         <span className="block whitespace-nowrap text-[12.5px]">{label}</span>
-        <span className="block whitespace-nowrap text-[10.5px] font-normal text-[#4f5d75]">{sub}</span>
+        <span className="block whitespace-nowrap text-[10.5px] font-normal text-[#4a4a4a]">{sub}</span>
       </th>
       {cells(addMoney(list.map((r) => r.m)), list.reduce((n, r) => n + r.trips, 0))}
     </tr>
@@ -54,12 +54,12 @@ export default function DateTable({ trips }: { trips: CompanyTrip[] }) {
     <div className="card-2 overflow-hidden">
       <div className="flex flex-col gap-0.5 border-b border-[#c9d6e4] px-4 py-3">
         <span className="label-xs">Date by date · bus by bus</span>
-        <span className="text-[11px] text-[#617086]">Each day&apos;s sales, BusHub money and costs for every bus. Slide sideways for every column.</span>
+        <span className="text-[11px] text-[#5e5e5e]">Each day&apos;s sales, BusHub money and costs for every bus. Slide sideways for every column.</span>
       </div>
       <div className="overflow-x-auto">
         <table className="w-full min-w-[1000px] border-collapse">
           <thead>
-            <tr className="text-[10px] font-bold uppercase tracking-[0.08em] text-[#617086]">
+            <tr className="text-[10px] font-bold uppercase tracking-[0.08em] text-[#5e5e5e]">
               <th className="sticky left-0 z-10 bg-[#f3f6fa] px-3 py-2.5 text-left">Date · bus</th>
               {COLUMNS.map((c) => (
                 <th key={c.label} className="px-2.5 py-2.5 text-right leading-tight">
@@ -77,12 +77,12 @@ export default function DateTable({ trips }: { trips: CompanyTrip[] }) {
                 ...dayRows.map((r) => (
                   <tr key={`${date}|${r.plateNumber}|${r.busName}`} className="border-t border-[#c9d6e4]">
                     <th scope="row" className="sticky left-0 z-10 bg-[#f3f6fa] px-3 py-2 text-left font-normal">
-                      <span className="block whitespace-nowrap text-[11px] text-[#4f5d75]">
+                      <span className="block whitespace-nowrap text-[11px] text-[#4a4a4a]">
                         {rest.join(' ')} · {day}
                       </span>
                       <span className="mt-0.5 flex items-center gap-1.5">
                         <Plate plate={r.plateNumber} />
-                        <span className="max-w-[140px] truncate text-[12px] font-semibold text-[#16263f]">{r.busName}</span>
+                        <span className="max-w-[140px] truncate text-[12px] font-semibold text-[#161616]">{r.busName}</span>
                       </span>
                     </th>
                     {cells(r.m, r.trips)}

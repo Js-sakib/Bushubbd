@@ -88,7 +88,7 @@ export default function HomeClient() {
           <br />
           one tap away.
         </h1>
-        <p className="max-w-md text-sm leading-relaxed text-[#44526b]">
+        <p className="max-w-md text-sm leading-relaxed text-[#3f3f3f]">
           Buy bus tickets online in Bangladesh: live seat availability, payment with bKash or Nagad, and a QR
           ticket on WhatsApp the moment you pay.
         </p>
@@ -101,7 +101,7 @@ export default function HomeClient() {
         <div
           role="radiogroup"
           aria-label="Trip type"
-          className="flex gap-1 rounded-full border border-[#0b2545]/10 bg-white/60 p-1"
+          className="flex gap-1 rounded-full border border-[#111111]/10 bg-white/60 p-1"
         >
           {(
             [
@@ -118,7 +118,7 @@ export default function HomeClient() {
               className={`h-10 grow rounded-full text-[13px] font-bold transition ${
                 trip === option.key
                   ? 'bg-gradient-to-br from-[#f2661d] to-[#feb249] text-[#170b02] shadow-[0_6px_16px_rgba(242,102,29,0.32)]'
-                  : 'text-[#44526b] hover:text-[#e8eef0]'
+                  : 'text-[#3f3f3f] hover:text-[#e8eef0]'
               }`}
             >
               {option.label}
@@ -159,7 +159,7 @@ export default function HomeClient() {
             type="button"
             onClick={handleSwap}
             aria-label="Swap origin and destination"
-            className="h-11 w-11 shrink-0 self-center rounded-full border border-[#0b2545]/10 bg-[#0b2545]/[0.05] text-[#0b7f8c] transition hover:border-[#cc8b65]"
+            className="h-11 w-11 shrink-0 self-center rounded-full border border-[#111111]/10 bg-[#111111]/[0.05] text-[#0b7f8c] transition hover:border-[#cc8b65]"
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mx-auto h-[19px] w-[19px]">
               <path d="M7 4v16" />
@@ -237,7 +237,7 @@ export default function HomeClient() {
                 <span className="text-sm font-bold">
                   {route.from} → {route.to}
                 </span>
-                <span className="text-xs text-[#44526b]">See today&apos;s buses</span>
+                <span className="text-xs text-[#3f3f3f]">See today&apos;s buses</span>
               </button>
             ))}
           </div>
@@ -256,7 +256,7 @@ export default function HomeClient() {
           </span>
           <div className="flex flex-col gap-1">
             <span className="text-sm font-bold">A ticket that can&apos;t be faked</span>
-            <span className="text-[12.5px] leading-relaxed text-[#44526b]">
+            <span className="text-[12.5px] leading-relaxed text-[#3f3f3f]">
               The conductor scans your QR and checks it live against our database. A screenshot won&apos;t pass.
             </span>
           </div>
@@ -271,7 +271,7 @@ export default function HomeClient() {
           </span>
           <div className="flex flex-col gap-1">
             <span className="text-sm font-bold">Seats held for 10 minutes</span>
-            <span className="text-[12.5px] leading-relaxed text-[#44526b]">
+            <span className="text-[12.5px] leading-relaxed text-[#3f3f3f]">
               Your seat is locked while you pay, then released automatically if you change your mind.
             </span>
           </div>
@@ -287,7 +287,7 @@ export default function HomeClient() {
           </span>
           <div className="flex flex-col gap-1">
             <span className="text-sm font-bold">bKash, Nagad, no account</span>
-            <span className="text-[12.5px] leading-relaxed text-[#44526b]">
+            <span className="text-[12.5px] leading-relaxed text-[#3f3f3f]">
               Pay the way you already pay. You never have to create a BusHub account to book.
             </span>
           </div>
@@ -302,7 +302,7 @@ export default function HomeClient() {
         </span>
         <div className="flex grow flex-col gap-1">
           <span className="text-sm font-bold">Book on WhatsApp</span>
-          <span className="text-[12.5px] leading-snug text-[#34445f]">
+          <span className="text-[12.5px] leading-snug text-[#303030]">
             Say &ldquo;hi&rdquo; to our bot and it finds your bus in seconds.
           </span>
         </div>

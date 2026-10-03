@@ -54,7 +54,7 @@ function dhakaTime(iso: string): string {
 function Row({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="flex items-start justify-between gap-3">
-      <span className="shrink-0 text-[12px] text-[#4f5d75]">{label}</span>
+      <span className="shrink-0 text-[12px] text-[#4a4a4a]">{label}</span>
       <span className="text-right text-[13.5px] font-semibold">{children}</span>
     </div>
   )
@@ -86,7 +86,7 @@ export default function ScanResultCard({ scan }: { scan: ScanResponse }) {
         </span>
         <div className="flex flex-col gap-0.5">
           <span className={`display text-[22px] font-bold leading-tight ${tone.text}`}>{verdict.title}</span>
-          <span className="text-[12.5px] leading-snug text-[#24344f]">{verdict.detail}</span>
+          <span className="text-[12.5px] leading-snug text-[#222222]">{verdict.detail}</span>
         </div>
       </div>
 
@@ -117,7 +117,7 @@ export default function ScanResultCard({ scan }: { scan: ScanResponse }) {
           </Row>
           <Row label="Time">{ticket.departureTime}</Row>
           <Row label="Seats">
-            {ticket.seats.join(', ')} <span className="text-[#4f5d75]">({passengers})</span>
+            {ticket.seats.join(', ')} <span className="text-[#4a4a4a]">({passengers})</span>
           </Row>
           {typeof ticket.bags === 'number' && (
             <Row label="Bags">{ticket.bags === 0 ? 'None' : `${ticket.bags} bag${ticket.bags === 1 ? '' : 's'}`}</Row>
@@ -131,8 +131,8 @@ export default function ScanResultCard({ scan }: { scan: ScanResponse }) {
       )}
 
       {!ticket && scan.bookingCode && (
-        <p className="text-center text-[12px] text-[#4f5d75]">
-          Code scanned: <span className="display font-bold text-[#24344f]">{scan.bookingCode}</span>
+        <p className="text-center text-[12px] text-[#4a4a4a]">
+          Code scanned: <span className="display font-bold text-[#222222]">{scan.bookingCode}</span>
         </p>
       )}
     </div>

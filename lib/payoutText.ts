@@ -11,7 +11,7 @@ export const STATUS_TEXT: Record<PayoutStatus, { label: string; dark: string; li
   paid: { label: 'Paid · waiting for the company to sign', dark: 'bg-[#60a5fa]/[0.15] text-[#2563eb]', light: 'bg-blue-100 text-blue-800' },
   confirmed: { label: 'Paid and signed', dark: 'bg-[#3fd0c9]/[0.14] text-[#0a8a84]', light: 'bg-emerald-100 text-emerald-800' },
   disputed: { label: 'Problem reported', dark: 'bg-[#f87171]/[0.14] text-[#c13b3b]', light: 'bg-red-100 text-red-800' },
-  cancelled: { label: 'Cancelled', dark: 'bg-[#0b2545]/[0.05] text-[#44526b]', light: 'bg-gray-100 text-gray-600' },
+  cancelled: { label: 'Cancelled', dark: 'bg-[#111111]/[0.05] text-[#3f3f3f]', light: 'bg-gray-100 text-gray-600' },
 }
 
 export interface PayoutTotalsView {
