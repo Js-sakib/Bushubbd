@@ -5,6 +5,8 @@ import toast from 'react-hot-toast'
 import { whatsappNumber } from '@/lib/phone'
 import PasswordInput from '../PasswordInput'
 import type { CompanyPrefill, CompanyRow } from './types'
+import SearchBox from '../SearchBox'
+import { matches } from '@/lib/search'
 
 /** A password to pass on once: after a reset, or for a company the admin just added (isNew). */
 type NewLogin = { name: string; email: string; phone: string; password: string; isNew?: boolean }
@@ -118,11 +120,12 @@ export default function CompaniesSection({
     onPrefillUsed?.()
   }, [prefill, onPrefillUsed])
 
+  const [search, setSearch] = useState('')
   // Operators waiting on a new password go to the top of the list.
-  const rows = [...companies].sort(
+  const rows = [...companies].filter((c) => matches(search, c.name, c.ownerName, c.email, c.phone, c.status)).sort(
     (a, b) => Number(Boolean(b.passwordResetRequestedAt)) - Number(Boolean(a.passwordResetRequestedAt))
   )
-  const waiting = rows.filter((c) => c.passwordResetRequestedAt)
+  const waiting = companies.filter((c) => c.passwordResetRequestedAt)
 
   const setStatus = async (id: string, status: string) => {
     const res = await fetch(`/api/companies/${id}`, {
@@ -339,6 +342,11 @@ export default function CompaniesSection({
           <h2 className="display text-[15.5px] font-bold">Bus companies</h2>
           <span className="text-[11.5px] text-[#78868a]">{companies.length} registered</span>
         </div>
+        {companies.length > 3 && (
+          <div className="px-5 pb-3">
+            <SearchBox value={search} onChange={setSearch} placeholder="Search company, person, email, phone" />
+          </div>
+        )}
         {companies.length === 0 && <p className="px-5 pb-8 pt-4 text-center text-sm text-[#8e9a9d]">No companies registered yet.</p>}
         <ul className="flex flex-col">
           {rows.map((c) => (

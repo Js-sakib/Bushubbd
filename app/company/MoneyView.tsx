@@ -7,7 +7,9 @@ import CostEditor from './CostEditor'
 import MoneyCard, { Line } from './MoneyCard'
 import SalesBreakdown, { type SaleBooking } from './SalesBreakdown'
 import StaffSales from './StaffSales'
-import { busLabel, companyTripMoney, type CompanyTrip, type FleetOption } from './types'
+import { busLabel, companyTripMoney, tripSearchText, type CompanyTrip, type FleetOption } from './types'
+import SearchBox from '../SearchBox'
+import { matches } from '@/lib/search'
 import Plate from '../Plate'
 
 const PERIODS = [
@@ -80,18 +82,23 @@ export default function MoneyView({
 }) {
   const [busId, setBusId] = useState('')
   const [period, setPeriod] = useState<Period>('all')
+  const [search, setSearch] = useState('')
 
   const shown = useMemo(() => {
     const list = trips.filter(
-      (t) => (!busId || t.fleetId === busId) && (period === 'all' || (period === 'finished' ? t.departed : !t.departed))
+      (t) =>
+        (!busId || t.fleetId === busId) &&
+        (period === 'all' || (period === 'finished' ? t.departed : !t.departed)) &&
+        matches(search, tripSearchText(t), (t.costs || []).map((c) => [c.note, c.addedBy]))
     )
     // Newest first, except trips still to come, which read soonest first.
     return period === 'upcoming' ? list : [...list].reverse()
-  }, [trips, busId, period])
+  }, [trips, busId, period, search])
   const total = useMemo(() => addMoney(shown.map(companyTripMoney)), [shown])
 
   return (
     <div className="flex flex-col gap-3">
+      <SearchBox value={search} onChange={setSearch} placeholder="Search route, number plate, bus, date, counter" />
       <div className="flex flex-col gap-2 sm:flex-row">
         <select value={busId} onChange={(e) => setBusId(e.target.value)} className="input-dark sm:grow" aria-label="Bus">
           <option value="">All buses</option>

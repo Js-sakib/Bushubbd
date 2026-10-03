@@ -1,6 +1,9 @@
 'use client'
 
+import { useState } from 'react'
 import { formatTripDate } from '@/lib/dates'
+import { matches } from '@/lib/search'
+import SearchBox from '../SearchBox'
 import { statusOf, type InvoiceSummaryView, type PayoutTotalsView } from '@/lib/payoutText'
 import { taka } from '@/lib/tripMoney'
 
@@ -19,6 +22,7 @@ const range = (from: string, to: string) => (from === to ? formatTripDate(from) 
  * tickets. A paid invoice waits for the manager to check the money arrived and sign it.
  */
 export default function PaymentsPanel({ data }: { data: PaymentsData | null }) {
+  const [search, setSearch] = useState('')
   if (!data) return <div className="py-16 text-center text-sm text-[#8e9a9d]">Loading...</div>
   const toSign = data.invoices.filter((i) => i.status === 'paid')
   const toApprove = data.invoices.filter((i) => i.status === 'unpaid' && !i.approval)
@@ -86,7 +90,14 @@ export default function PaymentsPanel({ data }: { data: PaymentsData | null }) {
         <div className="border-b border-[#1a2123] px-4 py-3">
           <span className="label-xs">Invoices from BusHub</span>
         </div>
-        {data.invoices.map((i) => (
+        {data.invoices.length > 3 && (
+          <div className="border-b border-[#1a2123] px-3 py-2.5">
+            <SearchBox value={search} onChange={setSearch} placeholder="Search invoice number, date, status" />
+          </div>
+        )}
+        {data.invoices
+          .filter((i) => matches(search, i.number, i.from, i.to, formatTripDate(i.from), formatTripDate(i.to), statusOf(i).label, i.totals.payout))
+          .map((i) => (
           <a key={i._id} href={`/invoice/${i._id}`} className="flex items-start gap-3 border-b border-[#1a2123] px-4 py-3 last:border-b-0 hover:bg-white/[0.03]">
             <div className="flex min-w-0 grow flex-col gap-0.5">
               <span className="font-mono text-[13px] font-bold">{i.number}</span>

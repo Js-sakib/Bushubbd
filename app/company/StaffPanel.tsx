@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import toast from 'react-hot-toast'
+import { matches } from '@/lib/search'
+import SearchBox from '../SearchBox'
 import { SITE_URL } from '@/lib/site'
 
 interface StaffRow {
@@ -31,6 +33,7 @@ function loginMessage(name: string, email: string, password: string, role: strin
  */
 export default function StaffPanel() {
   const [staff, setStaff] = useState<StaffRow[] | null>(null)
+  const [search, setSearch] = useState('')
   const [form, setForm] = useState(EMPTY)
   const [busy, setBusy] = useState(false)
   const [shown, setShown] = useState<{ name: string; email: string; password: string; role: string } | null>(null)
@@ -155,11 +158,16 @@ export default function StaffPanel() {
         <div className="border-b border-[#1a2123] px-4 py-3">
           <span className="label-xs">Staff logins</span>
         </div>
+        {(staff?.length || 0) > 4 && (
+          <div className="border-b border-[#1a2123] px-3 py-2.5">
+            <SearchBox value={search} onChange={setSearch} placeholder="Search name, email, counter or scanner" />
+          </div>
+        )}
         {staff === null && <div className="px-4 py-8 text-center text-sm text-[#8e9a9d]">Loading...</div>}
         {staff?.length === 0 && (
           <div className="px-4 py-8 text-center text-sm text-[#8e9a9d]">No staff logins yet. Add one for each counter and each scanner phone.</div>
         )}
-        {staff?.map((row) => (
+        {staff?.filter((row) => matches(search, row.name, row.email, ROLE_INFO[row.role].label, row.status === 'disabled' ? 'off' : 'active')).map((row) => (
           <div key={row._id} className="flex flex-col gap-2.5 border-b border-[#1a2123] px-4 py-3 last:border-b-0">
             <div className="flex items-center gap-2.5">
               <div className="flex min-w-0 grow flex-col">

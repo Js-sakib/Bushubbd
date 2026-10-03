@@ -1,7 +1,10 @@
 'use client'
 
 import { formatTripDate } from '@/lib/dates'
-import { busLabel, tripCounts, type CompanyTrip, type FleetOption } from './types'
+import { useState } from 'react'
+import { busLabel, tripCounts, tripSearchText, type CompanyTrip, type FleetOption } from './types'
+import SearchBox from '../SearchBox'
+import { matches } from '@/lib/search'
 import Plate from '../Plate'
 
 /** Bus drop-down, then the trips of that bus as cards to pick from. */
@@ -20,9 +23,11 @@ export default function TripPicker({
   tripId: string | null
   onTrip: (id: string) => void
 }) {
-  const shown = trips.filter((t) => !busId || t.fleetId === busId)
+  const [search, setSearch] = useState('')
+  const shown = trips.filter((t) => (!busId || t.fleetId === busId) && matches(search, tripSearchText(t)))
   return (
     <div className="flex flex-col gap-3">
+      <SearchBox value={search} onChange={setSearch} placeholder="Search route, number plate, time, date" />
       <select value={busId} onChange={(e) => onBus(e.target.value)} className="input-dark" aria-label="Bus">
         <option value="">All buses</option>
         {fleet.map((f) => (
@@ -31,7 +36,7 @@ export default function TripPicker({
           </option>
         ))}
       </select>
-      {shown.length === 0 && <p className="glass-lite p-4 text-center text-[13px] text-[#8e9a9d]">No upcoming trips for this bus.</p>}
+      {shown.length === 0 && <p className="glass-lite p-4 text-center text-[13px] text-[#8e9a9d]">{search ? 'No trips match your search.' : 'No upcoming trips for this bus.'}</p>}
       <div className="flex flex-col gap-2">
         {shown.map((t) => {
           const c = tripCounts(t)

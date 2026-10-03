@@ -11,7 +11,9 @@ import SeatMap, { type SeatKind } from './SeatMap'
 import StaffPanel from './StaffPanel'
 import TripForm from './TripForm'
 import { changeSeat, useTrips } from './useTrips'
-import { busLabel, tripCounts, type CompanyTrip } from './types'
+import { busLabel, tripCounts, tripSearchText, type CompanyTrip } from './types'
+import SearchBox from '../SearchBox'
+import { matches } from '@/lib/search'
 import Plate from '../Plate'
 
 const TABS = [
@@ -143,6 +145,7 @@ export default function ManagerView() {
   const { data, reload } = useTrips()
   const [tab, setTab] = useState<(typeof TABS)[number][0]>('trips')
   const [busId, setBusId] = useState('')
+  const [search, setSearch] = useState('')
   const [when, setWhen] = useState<'upcoming' | 'finished'>('upcoming')
   const [open, setOpen] = useState<string | null>(null)
   const [adding, setAdding] = useState(false)
@@ -170,9 +173,11 @@ export default function ManagerView() {
   const trips = data?.trips ?? []
   const upcoming = trips.filter((t) => !t.departed)
   const shown = useMemo(() => {
-    const list = trips.filter((t) => (when === 'upcoming' ? !t.departed : t.departed) && (!busId || t.fleetId === busId))
+    const list = trips.filter(
+      (t) => (when === 'upcoming' ? !t.departed : t.departed) && (!busId || t.fleetId === busId) && matches(search, tripSearchText(t))
+    )
     return when === 'finished' ? [...list].reverse() : list
-  }, [trips, when, busId])
+  }, [trips, when, busId, search])
   const sold = upcoming.reduce(
     (acc, t) => {
       const c = tripCounts(t)
@@ -220,6 +225,7 @@ export default function ManagerView() {
 
       {tab === 'trips' && (
         <div className="flex flex-col gap-3">
+          <SearchBox value={search} onChange={setSearch} placeholder="Search route, number plate, bus, date, counter" />
           <div className="flex flex-col gap-2 sm:flex-row">
             <select value={busId} onChange={(e) => setBusId(e.target.value)} className="input-dark sm:grow" aria-label="Bus">
               <option value="">All buses</option>
@@ -260,7 +266,7 @@ export default function ManagerView() {
           )}
           {shown.length === 0 && (
             <p className="glass-lite p-5 text-center text-[13px] text-[#8e9a9d]">
-              {when === 'upcoming' ? 'No upcoming trips.' : 'No finished trips in the last 30 days.'}
+              {search ? 'No trips match your search.' : when === 'upcoming' ? 'No upcoming trips.' : 'No finished trips in the last 30 days.'}
             </p>
           )}
           <div className="grid gap-3 lg:grid-cols-2 lg:items-start">
