@@ -25,7 +25,7 @@ export default function OperatorLogo({
   const tone =
     variant === 'light'
       ? 'text-[#002447] ring-1 ring-[#ebe5dc]'
-      : 'bg-[#feb249]/[0.13] text-[#53d3d1]'
+      : 'bg-[#feb249]/[0.13] text-[#0b7f8c]'
 
   return (
     <span

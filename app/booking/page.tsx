@@ -140,13 +140,13 @@ function BookingContent() {
   }
 
   if (loading) {
-    return <div className="py-16 text-center text-sm text-[#aaa598]">Loading bus details...</div>
+    return <div className="py-16 text-center text-sm text-[#4f5d75]">Loading bus details...</div>
   }
 
   if (!bus) {
     return (
       <div className="flex flex-col items-center gap-4 py-16 text-center">
-        <p className="text-sm text-[#b8b2a6]">Bus not found.</p>
+        <p className="text-sm text-[#44526b]">Bus not found.</p>
         <button type="button" onClick={() => router.push('/')} className="glass-btn glass-btn-plain h-11 text-sm">
           Back to search
         </button>
@@ -177,19 +177,19 @@ function BookingContent() {
         </button>
         <div className="flex grow flex-col gap-0.5">
           <span className="display text-[17px] font-bold">{bus.busName}</span>
-          <span className="text-xs text-[#aaa598]">
+          <span className="text-xs text-[#4f5d75]">
             {bus.from} → {bus.to} · {bus.departureTime} · {bus.date}
           </span>
-          {bus.boardingPoint && <span className="text-xs text-[#cfc8bc]">📍 Boarding: {bus.boardingPoint}</span>}
+          {bus.boardingPoint && <span className="text-xs text-[#2f3f5a]">📍 Boarding: {bus.boardingPoint}</span>}
         </div>
       </div>
 
       {returnBusId && (
-        <div className="mt-4 flex items-center gap-2.5 rounded-[14px] border border-[#24546e] bg-[#002447]/50 px-3.5 py-2.5">
-          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#2dd4bf]/[0.18] text-[11px] font-bold text-[#2dd4bf]">
+        <div className="mt-4 flex items-center gap-2.5 rounded-[14px] border border-[#c3d1e0] bg-[#002447]/50 px-3.5 py-2.5">
+          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#2dd4bf]/[0.18] text-[11px] font-bold text-[#0f8f80]">
             1
           </span>
-          <span className="text-[12px] leading-snug text-[#c4beb2]">
+          <span className="text-[12px] leading-snug text-[#34445f]">
             Going leg of your round trip. We&apos;ll book your return straight after this.
           </span>
         </div>
@@ -199,32 +199,32 @@ function BookingContent() {
         {(['seats', 'details', 'payment'] as const).map((s) => (
           <span
             key={s}
-            className={`h-1.5 grow rounded-full ${step === s ? 'bg-[#f2661d]' : 'bg-[#24506b]'}`}
+            className={`h-1.5 grow rounded-full ${step === s ? 'bg-[#f2661d]' : 'bg-[#e1e9f2]'}`}
           />
         ))}
       </div>
 
       {step === 'seats' && (
         <div className="mt-5 flex flex-col gap-4">
-          <div className="flex items-center gap-4 rounded-[14px] border border-white/[0.08] bg-white/[0.04] px-3.5 py-2.5">
-            <span className="inline-flex items-center gap-2 text-[11.5px] font-semibold text-[#dad3c8]">
-              <span className="h-3.5 w-3.5 rounded border border-[#e3dcd2] bg-[#fbeceb]" />
+          <div className="flex items-center gap-4 rounded-[14px] border border-[#0b2545]/10 bg-[#0b2545]/[0.05] px-3.5 py-2.5">
+            <span className="inline-flex items-center gap-2 text-[11.5px] font-semibold text-[#24344f]">
+              <span className="h-3.5 w-3.5 rounded border border-[#ead2cf] bg-[#fbeceb]" />
               Available
             </span>
-            <span className="inline-flex items-center gap-2 text-[11.5px] font-semibold text-[#dad3c8]">
+            <span className="inline-flex items-center gap-2 text-[11.5px] font-semibold text-[#24344f]">
               <span className="h-3.5 w-3.5 rounded bg-gradient-to-br from-[#f2661d] to-[#feb249]" />
               Yours
             </span>
-            <span className="inline-flex items-center gap-2 text-[11.5px] font-semibold text-[#dad3c8]">
-              <span className="h-3.5 w-3.5 rounded border border-dashed border-[#7a3230] bg-[#3a1a1a]" />
+            <span className="inline-flex items-center gap-2 text-[11.5px] font-semibold text-[#24344f]">
+              <span className="h-3.5 w-3.5 rounded border border-dashed border-[#eba9a9] bg-[#fde4e4]" />
               Booked
             </span>
           </div>
 
           <div className="glass-lite p-4">
-            <div className="flex items-center justify-between border-b border-dashed border-[#275470] pb-3">
+            <div className="flex items-center justify-between border-b border-dashed border-[#c3d1e0] pb-3">
               <span className="label-xs">Deck</span>
-              <span className="inline-flex items-center gap-1.5 text-[11.5px] font-semibold text-[#aaa598]">
+              <span className="inline-flex items-center gap-1.5 text-[11.5px] font-semibold text-[#4f5d75]">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-[15px] w-[15px]">
                   <circle cx="12" cy="12" r="7.5" />
                   <path d="M12 4.5v3M12 16.5v3M4.5 12h3M16.5 12h3" />
@@ -236,7 +236,7 @@ function BookingContent() {
             <div className="mt-4 flex flex-col gap-2.5">
               {rows.map((row, rowIndex) => (
                 <div key={rowIndex} className="flex items-center gap-2.5">
-                  <span className="w-4 shrink-0 text-[11px] font-bold text-[#88908a]">{rowIndex + 1}</span>
+                  <span className="w-4 shrink-0 text-[11px] font-bold text-[#617086]">{rowIndex + 1}</span>
                   {row.slice(0, 2).map((seat) => {
                     const isBooked = unavailable.includes(seat)
                     const isSelected = selectedSeats.includes(seat)
@@ -248,10 +248,10 @@ function BookingContent() {
                         onClick={() => toggleSeat(seat)}
                         className={`h-9 min-w-0 grow basis-0 rounded-[9px] text-[11.5px] font-bold transition ${
                           isBooked
-                            ? 'cursor-not-allowed border border-dashed border-[#7a3230] bg-[#3a1a1a] text-[#d98a86]'
+                            ? 'cursor-not-allowed border border-dashed border-[#eba9a9] bg-[#fde4e4] text-[#b84a46]'
                             : isSelected
                             ? 'border border-[#cc8b65] bg-gradient-to-br from-[#f2661d] to-[#feb249] text-[#170b02]'
-                            : 'border border-[#e3dcd2] bg-[#fbeceb] text-[#0b2545] hover:border-[#53d3d1] hover:bg-white'
+                            : 'border border-[#ead2cf] bg-[#fbeceb] text-[#0b2545] shadow-[0_1px_2px_rgba(11,37,69,0.08)] hover:border-[#0dabab] hover:bg-white'
                         }`}
                       >
                         {seat}
@@ -270,10 +270,10 @@ function BookingContent() {
                         onClick={() => toggleSeat(seat)}
                         className={`h-9 min-w-0 grow basis-0 rounded-[9px] text-[11.5px] font-bold transition ${
                           isBooked
-                            ? 'cursor-not-allowed border border-dashed border-[#7a3230] bg-[#3a1a1a] text-[#d98a86]'
+                            ? 'cursor-not-allowed border border-dashed border-[#eba9a9] bg-[#fde4e4] text-[#b84a46]'
                             : isSelected
                             ? 'border border-[#cc8b65] bg-gradient-to-br from-[#f2661d] to-[#feb249] text-[#170b02]'
-                            : 'border border-[#e3dcd2] bg-[#fbeceb] text-[#0b2545] hover:border-[#53d3d1] hover:bg-white'
+                            : 'border border-[#ead2cf] bg-[#fbeceb] text-[#0b2545] shadow-[0_1px_2px_rgba(11,37,69,0.08)] hover:border-[#0dabab] hover:bg-white'
                         }`}
                       >
                         {seat}
@@ -287,14 +287,14 @@ function BookingContent() {
 
           <div className="flex flex-col gap-3 glass-lite p-4">
             <div className="flex items-center justify-between gap-3">
-              <span className="text-[12.5px] leading-snug text-[#aaa598]">
+              <span className="text-[12.5px] leading-snug text-[#4f5d75]">
                 {selectedSeats.length === 0
                   ? `Choose ${passengers} seat${passengers === 1 ? '' : 's'}`
                   : selectedSeats.length < passengers
                     ? `${selectedSeats.join(', ')} · ${passengers - selectedSeats.length} more to pick`
                     : `${selectedSeats.length} seat${selectedSeats.length === 1 ? '' : 's'} · ${selectedSeats.join(', ')}`}
               </span>
-              <span className="display shrink-0 text-[22px] font-bold text-[#53d3d1]">৳{totalPrice}</span>
+              <span className="display shrink-0 text-[22px] font-bold text-[#0b7f8c]">৳{totalPrice}</span>
             </div>
             <button type="button" onClick={handleConfirmSeats} className="glass-btn w-full">
               <span className="icon-disc">
@@ -305,7 +305,7 @@ function BookingContent() {
               </span>
               Continue
             </button>
-            <span className="text-center text-[11.5px] text-[#959488]">
+            <span className="text-center text-[11.5px] text-[#5a677d]">
               Seats are held for 10 minutes while you pay.
             </span>
           </div>
@@ -316,7 +316,7 @@ function BookingContent() {
         <div className="mt-5 flex flex-col gap-4">
           <div>
             <h2 className="text-xl font-bold">Passenger details</h2>
-            <p className="mt-1 text-[12.5px] text-[#b8b2a6]">No account needed — just your contact details.</p>
+            <p className="mt-1 text-[12.5px] text-[#44526b]">No account needed — just your contact details.</p>
           </div>
 
           <div className="flex flex-col gap-3.5 glass-lite p-4">
@@ -359,10 +359,10 @@ function BookingContent() {
                 placeholder="you@example.com"
               />
             </div>
-            <div className="flex items-center justify-between gap-3 rounded-2xl border border-white/[0.08] bg-black/25 p-3.5">
+            <div className="flex items-center justify-between gap-3 rounded-2xl border border-[#0b2545]/10 bg-white/60 p-3.5">
               <div className="flex flex-col gap-0.5">
                 <span className="label-xs">Bags (optional)</span>
-                <span className="text-[12px] leading-snug text-[#aaa598]">How many bags you are bringing. Shown on your ticket.</span>
+                <span className="text-[12px] leading-snug text-[#4f5d75]">How many bags you are bringing. Shown on your ticket.</span>
               </div>
               <div className="flex shrink-0 items-center gap-2">
                 <button
@@ -370,7 +370,7 @@ function BookingContent() {
                   aria-label="One bag fewer"
                   onClick={() => setBags((n) => Math.max(0, n - 1))}
                   disabled={bags === 0}
-                  className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/[0.06] text-lg font-bold disabled:opacity-40"
+                  className="flex h-10 w-10 items-center justify-center rounded-full border border-[#0b2545]/10 bg-[#0b2545]/[0.05] text-lg font-bold disabled:opacity-40"
                 >
                   −
                 </button>
@@ -382,7 +382,7 @@ function BookingContent() {
                   aria-label="One bag more"
                   onClick={() => setBags((n) => Math.min(MAX_BAGS, n + 1))}
                   disabled={bags === MAX_BAGS}
-                  className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/[0.06] text-lg font-bold text-[#53d3d1] disabled:opacity-40"
+                  className="flex h-10 w-10 items-center justify-center rounded-full border border-[#0b2545]/10 bg-[#0b2545]/[0.05] text-lg font-bold text-[#0b7f8c] disabled:opacity-40"
                 >
                   +
                 </button>
@@ -406,10 +406,10 @@ function BookingContent() {
           <h2 className="text-xl font-bold">Payment</h2>
 
           <div className="flex flex-col gap-4 glass-lite p-4">
-            <div className="rounded-2xl border border-white/[0.08] bg-black/25 p-4">
-              <p className="text-[12.5px] text-[#aaa598]">Total amount</p>
-              <p className="display mt-1 text-[32px] font-bold leading-none text-[#53d3d1]">৳{totalPrice}</p>
-              <p className="mt-2 text-xs text-[#aaa598]">
+            <div className="rounded-2xl border border-[#0b2545]/10 bg-white/60 p-4">
+              <p className="text-[12.5px] text-[#4f5d75]">Total amount</p>
+              <p className="display mt-1 text-[32px] font-bold leading-none text-[#0b7f8c]">৳{totalPrice}</p>
+              <p className="mt-2 text-xs text-[#4f5d75]">
                 Seats: {selectedSeats.join(', ')}
                 {bags > 0 && ` · ${bags} bag${bags === 1 ? '' : 's'}`}
               </p>
@@ -418,7 +418,7 @@ function BookingContent() {
             <div className="flex flex-col gap-2.5">
               <label
                 className={`flex cursor-pointer items-center gap-3 rounded-2xl border p-3.5 ${
-                  paymentMethod === 'bkash' ? 'border-[#f2661d] bg-[#f2661d]/10' : 'border-white/[0.08] bg-black/25'
+                  paymentMethod === 'bkash' ? 'border-[#f2661d] bg-[#f2661d]/10' : 'border-[#0b2545]/10 bg-white/60'
                 }`}
               >
                 <input
@@ -430,13 +430,13 @@ function BookingContent() {
                 />
                 <span className="flex flex-col">
                   <span className="text-sm font-bold">bKash</span>
-                  <span className="text-xs text-[#aaa598]">Instant payment</span>
+                  <span className="text-xs text-[#4f5d75]">Instant payment</span>
                 </span>
               </label>
 
               <label
                 className={`flex cursor-pointer items-center gap-3 rounded-2xl border p-3.5 ${
-                  paymentMethod === 'nagad' ? 'border-[#f2661d] bg-[#f2661d]/10' : 'border-white/[0.08] bg-black/25'
+                  paymentMethod === 'nagad' ? 'border-[#f2661d] bg-[#f2661d]/10' : 'border-[#0b2545]/10 bg-white/60'
                 }`}
               >
                 <input
@@ -448,7 +448,7 @@ function BookingContent() {
                 />
                 <span className="flex flex-col">
                   <span className="text-sm font-bold">Nagad</span>
-                  <span className="text-xs text-[#aaa598]">Instant payment</span>
+                  <span className="text-xs text-[#4f5d75]">Instant payment</span>
                 </span>
               </label>
             </div>
@@ -471,7 +471,7 @@ function BookingContent() {
 
 export default function BookingPage() {
   return (
-    <Suspense fallback={<div className="py-16 text-center text-sm text-[#aaa598]">Loading...</div>}>
+    <Suspense fallback={<div className="py-16 text-center text-sm text-[#4f5d75]">Loading...</div>}>
       <BookingContent />
     </Suspense>
   )

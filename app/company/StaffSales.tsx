@@ -77,7 +77,7 @@ export default function StaffSales({ trips, period }: { trips: CompanyTrip[]; pe
       <div className="flex flex-col gap-2.5 border-b border-[#c9d6e4] px-4 py-3.5">
         <div className="flex items-end justify-between gap-3">
           <span className="text-[13px] text-[#24344f]">
-            <span className="display text-[22px] font-bold text-white">{sold}</span> of {totalSeats} seats sold
+            <span className="display text-[22px] font-bold text-[#0b2545]">{sold}</span> of {totalSeats} seats sold
           </span>
           <span className="text-[12px] font-semibold text-[#0a8a84]">{notSold} not sold</span>
         </div>

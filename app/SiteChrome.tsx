@@ -44,11 +44,11 @@ export default function SiteChrome({ children }: { children: React.ReactNode }) 
       <nav className="no-print sticky top-0 z-40 px-3 pt-3">
         <div className="glass nav-glow mx-auto flex max-w-5xl items-center justify-between px-4 py-2.5">
           <a href="/" className="flex items-center" aria-label="BusHub home">
-            <Logo className="h-9 w-auto" />
+            <Logo className="h-9 w-auto" tone="light" />
           </a>
           <a
             href="/about"
-            className="rounded-full border border-white/10 bg-white/[0.05] px-3.5 py-1.5 text-[12px] font-semibold text-[#dad3c8] transition hover:border-[#cc8b65]/50 hover:text-[#53d3d1]"
+            className="rounded-full border border-[#0b2545]/10 bg-[#0b2545]/[0.05] px-3.5 py-1.5 text-[12px] font-semibold text-[#24344f] transition hover:border-[#cc8b65]/50 hover:text-[#0b7f8c]"
           >
             About us
           </a>
@@ -58,11 +58,11 @@ export default function SiteChrome({ children }: { children: React.ReactNode }) 
       <main className="mx-auto w-full max-w-5xl">{children}</main>
       <LivePurchases />
 
-      <footer className="no-print mt-12 border-t border-white/[0.07] bg-black/30">
+      <footer className="no-print mt-12 border-t border-[#0b2545]/10 bg-white/60">
         <div className="mx-auto flex max-w-5xl flex-col gap-7 px-5 py-8">
           <div className="flex flex-col gap-3 sm:max-w-sm">
             <span className="display text-base font-bold">Get fare alerts</span>
-            <span className="text-[12.5px] leading-snug text-[#aaa598]">
+            <span className="text-[12.5px] leading-snug text-[#4f5d75]">
               New routes and seat drops, straight to your inbox.
             </span>
             <label htmlFor="footer-email" className="sr-only">
@@ -75,32 +75,32 @@ export default function SiteChrome({ children }: { children: React.ReactNode }) 
           </div>
 
           <div className="grid grid-cols-2 gap-x-6 gap-y-3 sm:grid-cols-3">
-            <a href="/routes" className="text-[13px] text-[#cfc8bc] hover:text-[#53d3d1]">
+            <a href="/routes" className="text-[13px] text-[#2f3f5a] hover:text-[#0b7f8c]">
               Bus routes
             </a>
-            <a href="/company/register" className="text-[13px] text-[#cfc8bc] hover:text-[#53d3d1]">
+            <a href="/company/register" className="text-[13px] text-[#2f3f5a] hover:text-[#0b7f8c]">
               For bus operators
             </a>
-            <a href="#refund" className="text-[13px] text-[#cfc8bc] hover:text-[#53d3d1]">
+            <a href="#refund" className="text-[13px] text-[#2f3f5a] hover:text-[#0b7f8c]">
               Refund policy
             </a>
-            <a href="/about#contact" className="text-[13px] text-[#cfc8bc] hover:text-[#53d3d1]">
+            <a href="/about#contact" className="text-[13px] text-[#2f3f5a] hover:text-[#0b7f8c]">
               Contact us
             </a>
-            <a href="#terms" className="text-[13px] text-[#cfc8bc] hover:text-[#53d3d1]">
+            <a href="#terms" className="text-[13px] text-[#2f3f5a] hover:text-[#0b7f8c]">
               Terms
             </a>
-            <a href="#privacy" className="text-[13px] text-[#cfc8bc] hover:text-[#53d3d1]">
+            <a href="#privacy" className="text-[13px] text-[#2f3f5a] hover:text-[#0b7f8c]">
               Privacy
             </a>
-            <a href="/about" className="text-[13px] text-[#cfc8bc] hover:text-[#53d3d1]">
+            <a href="/about" className="text-[13px] text-[#2f3f5a] hover:text-[#0b7f8c]">
               About BusHub
             </a>
           </div>
 
-          <div className="flex flex-col gap-3 border-t border-white/[0.07] pt-5 sm:flex-row sm:items-center sm:justify-between">
-            <Logo className="h-8 w-auto" />
-            <span className="text-[11.5px] leading-relaxed text-[#959488]">
+          <div className="flex flex-col gap-3 border-t border-[#0b2545]/10 pt-5 sm:flex-row sm:items-center sm:justify-between">
+            <Logo className="h-8 w-auto" tone="light" />
+            <span className="text-[11.5px] leading-relaxed text-[#5a677d]">
               © {new Date().getFullYear()} BusHub · bushubbd.com. All rights reserved.
             </span>
           </div>

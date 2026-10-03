@@ -73,16 +73,16 @@ export default function SeatManager({
         <h3 className="display text-[15px] font-bold">
           {bus.busName} · {bus.from} → {bus.to} ({bus.date})
         </h3>
-        <p className="mt-1 text-[12.5px] text-[#b8b2a6]">
-          Tap a seat to mark it <strong className="text-[#53d3d1]">sold at your counter</strong>, tap again to put it
+        <p className="mt-1 text-[12.5px] text-[#44526b]">
+          Tap a seat to mark it <strong className="text-[#0b7f8c]">sold at your counter</strong>, tap again to put it
           back on sale. Seats sold on BusHub are locked — refund the ticket to free one.
         </p>
       </div>
 
       <div className="flex flex-wrap gap-2 text-[12px] font-semibold">
-        <span className="rounded-full bg-[#3fd0c9]/[0.13] px-3 py-1 text-[#3fd0c9]">{free} available</span>
-        <span className="rounded-full bg-[#feb249]/[0.13] px-3 py-1 text-[#53d3d1]">{blocked.length} sold at counter</span>
-        <span className="rounded-full bg-[#f87171]/[0.13] px-3 py-1 text-[#f87171]">{sold.length} sold on BusHub</span>
+        <span className="rounded-full bg-[#3fd0c9]/[0.13] px-3 py-1 text-[#0a8a84]">{free} available</span>
+        <span className="rounded-full bg-[#feb249]/[0.13] px-3 py-1 text-[#0b7f8c]">{blocked.length} sold at counter</span>
+        <span className="rounded-full bg-[#f87171]/[0.13] px-3 py-1 text-[#d23c3c]">{sold.length} sold on BusHub</span>
       </div>
 
       <div className="grid max-w-2xl grid-cols-8 gap-2 sm:grid-cols-12">
@@ -90,10 +90,10 @@ export default function SeatManager({
           const isSold = sold.includes(seatLabel)
           const isBlocked = blocked.includes(seatLabel)
           const state = isSold
-            ? 'cursor-not-allowed border border-[#7a3230] bg-[#3a1a1a] text-[#d98a86]'
+            ? 'cursor-not-allowed border border-[#eba9a9] bg-[#fde4e4] text-[#b84a46]'
             : isBlocked
-              ? 'border border-[#8a6216] bg-[#3a2c10] text-[#f6e879] hover:bg-[#4a3814]'
-              : 'border border-[#0dabab] bg-[#0a4f5a] text-[#8ee8e4] hover:bg-[#0a4550]'
+              ? 'border border-[#e2b860] bg-[#fff1d6] text-[#8a6d00] hover:bg-[#fff1d6]'
+              : 'border border-[#0dabab] bg-[#dff6f5] text-[#0a6f72] hover:bg-[#dff6f5]'
           return (
             <button
               key={seatLabel}
@@ -109,17 +109,17 @@ export default function SeatManager({
         })}
       </div>
 
-      <div className="flex flex-wrap gap-4 text-[12.5px] text-[#dad3c8]">
+      <div className="flex flex-wrap gap-4 text-[12.5px] text-[#24344f]">
         <span className="inline-flex items-center gap-2">
-          <span className="h-3.5 w-3.5 rounded border border-[#0dabab] bg-[#0a4f5a]" />
+          <span className="h-3.5 w-3.5 rounded border border-[#0dabab] bg-[#dff6f5]" />
           Available now
         </span>
         <span className="inline-flex items-center gap-2">
-          <span className="h-3.5 w-3.5 rounded border border-[#8a6216] bg-[#3a2c10]" />
+          <span className="h-3.5 w-3.5 rounded border border-[#e2b860] bg-[#fff1d6]" />
           Sold at counter
         </span>
         <span className="inline-flex items-center gap-2">
-          <span className="h-3.5 w-3.5 rounded border border-[#7a3230] bg-[#3a1a1a]" />
+          <span className="h-3.5 w-3.5 rounded border border-[#eba9a9] bg-[#fde4e4]" />
           Sold on BusHub (locked)
         </span>
       </div>

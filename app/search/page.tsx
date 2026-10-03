@@ -131,7 +131,7 @@ function SearchResults() {
           <span className="display text-[17px] font-bold">
             {legHeader.from} → {legHeader.to}
           </span>
-          <span className="text-xs text-[#aaa598]">
+          <span className="text-xs text-[#4f5d75]">
             {formatTripDate(legHeader.date)}
             {isRoundTrip ? ' · Round trip' : ''}
             {passengers > 1 ? ` · ${passengers} seats` : ''}
@@ -140,7 +140,7 @@ function SearchResults() {
       </div>
 
       {isRoundTrip && (
-        <div className="mt-4 grid grid-cols-2 gap-2 rounded-2xl border border-white/10 bg-black/30 p-1">
+        <div className="mt-4 grid grid-cols-2 gap-2 rounded-2xl border border-[#0b2545]/10 bg-white/60 p-1">
           {(
             [
               { key: 'outbound' as const, label: 'Going', city: `${from} → ${to}`, day: date, pick: outboundPick },
@@ -152,11 +152,11 @@ function SearchResults() {
               type="button"
               onClick={() => setLeg(tab.key)}
               className={`flex flex-col items-start gap-0.5 rounded-[14px] px-3 py-2.5 text-left transition ${
-                leg === tab.key ? 'bg-white/[0.09] shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]' : 'hover:bg-white/[0.04]'
+                leg === tab.key ? 'bg-[#0b2545]/[0.05] shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]' : 'hover:bg-[#0b2545]/[0.05]'
               }`}
             >
               <span className="flex w-full items-center gap-1.5">
-                <span className={`text-[12px] font-bold ${leg === tab.key ? 'text-[#53d3d1]' : 'text-[#b8b2a6]'}`}>
+                <span className={`text-[12px] font-bold ${leg === tab.key ? 'text-[#0b7f8c]' : 'text-[#44526b]'}`}>
                   {tab.label}
                 </span>
                 {tab.pick && (
@@ -165,7 +165,7 @@ function SearchResults() {
                   </svg>
                 )}
               </span>
-              <span className="text-[11px] text-[#959488]">{tab.pick ? `${tab.pick.departureTime} · ৳${tab.pick.price}` : tab.city}</span>
+              <span className="text-[11px] text-[#5a677d]">{tab.pick ? `${tab.pick.departureTime} · ৳${tab.pick.price}` : tab.city}</span>
             </button>
           ))}
         </div>
@@ -196,15 +196,15 @@ function SearchResults() {
         </button>
       </div>
 
-      {current.loading && <div className="py-16 text-center text-sm text-[#aaa598]">Searching buses...</div>}
+      {current.loading && <div className="py-16 text-center text-sm text-[#4f5d75]">Searching buses...</div>}
 
       {!current.loading && current.error && (
-        <div className="py-16 text-center text-sm text-[#f87171]">{current.error}</div>
+        <div className="py-16 text-center text-sm text-[#d23c3c]">{current.error}</div>
       )}
 
       {!current.loading && !current.error && visible.length === 0 && (
         <div className="card mt-5 flex flex-col items-center gap-3 px-6 py-14 text-center">
-          <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white/[0.06] text-[#aaa598]">
+          <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#0b2545]/[0.05] text-[#4f5d75]">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-7 w-7">
               <rect x="3" y="4" width="18" height="12.5" rx="3" />
               <path d="M3 11h18" />
@@ -219,7 +219,7 @@ function SearchResults() {
                 ? `No bus has ${passengers} seats free`
                 : 'Nothing matches those filters'}
           </h2>
-          <p className="text-[13px] text-[#b8b2a6]">
+          <p className="text-[13px] text-[#44526b]">
             {current.buses.length === 0
               ? 'Try a different date or route.'
               : roomy.length === 0
@@ -235,7 +235,7 @@ function SearchResults() {
       )}
 
       {!current.loading && visible.length > 0 && (
-        <p className="mt-4 text-[12px] text-[#959488]">
+        <p className="mt-4 text-[12px] text-[#5a677d]">
           {visible.length} bus{visible.length === 1 ? '' : 'es'}
           {activeFilters > 0 ? ` of ${roomy.length}` : ''} · {sortLabel.toLowerCase()}
           {tooSmall > 0 ? ` · ${tooSmall} hidden without ${passengers} seats together` : ''}
@@ -256,15 +256,15 @@ function SearchResults() {
       </div>
 
       {!current.loading && visible.length > 0 && !isRoundTrip && (
-        <p className="mt-6 text-center text-[11.5px] text-[#959488]">Prices shown are per seat, all taxes included.</p>
+        <p className="mt-6 text-center text-[11.5px] text-[#5a677d]">Prices shown are per seat, all taxes included.</p>
       )}
 
       {isRoundTrip && outboundPick && returnPick && (
-        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-[#002447]/80 px-5 py-3.5 backdrop-blur-xl">
+        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-[#0b2545]/10 bg-[#002447]/80 px-5 py-3.5 backdrop-blur-xl">
           <div className="mx-auto flex max-w-5xl items-center gap-3">
             <div className="flex grow flex-col gap-0.5">
-              <span className="text-[11.5px] text-[#aaa598]">Both legs chosen · per seat</span>
-              <span className="display text-[19px] font-bold text-[#53d3d1]">
+              <span className="text-[11.5px] text-[#4f5d75]">Both legs chosen · per seat</span>
+              <span className="display text-[19px] font-bold text-[#0b7f8c]">
                 ৳{outboundPick.price + returnPick.price}
               </span>
             </div>
@@ -298,7 +298,7 @@ function SearchResults() {
 
 export default function Search() {
   return (
-    <Suspense fallback={<div className="py-16 text-center text-sm text-[#aaa598]">Loading...</div>}>
+    <Suspense fallback={<div className="py-16 text-center text-sm text-[#4f5d75]">Loading...</div>}>
       <SearchResults />
     </Suspense>
   )

@@ -73,7 +73,7 @@ function groupByTrip(lines: Line[]) {
 function Row({ label, value, strong = false }: { label: string; value: string; strong?: boolean }) {
   return (
     <div className="flex items-baseline justify-between gap-3">
-      <span className={strong ? 'font-bold text-[#100c0d]' : 'text-[#5e6a62]'}>{label}</span>
+      <span className={strong ? 'font-bold text-[#100c0d]' : 'text-[#4f5d75]'}>{label}</span>
       <span className={`shrink-0 whitespace-nowrap ${strong ? 'text-[18px] font-extrabold text-[#100c0d]' : 'font-semibold text-[#100c0d]'}`}>{value}</span>
     </div>
   )
@@ -103,7 +103,7 @@ function PaymentFields({
             key={m}
             type="button"
             onClick={() => setMethod(m)}
-            className={`rounded-xl border px-2 py-2 text-[12.5px] font-bold ${method === m ? 'border-[#cc8b65] bg-[#feb249]/[0.12] text-[#53d3d1]' : 'border-white/10 text-[#cfc8bc]'}`}
+            className={`rounded-xl border px-2 py-2 text-[12.5px] font-bold ${method === m ? 'border-[#cc8b65] bg-[#feb249]/[0.12] text-[#0b7f8c]' : 'border-[#0b2545]/10 text-[#2f3f5a]'}`}
           >
             {PAY_METHOD_LABELS[m]}
           </button>
@@ -159,13 +159,13 @@ function AdminActions({ inv, onDone }: { inv: Invoice; onDone: () => void }) {
         <>
           <span className="display text-[16px] font-bold">Pay {taka(inv.totals.payout)} to {inv.companyName}</span>
           {inv.approval ? (
-            <span className="text-[12.5px] font-semibold text-[#a9d8e0]">
+            <span className="text-[12.5px] font-semibold text-[#2d7886]">
               ✓ Approved by the company ({inv.approval.by}, {dhakaDateTime(inv.approval.at)})
             </span>
           ) : inv.status === 'unpaid' ? (
-            <span className="text-[12.5px] text-[#f6e879]">The company has not approved this invoice yet.</span>
+            <span className="text-[12.5px] text-[#8a6d00]">The company has not approved this invoice yet.</span>
           ) : null}
-          <p className="text-[12.5px] text-[#b8b2a6]">
+          <p className="text-[12.5px] text-[#44526b]">
             Send the money first, then write down how you sent it and the reference (bKash TrxID, bank reference). Cash needs no reference. The company then
             checks it and signs.
           </p>
@@ -187,13 +187,13 @@ function AdminActions({ inv, onDone }: { inv: Invoice; onDone: () => void }) {
               type="button"
               disabled={busy}
               onClick={() => confirm('Cancel this invoice? Its tickets go back to "owed" for the next invoice.') && send({ action: 'cancel' }, 'Invoice cancelled')}
-              className="text-[12.5px] font-semibold text-[#f87171]"
+              className="text-[12.5px] font-semibold text-[#d23c3c]"
             >
               Cancel this invoice
             </button>
           )}
           {inv.status === 'disputed' && canEdit && (
-            <button type="button" onClick={() => setEditing(true)} className="text-[12.5px] font-semibold text-[#53d3d1]">
+            <button type="button" onClick={() => setEditing(true)} className="text-[12.5px] font-semibold text-[#0b7f8c]">
               Correct the recorded payment instead
             </button>
           )}
@@ -202,7 +202,7 @@ function AdminActions({ inv, onDone }: { inv: Invoice; onDone: () => void }) {
         <>
           <span className="display text-[16px] font-bold">Correct the payment</span>
           {inv.status === 'confirmed' && (
-            <p className="rounded-xl border border-[#cc8b65]/40 bg-[#feb249]/[0.08] px-3.5 py-2.5 text-[12.5px] text-[#f6e879]">
+            <p className="rounded-xl border border-[#cc8b65]/40 bg-[#feb249]/[0.08] px-3.5 py-2.5 text-[12.5px] text-[#8a6d00]">
               The company already signed this. After a change it has to check and sign again.
             </p>
           )}
@@ -215,7 +215,7 @@ function AdminActions({ inv, onDone }: { inv: Invoice; onDone: () => void }) {
           >
             {busy ? 'Saving…' : 'Save the correction'}
           </button>
-          <button type="button" onClick={() => setEditing(false)} className="text-[12.5px] font-semibold text-[#b8b2a6]">
+          <button type="button" onClick={() => setEditing(false)} className="text-[12.5px] font-semibold text-[#44526b]">
             Back
           </button>
         </>
@@ -231,7 +231,7 @@ function AdminActions({ inv, onDone }: { inv: Invoice; onDone: () => void }) {
                 type="button"
                 disabled={busy}
                 onClick={() => confirm('Remove this payment? Use this only if the money was not actually sent. The invoice goes back to unpaid.') && send({ action: 'unpay' }, 'Payment removed')}
-                className="h-10 rounded-full border border-[#f87171]/30 px-4 text-[13px] font-semibold text-[#fca5a5]"
+                className="h-10 rounded-full border border-[#f87171]/30 px-4 text-[13px] font-semibold text-[#c13b3b]"
               >
                 Money was not sent: remove payment
               </button>
@@ -271,9 +271,9 @@ function CompanyActions({ inv, onDone }: { inv: Invoice; onDone: () => void }) {
     return (
       <div className="no-print glass flex flex-col gap-3 p-4">
         <span className="display text-[16px] font-bold">Review and approve</span>
-        <p className="text-[12.5px] leading-relaxed text-[#b8b2a6]">
+        <p className="text-[12.5px] leading-relaxed text-[#44526b]">
           Check the tickets below: {inv.totals.tickets} tickets, {inv.totals.seats} seats, original price {taka(inv.totals.ticketTotal)}, BusHub commission{' '}
-          {taka(inv.totals.commission)}. If everything is right, approve it and BusHub pays you <b className="text-white">{taka(inv.totals.payout)}</b>.
+          {taka(inv.totals.commission)}. If everything is right, approve it and BusHub pays you <b className="text-[#0b2545]">{taka(inv.totals.payout)}</b>.
         </p>
         {problem === null ? (
           <>
@@ -285,7 +285,7 @@ function CompanyActions({ inv, onDone }: { inv: Invoice; onDone: () => void }) {
             >
               {busy ? 'Saving…' : `Approve · ${taka(inv.totals.payout)}`}
             </button>
-            <button type="button" onClick={() => setProblem('')} className="text-[12.5px] font-semibold text-[#f87171]">
+            <button type="button" onClick={() => setProblem('')} className="text-[12.5px] font-semibold text-[#d23c3c]">
               Something is wrong?
             </button>
           </>
@@ -295,7 +295,7 @@ function CompanyActions({ inv, onDone }: { inv: Invoice; onDone: () => void }) {
             <button type="button" disabled={busy || problem.trim().length < 5} onClick={() => send({ action: 'dispute', note: problem }, 'Sent to BusHub')} className="glass-btn h-12">
               Report the problem to BusHub
             </button>
-            <button type="button" onClick={() => setProblem(null)} className="text-[12.5px] font-semibold text-[#b8b2a6]">
+            <button type="button" onClick={() => setProblem(null)} className="text-[12.5px] font-semibold text-[#44526b]">
               Back
             </button>
           </>
@@ -307,16 +307,16 @@ function CompanyActions({ inv, onDone }: { inv: Invoice; onDone: () => void }) {
   return (
     <div className="no-print glass flex flex-col gap-3 p-4">
       <span className="display text-[16px] font-bold">Money arrived? Tap Done</span>
-      <p className="text-[12.5px] leading-relaxed text-[#b8b2a6]">
+      <p className="text-[12.5px] leading-relaxed text-[#44526b]">
         {inv.payment.method === 'cash' ? (
           <>
-            BusHub says it paid <b className="text-white">{taka(inv.payment.amount)}</b> in cash{inv.payment.reference ? ` to ${inv.payment.reference}` : ''}. Count the
+            BusHub says it paid <b className="text-[#0b2545]">{taka(inv.payment.amount)}</b> in cash{inv.payment.reference ? ` to ${inv.payment.reference}` : ''}. Count the
             cash first. Sign only if you received all of it.
           </>
         ) : (
           <>
-            BusHub says it sent <b className="text-white">{taka(inv.payment.amount)}</b> by {PAY_METHOD_LABELS[inv.payment.method]} (ref{' '}
-            <span className="font-mono text-white">{inv.payment.reference}</span>). Check your {PAY_METHOD_LABELS[inv.payment.method]} or bank first. Sign only if the
+            BusHub says it sent <b className="text-[#0b2545]">{taka(inv.payment.amount)}</b> by {PAY_METHOD_LABELS[inv.payment.method]} (ref{' '}
+            <span className="font-mono text-[#0b2545]">{inv.payment.reference}</span>). Check your {PAY_METHOD_LABELS[inv.payment.method]} or bank first. Sign only if the
             money has arrived.
           </>
         )}
@@ -325,14 +325,14 @@ function CompanyActions({ inv, onDone }: { inv: Invoice; onDone: () => void }) {
         <>
           <input value={name} onChange={(e) => setName(e.target.value.slice(0, 60))} placeholder="Your full name" className="input-dark" aria-label="Your full name" autoComplete="name" />
           <PasswordInput value={password} onChange={setPassword} placeholder="Company login password" autoComplete="current-password" />
-          <label className="flex items-start gap-2.5 text-[12.5px] text-[#dad3c8]">
+          <label className="flex items-start gap-2.5 text-[12.5px] text-[#24344f]">
             <input type="checkbox" checked={checked} onChange={(e) => setChecked(e.target.checked)} className="mt-0.5 h-4 w-4 accent-[#cc8b65]" />
             I checked the tickets on this invoice and received {taka(inv.payment.amount)}.
           </label>
           <button type="button" disabled={busy || !checked || name.trim().length < 3 || !password} onClick={() => send({ action: 'confirm', signedBy: name, password }, 'Signed. Thank you!')} className="glass-btn h-12">
             {busy ? 'Signing…' : 'Done: money received'}
           </button>
-          <button type="button" onClick={() => setProblem('')} className="text-[12.5px] font-semibold text-[#f87171]">
+          <button type="button" onClick={() => setProblem('')} className="text-[12.5px] font-semibold text-[#d23c3c]">
             Money not received, or something is wrong?
           </button>
         </>
@@ -342,7 +342,7 @@ function CompanyActions({ inv, onDone }: { inv: Invoice; onDone: () => void }) {
           <button type="button" disabled={busy || problem.trim().length < 5} onClick={() => send({ action: 'dispute', note: problem }, 'Sent to BusHub')} className="glass-btn h-12">
             Report the problem to BusHub
           </button>
-          <button type="button" onClick={() => setProblem(null)} className="text-[12.5px] font-semibold text-[#b8b2a6]">
+          <button type="button" onClick={() => setProblem(null)} className="text-[12.5px] font-semibold text-[#44526b]">
             Back
           </button>
         </>
@@ -377,8 +377,8 @@ function InvoiceView() {
 
   const trips = useMemo(() => (inv ? groupByTrip(inv.lines) : []), [inv])
 
-  if (error) return <p className="glass-lite mx-auto mt-10 max-w-md p-6 text-center text-sm text-[#dad3c8]">{error}</p>
-  if (!inv) return <div className="py-16 text-center text-sm text-[#aaa598]">Loading...</div>
+  if (error) return <p className="glass-lite mx-auto mt-10 max-w-md p-6 text-center text-sm text-[#24344f]">{error}</p>
+  if (!inv) return <div className="py-16 text-center text-sm text-[#4f5d75]">Loading...</div>
 
   const status = statusOf(inv)
   const back = viewer === 'admin' ? '/admin' : '/company'
@@ -386,7 +386,7 @@ function InvoiceView() {
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-4">
       <div className="no-print flex items-center justify-between gap-3">
-        <a href={back} className="text-[13px] font-semibold text-[#53d3d1]">
+        <a href={back} className="text-[13px] font-semibold text-[#0b7f8c]">
           ‹ Back
         </a>
         <button type="button" onClick={() => window.print()} className="glass-btn glass-btn-plain h-10 px-4 text-[13px]">
@@ -403,11 +403,11 @@ function InvoiceView() {
             <LogoMark className="h-11 w-11" />
             <div className="flex flex-col leading-tight">
               <span className="text-[18px] font-extrabold">BusHub</span>
-              <span className="text-[11.5px] text-[#5e6a62]">bushubbd.com · info@bushubbd.com</span>
+              <span className="text-[11.5px] text-[#4f5d75]">bushubbd.com · info@bushubbd.com</span>
             </div>
           </div>
           <div className="flex flex-col items-start gap-1 sm:items-end sm:text-right">
-            <span className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#5e6a62]">Payout invoice</span>
+            <span className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#4f5d75]">Payout invoice</span>
             <span className="font-mono text-[16px] font-extrabold">{inv.number}</span>
             <span className={`rounded-full px-2.5 py-1 text-[11px] font-bold ${status.light}`}>{status.label}</span>
           </div>
@@ -415,13 +415,13 @@ function InvoiceView() {
 
         <section className="grid gap-4 border-b border-[#ebe5dc] py-5 sm:grid-cols-2">
           <div className="flex flex-col gap-0.5">
-            <span className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#5e6a62]">Paid to</span>
+            <span className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#4f5d75]">Paid to</span>
             <span className="text-[15px] font-bold">{inv.companyName}</span>
           </div>
           <div className="flex flex-col gap-0.5 sm:items-end sm:text-right">
-            <span className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#5e6a62]">Trips</span>
+            <span className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#4f5d75]">Trips</span>
             <span className="font-semibold">{inv.from === inv.to ? formatTripDate(inv.from) : `${formatTripDate(inv.from)} – ${formatTripDate(inv.to)}`}</span>
-            <span className="text-[11.5px] text-[#5e6a62]">Made {dhakaDateTime(inv.createdAt)}</span>
+            <span className="text-[11.5px] text-[#4f5d75]">Made {dhakaDateTime(inv.createdAt)}</span>
           </div>
         </section>
 
@@ -437,18 +437,18 @@ function InvoiceView() {
         </section>
 
         <section className="flex flex-col gap-4 py-5">
-          <span className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#5e6a62]">Every ticket, trip by trip</span>
+          <span className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#4f5d75]">Every ticket, trip by trip</span>
           {trips.map((t) => (
             <div key={t.key} className="invoice-trip overflow-hidden rounded-xl border border-[#ebe5dc]">
               <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5 bg-[#f3f6f6] px-3.5 py-2.5">
                 <span className="font-bold">
                   {t.first.from} → {t.first.to} · {t.first.departureTime}
                 </span>
-                <span className="text-[12px] text-[#5e6a62]">
+                <span className="text-[12px] text-[#4f5d75]">
                   {formatTripDate(t.first.date)} · {t.first.busName}
                 </span>
               </div>
-              <div className="hidden grid-cols-[1.6fr_0.8fr_0.9fr_0.9fr_0.9fr] gap-2 border-b border-[#ebe5dc] px-3.5 py-1.5 text-[10.5px] font-bold uppercase tracking-wide text-[#8a8f86] sm:grid">
+              <div className="hidden grid-cols-[1.6fr_0.8fr_0.9fr_0.9fr_0.9fr] gap-2 border-b border-[#ebe5dc] px-3.5 py-1.5 text-[10.5px] font-bold uppercase tracking-wide text-[#617086] sm:grid">
                 <span>{viewer === 'admin' ? 'Ticket · passenger' : 'Ticket'}</span>
                 <span>Seats</span>
                 <span className="text-right">Price</span>
@@ -459,27 +459,27 @@ function InvoiceView() {
                 <div key={l.bookingId} className="grid grid-cols-2 gap-x-2 gap-y-0.5 border-b border-[#eef1f1] px-3.5 py-2 last:border-b-0 sm:grid-cols-[1.6fr_0.8fr_0.9fr_0.9fr_0.9fr] sm:items-baseline">
                   <span className="col-span-2 flex flex-col sm:col-span-1">
                     <span className="font-mono text-[11.5px] font-semibold">{l.code}</span>
-                    {l.passengerName && <span className="text-[11.5px] text-[#5e6a62]">{l.passengerName}</span>}
+                    {l.passengerName && <span className="text-[11.5px] text-[#4f5d75]">{l.passengerName}</span>}
                   </span>
                   <span className="text-[12px]">
-                    <span className="text-[#8a8f86] sm:hidden">Seats </span>
+                    <span className="text-[#617086] sm:hidden">Seats </span>
                     {l.seats.join(', ')}
                   </span>
                   <span className="text-right text-[12px]">
-                    <span className="text-[#8a8f86] sm:hidden">Price </span>
+                    <span className="text-[#617086] sm:hidden">Price </span>
                     {taka(l.ticketPrice)}
                   </span>
-                  <span className="text-[12px] text-[#5e6a62] sm:text-right">
+                  <span className="text-[12px] text-[#4f5d75] sm:text-right">
                     <span className="sm:hidden">Commission </span>−{taka(l.commission)}
                   </span>
                   <span className="text-right text-[12.5px] font-bold">
-                    <span className="font-normal text-[#8a8f86] sm:hidden">Company gets </span>
+                    <span className="font-normal text-[#617086] sm:hidden">Company gets </span>
                     {taka(l.payout)}
                   </span>
                 </div>
               ))}
               <div className="flex flex-wrap justify-between gap-2 bg-[#fafbfb] px-3.5 py-2 text-[12px]">
-                <span className="text-[#5e6a62]">
+                <span className="text-[#4f5d75]">
                   {t.lines.length} ticket{t.lines.length === 1 ? '' : 's'} · {t.seats} seat{t.seats === 1 ? '' : 's'} · price {taka(t.price)} · commission −{taka(t.commission)}
                 </span>
                 <span className="font-bold">{taka(t.payout)}</span>
@@ -490,14 +490,14 @@ function InvoiceView() {
 
         {inv.deductions.length > 0 && (
           <section className="invoice-trip flex flex-col gap-2 pb-5">
-            <span className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#5e6a62]">Refunds taken back</span>
-            <p className="text-[11.5px] text-[#5e6a62]">These tickets were refunded to the passenger after BusHub had already paid for them, so their payout comes off this payment.</p>
+            <span className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#4f5d75]">Refunds taken back</span>
+            <p className="text-[11.5px] text-[#4f5d75]">These tickets were refunded to the passenger after BusHub had already paid for them, so their payout comes off this payment.</p>
             <div className="overflow-hidden rounded-xl border border-[#ebe5dc]">
               {inv.deductions.map((d) => (
                 <div key={d._id} className="flex items-start justify-between gap-3 border-b border-[#eef1f1] px-3.5 py-2 last:border-b-0">
                   <span className="flex min-w-0 flex-col">
                     <span className="font-mono text-[11.5px] font-semibold">{d.code}</span>
-                    <span className="text-[11.5px] text-[#5e6a62]">
+                    <span className="text-[11.5px] text-[#4f5d75]">
                       {d.from} → {d.to} · {formatTripDate(d.date)} {d.departureTime} · seats {d.seats.join(', ')} · paid in {d.paidIn}
                     </span>
                   </span>
@@ -510,7 +510,7 @@ function InvoiceView() {
 
         <section className="grid gap-4 border-t border-[#ebe5dc] pt-5 sm:grid-cols-2">
           <div className="flex flex-col gap-1">
-            <span className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#5e6a62]">Payment</span>
+            <span className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#4f5d75]">Payment</span>
             {inv.payment ? (
               <>
                 <span className="font-bold">
@@ -522,27 +522,27 @@ function InvoiceView() {
                     <span className={inv.payment.method === 'cash' ? 'font-semibold' : 'font-mono font-semibold'}>{inv.payment.reference}</span>
                   </span>
                 )}
-                <span className="text-[11.5px] text-[#5e6a62]">{dhakaDateTime(inv.payment.at)}</span>
-                {inv.payment.note && <span className="text-[11.5px] text-[#5e6a62]">{inv.payment.note}</span>}
+                <span className="text-[11.5px] text-[#4f5d75]">{dhakaDateTime(inv.payment.at)}</span>
+                {inv.payment.note && <span className="text-[11.5px] text-[#4f5d75]">{inv.payment.note}</span>}
               </>
             ) : (
-              <span className="text-[#5e6a62]">Not paid yet</span>
+              <span className="text-[#4f5d75]">Not paid yet</span>
             )}
             {inv.approval && (
-              <span className="text-[11.5px] text-[#5e6a62]">
+              <span className="text-[11.5px] text-[#4f5d75]">
                 Tickets approved by the company: {inv.approval.by}, {dhakaDateTime(inv.approval.at)}
               </span>
             )}
           </div>
           <div className="flex flex-col gap-1 sm:items-end sm:text-right">
-            <span className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#5e6a62]">Received and signed by the company</span>
+            <span className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#4f5d75]">Received and signed by the company</span>
             {inv.confirmation ? (
               <>
                 <span className="font-[cursive] text-[20px] leading-tight text-[#1d3f8f]">{inv.confirmation.signedBy}</span>
-                <span className="text-[11.5px] text-[#5e6a62]">{dhakaDateTime(inv.confirmation.at)}</span>
+                <span className="text-[11.5px] text-[#4f5d75]">{dhakaDateTime(inv.confirmation.at)}</span>
               </>
             ) : (
-              <span className="text-[#5e6a62]">Not signed yet</span>
+              <span className="text-[#4f5d75]">Not signed yet</span>
             )}
           </div>
         </section>
@@ -553,7 +553,7 @@ function InvoiceView() {
           </p>
         )}
 
-        <footer className="mt-5 flex flex-col gap-1.5 rounded-xl border border-dashed border-[#d5dbdc] px-3.5 py-3 text-[11.5px] text-[#5e6a62]">
+        <footer className="mt-5 flex flex-col gap-1.5 rounded-xl border border-dashed border-[#d5dbdc] px-3.5 py-3 text-[11.5px] text-[#4f5d75]">
           <span className={`font-bold ${inv.check.contentOk && inv.check.signatureOk !== false ? 'text-emerald-700' : 'text-red-700'}`}>
             {!inv.check.contentOk
               ? '⚠ This invoice does not match the record it was made from.'
@@ -574,10 +574,10 @@ function InvoiceView() {
           <span className="label-xs">History</span>
           {inv.history.map((h, i) => (
             <div key={i} className="flex justify-between gap-3">
-              <span className="text-[#dad3c8]">
-                {h.event} <span className="text-[#88908a]">· {h.by}</span>
+              <span className="text-[#24344f]">
+                {h.event} <span className="text-[#617086]">· {h.by}</span>
               </span>
-              <span className="shrink-0 text-[#88908a]">{dhakaDateTime(h.at)}</span>
+              <span className="shrink-0 text-[#617086]">{dhakaDateTime(h.at)}</span>
             </div>
           ))}
         </div>
@@ -588,7 +588,7 @@ function InvoiceView() {
 
 export default function InvoicePage() {
   return (
-    <Suspense fallback={<div className="py-16 text-center text-sm text-[#aaa598]">Loading...</div>}>
+    <Suspense fallback={<div className="py-16 text-center text-sm text-[#4f5d75]">Loading...</div>}>
       <InvoiceView />
     </Suspense>
   )

@@ -16,11 +16,11 @@ export function bookingStatus(b: Booking): StatusKey {
 
 // A status always shows its word next to the colour, never the colour alone.
 const STATUS: Record<StatusKey, { label: string; className: string; dot: string }> = {
-  boarded: { label: 'Boarded', className: 'bg-[#12a594]/[0.16] text-[#5eead4]', dot: 'bg-[#2dd4bf]' },
-  paid: { label: 'Paid', className: 'bg-[#3fd0c9]/[0.13] text-[#5fdcd5]', dot: 'bg-[#3fd0c9]' },
-  pending: { label: 'Pending', className: 'bg-[#feb249]/[0.14] text-[#f6e879]', dot: 'bg-[#feb249]' },
-  refunded: { label: 'Refunded', className: 'bg-[#f87171]/[0.13] text-[#fca5a5]', dot: 'bg-[#f87171]' },
-  expired: { label: 'Expired', className: 'bg-white/[0.06] text-[#b8b2a6]', dot: 'bg-[#88908a]' },
+  boarded: { label: 'Boarded', className: 'bg-[#12a594]/[0.16] text-[#0f8f80]', dot: 'bg-[#2dd4bf]' },
+  paid: { label: 'Paid', className: 'bg-[#3fd0c9]/[0.13] text-[#0a8a84]', dot: 'bg-[#3fd0c9]' },
+  pending: { label: 'Pending', className: 'bg-[#feb249]/[0.14] text-[#8a6d00]', dot: 'bg-[#feb249]' },
+  refunded: { label: 'Refunded', className: 'bg-[#f87171]/[0.13] text-[#c13b3b]', dot: 'bg-[#f87171]' },
+  expired: { label: 'Expired', className: 'bg-[#0b2545]/[0.05] text-[#44526b]', dot: 'bg-[#88908a]' },
 }
 
 export function StatusChip({ status }: { status: StatusKey }) {
@@ -48,9 +48,9 @@ function Avatar({ name }: { name: string }) {
 
 function Channel({ source }: { source?: string }) {
   return source === 'whatsapp' ? (
-    <span className="text-[12px] font-semibold text-[#5fdcd5]">WhatsApp</span>
+    <span className="text-[12px] font-semibold text-[#0a8a84]">WhatsApp</span>
   ) : (
-    <span className="text-[12px] font-semibold text-[#93c5fd]">Website</span>
+    <span className="text-[12px] font-semibold text-[#2563eb]">Website</span>
   )
 }
 
@@ -67,7 +67,7 @@ function RefundButton({ booking, onRefund }: { booking: Booking; onRefund: (id: 
     <button
       type="button"
       onClick={() => onRefund(booking._id)}
-      className="h-8 shrink-0 rounded-full border border-[#f87171]/30 bg-[#f87171]/10 px-3 text-[11.5px] font-bold text-[#fca5a5] transition hover:bg-[#f87171]/20"
+      className="h-8 shrink-0 rounded-full border border-[#f87171]/30 bg-[#f87171]/10 px-3 text-[11.5px] font-bold text-[#c13b3b] transition hover:bg-[#f87171]/20"
     >
       Refund
     </button>
@@ -81,7 +81,7 @@ function DeleteButton({ booking, onDelete }: { booking: Booking; onDelete?: (b: 
       type="button"
       onClick={() => onDelete(booking)}
       aria-label={`Delete booking of ${booking.passengerName}`}
-      className="h-8 shrink-0 rounded-full border border-white/10 px-3 text-[11.5px] font-bold text-[#b8b2a6] transition hover:border-[#f87171]/40 hover:text-[#fca5a5]"
+      className="h-8 shrink-0 rounded-full border border-[#0b2545]/10 px-3 text-[11.5px] font-bold text-[#44526b] transition hover:border-[#f87171]/40 hover:text-[#c13b3b]"
     >
       Delete
     </button>
@@ -119,7 +119,7 @@ export default function BookingList({
   const ticking = Boolean(selected && onSelect)
   const allTicked = ticking && bookings.length > 0 && bookings.every((b) => selected!.has(b._id))
   if (bookings.length === 0) {
-    return <p className="px-5 py-10 text-center text-sm text-[#aaa598]">{empty}</p>
+    return <p className="px-5 py-10 text-center text-sm text-[#4f5d75]">{empty}</p>
   }
 
   return (
@@ -129,23 +129,23 @@ export default function BookingList({
         {bookings.map((b) => (
           <li
             key={b._id}
-            className={`flex flex-col gap-2.5 border-t border-white/[0.06] px-4 py-3.5 first:border-t-0 ${ticking && selected!.has(b._id) ? 'bg-[#feb249]/[0.06]' : ''}`}
+            className={`flex flex-col gap-2.5 border-t border-[#0b2545]/10 px-4 py-3.5 first:border-t-0 ${ticking && selected!.has(b._id) ? 'bg-[#feb249]/[0.06]' : ''}`}
           >
             <div className="flex items-center gap-3">
               {ticking && <Tick checked={selected!.has(b._id)} onChange={(on) => onSelect!([b._id], on)} label={`Select booking ${b.bookingCode}`} />}
               <Avatar name={b.passengerName} />
               <div className="flex min-w-0 grow flex-col gap-0.5">
                 <span className="truncate text-[13.5px] font-semibold">{b.passengerName}</span>
-                <span className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-[11.5px] text-[#aaa598]">
+                <span className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-[11.5px] text-[#4f5d75]">
                   <span className="truncate">
                     {b.from} → {b.to} · {formatTripDate(b.date)}
                   </span>
                   <Plate plate={b.plateNumber} />
                 </span>
-                <span className="truncate text-[11px] text-[#88908a]">
+                <span className="truncate text-[11px] text-[#617086]">
                   {b.busName} · seats {b.seats.join(', ')}
                 </span>
-                <span className="truncate text-[11px] text-[#88908a]">
+                <span className="truncate text-[11px] text-[#617086]">
                   {b.passengerPhone} · bought {boughtAt(b.createdAt)}
                 </span>
               </div>
@@ -168,7 +168,7 @@ export default function BookingList({
       <div className="hidden overflow-x-auto md:block">
         <table className="w-full text-left">
           <thead>
-            <tr className="text-[11px] font-bold uppercase tracking-[0.1em] text-[#88908a]">
+            <tr className="text-[11px] font-bold uppercase tracking-[0.1em] text-[#617086]">
               {ticking && (
                 <th className="w-10 py-3 pl-5">
                   <Tick checked={allTicked} onChange={(on) => onSelect!(bookings.map((b) => b._id), on)} label="Select all shown bookings" />
@@ -186,7 +186,7 @@ export default function BookingList({
           </thead>
           <tbody>
             {bookings.map((b) => (
-              <tr key={b._id} className={`border-t border-white/[0.06] transition hover:bg-white/[0.025] ${ticking && selected!.has(b._id) ? 'bg-[#feb249]/[0.06]' : ''}`}>
+              <tr key={b._id} className={`border-t border-[#0b2545]/10 transition hover:bg-[#0b2545]/[0.05] ${ticking && selected!.has(b._id) ? 'bg-[#feb249]/[0.06]' : ''}`}>
                 {ticking && (
                   <td className="py-3 pl-5">
                     <Tick checked={selected!.has(b._id)} onChange={(on) => onSelect!([b._id], on)} label={`Select booking ${b.bookingCode}`} />
@@ -197,7 +197,7 @@ export default function BookingList({
                     <Avatar name={b.passengerName} />
                     <div className="flex min-w-0 flex-col">
                       <span className="truncate text-[13.5px] font-semibold">{b.passengerName}</span>
-                      <span className="text-[11.5px] text-[#88908a]">{b.passengerPhone}</span>
+                      <span className="text-[11.5px] text-[#617086]">{b.passengerPhone}</span>
                     </div>
                   </div>
                 </td>
@@ -208,17 +208,17 @@ export default function BookingList({
                     </span>
                     <Plate plate={b.plateNumber} />
                   </span>
-                  <span className="text-[11.5px] text-[#88908a]">{b.busName}</span>
+                  <span className="text-[11.5px] text-[#617086]">{b.busName}</span>
                 </td>
-                <td className="whitespace-nowrap px-3 py-3 text-[12.5px] text-[#cfc8bc]">
+                <td className="whitespace-nowrap px-3 py-3 text-[12.5px] text-[#2f3f5a]">
                   {formatTripDate(b.date)}
-                  <span className="block text-[11.5px] text-[#88908a]">{b.departureTime}</span>
+                  <span className="block text-[11.5px] text-[#617086]">{b.departureTime}</span>
                 </td>
-                <td className="px-3 py-3 text-[12.5px] tabular-nums text-[#cfc8bc]">{b.seats.join(', ')}</td>
+                <td className="px-3 py-3 text-[12.5px] tabular-nums text-[#2f3f5a]">{b.seats.join(', ')}</td>
                 <td className="px-3 py-3 text-right text-[13px] font-bold tabular-nums">{taka(b.totalPrice)}</td>
                 <td className="px-3 py-3">
                   <Channel source={b.source} />
-                  <span className="block whitespace-nowrap text-[11px] text-[#88908a]">{boughtAt(b.createdAt)}</span>
+                  <span className="block whitespace-nowrap text-[11px] text-[#617086]">{boughtAt(b.createdAt)}</span>
                 </td>
                 <td className="px-3 py-3">
                   <StatusChip status={bookingStatus(b)} />

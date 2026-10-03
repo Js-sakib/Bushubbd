@@ -102,7 +102,7 @@ const ORGANIZATION = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${inter.variable} ${jakarta.variable} ${hindSiliguri.variable}`}>
-      <body>
+      <body className="light-panel">
         <JsonLd data={ORGANIZATION} />
         <SiteChrome>{children}</SiteChrome>
         <Toaster

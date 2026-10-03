@@ -10,7 +10,7 @@ import { useState } from 'react'
 export const ACCENT = '#e8601a'
 export const TEAL = '#12a594'
 const MUTED_LINE = '#66706a'
-const GRID = 'rgba(255,255,255,0.07)'
+const GRID = 'rgba(11,37,69,0.08)'
 
 /** Taka with Bangladeshi lakh grouping: ৳1,23,456. */
 export function taka(value: number): string {
@@ -22,10 +22,10 @@ export function Tooltip({ value, label, style }: { value: string; label: string;
     <div
       role="status"
       style={style}
-      className="pointer-events-none absolute z-20 flex -translate-x-1/2 flex-col items-center whitespace-nowrap rounded-xl border border-white/10 bg-[#001d3a]/95 px-2.5 py-1.5 shadow-[0_8px_24px_rgba(0,0,0,0.45)] backdrop-blur"
+      className="pointer-events-none absolute z-20 flex -translate-x-1/2 flex-col items-center whitespace-nowrap rounded-xl border border-[#0b2545]/10 bg-[#eef3f8]/95 px-2.5 py-1.5 shadow-[0_8px_24px_rgba(0,0,0,0.45)] backdrop-blur"
     >
-      <span className="text-[12.5px] font-bold text-white">{value}</span>
-      <span className="text-[10.5px] text-[#aaa598]">{label}</span>
+      <span className="text-[12.5px] font-bold text-[#0b2545]">{value}</span>
+      <span className="text-[10.5px] text-[#4f5d75]">{label}</span>
     </div>
   )
 }
@@ -85,7 +85,7 @@ export function Sparkline({
         <path d={path(0, currentFrom)} fill="none" stroke={MUTED_LINE} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
         <path d={path(currentFrom, pts.length - 1)} fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
         {hover !== null && (
-          <line x1={pts[hover][0]} x2={pts[hover][0]} y1={0} y2={H} stroke="rgba(255,255,255,0.25)" strokeWidth={1} vectorEffect="non-scaling-stroke" />
+          <line x1={pts[hover][0]} x2={pts[hover][0]} y1={0} y2={H} stroke="rgba(11,37,69,0.25)" strokeWidth={1} vectorEffect="non-scaling-stroke" />
         )}
       </svg>
       {/* Current value: an 8px accent dot with a surface ring so it stays legible on the line.
@@ -142,7 +142,7 @@ export function ColumnChart({
 
   return (
     <div className="flex gap-2">
-      <div className="flex flex-col justify-between pb-6 text-right text-[10.5px] tabular-nums text-[#88908a]" style={{ height: PLOT + 24 }}>
+      <div className="flex flex-col justify-between pb-6 text-right text-[10.5px] tabular-nums text-[#617086]" style={{ height: PLOT + 24 }}>
         {ticks.map((t) => (
           <span key={t} className="-translate-y-1/2 leading-none first:translate-y-0 last:translate-y-0">
             {format(t)}
@@ -155,7 +155,7 @@ export function ColumnChart({
             <span
               key={t}
               className="absolute inset-x-0 h-px"
-              style={{ top: `${(i / (ticks.length - 1)) * 100}%`, background: i === ticks.length - 1 ? 'rgba(255,255,255,0.14)' : GRID }}
+              style={{ top: `${(i / (ticks.length - 1)) * 100}%`, background: i === ticks.length - 1 ? 'rgba(11,37,69,0.16)' : GRID }}
             />
           ))}
         </div>
@@ -178,7 +178,7 @@ export function ColumnChart({
                 {/* The label floats above the bar; laid out in flow it would squash the bar
                     and draw the busiest day shorter than its value. */}
                 {labelled && (
-                  <span className="pointer-events-none absolute text-[10.5px] font-bold text-[#dad3c8]" style={{ bottom: h + 4 }}>
+                  <span className="pointer-events-none absolute text-[10.5px] font-bold text-[#24344f]" style={{ bottom: h + 4 }}>
                     {format(d.value)}
                   </span>
                 )}
@@ -200,7 +200,7 @@ export function ColumnChart({
             <span
               key={d.key}
               className={`min-w-0 grow basis-0 truncate text-center text-[10.5px] ${
-                i === data.length - 1 ? 'font-bold text-[#dad3c8]' : 'text-[#88908a]'
+                i === data.length - 1 ? 'font-bold text-[#24344f]' : 'text-[#617086]'
               } ${i % 2 === 1 && i !== data.length - 1 ? 'max-sm:invisible' : ''}`}
             >
               {d.label}
@@ -227,7 +227,7 @@ export function BarList({
         <div key={r.label} className="group flex flex-col gap-1.5">
           <div className="flex items-baseline justify-between gap-3">
             <span className="truncate text-[13px] font-semibold text-[#e8eef0]">{r.label}</span>
-            <span className="shrink-0 text-[13px] font-bold tabular-nums text-white">{format(r.value)}</span>
+            <span className="shrink-0 text-[13px] font-bold tabular-nums text-[#0b2545]">{format(r.value)}</span>
           </div>
           <div className="flex items-center gap-2">
             <span
@@ -235,7 +235,7 @@ export function BarList({
               style={{ width: `${Math.max(2, (r.value / max) * 100)}%`, background: ACCENT }}
             />
           </div>
-          {r.sub && <span className="text-[11px] text-[#959488]">{r.sub}</span>}
+          {r.sub && <span className="text-[11px] text-[#5a677d]">{r.sub}</span>}
         </div>
       ))}
     </div>
@@ -258,9 +258,9 @@ export function Meter({ value, max, label }: { value: number; max: number; label
       >
         <div className="h-full rounded-full transition-[width] duration-500" style={{ width: `${pct}%`, background: TEAL }} />
       </div>
-      <div className="flex justify-between text-[11.5px] text-[#aaa598]">
+      <div className="flex justify-between text-[11.5px] text-[#4f5d75]">
         <span>{label}</span>
-        <span className="font-semibold text-[#dad3c8]">{pct}%</span>
+        <span className="font-semibold text-[#24344f]">{pct}%</span>
       </div>
     </div>
   )
