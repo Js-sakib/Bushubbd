@@ -61,7 +61,7 @@ function StatButton({
       onClick={onClick}
       aria-pressed={active}
       className={`flex min-w-0 flex-col gap-1 rounded-[18px] p-3.5 text-left transition hover:-translate-y-0.5 ${STAT_TONES[tone]} ${
-        active ? 'ring-2 ring-[#002447] ring-offset-2 ring-offset-transparent' : ''
+        active ? '!shadow-[0_12px_30px_rgba(242,102,29,0.45)] ring-[3px] ring-[#f2661d] ring-offset-2 ring-offset-transparent' : ''
       }`}
     >
       <span className="text-[11px] font-bold opacity-80">{label}</span>
