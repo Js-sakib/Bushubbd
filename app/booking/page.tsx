@@ -212,11 +212,11 @@ function BookingContent() {
               Available
             </span>
             <span className="inline-flex items-center gap-2 text-[11.5px] font-semibold text-[#24344f]">
-              <span className="h-3.5 w-3.5 rounded bg-[#166534]" />
+              <span className="h-3.5 w-3.5 rounded bg-gradient-to-br from-[#f2661d] to-[#feb249]" />
               Yours
             </span>
             <span className="inline-flex items-center gap-2 text-[11.5px] font-semibold text-[#24344f]">
-              <span className="h-3.5 w-3.5 rounded bg-[#7f1d1d]" />
+              <span className="h-3.5 w-3.5 rounded border border-[#c3cbd6] bg-[#d5dbe3]" />
               Booked
             </span>
           </div>
@@ -248,10 +248,10 @@ function BookingContent() {
                         onClick={() => toggleSeat(seat)}
                         className={`h-9 min-w-0 grow basis-0 rounded-[9px] text-[11.5px] font-bold transition ${
                           isBooked
-                            ? 'cursor-not-allowed border border-[#5c0f12] bg-[#7f1d1d] text-white/85'
+                            ? 'cursor-not-allowed border border-[#c3cbd6] bg-[#d5dbe3] text-[#8a95a6] line-through decoration-[#8a95a6]/70'
                             : isSelected
-                            ? 'border border-[#0f3d22] bg-[#166534] text-white shadow-[0_4px_12px_rgba(22,101,52,0.35)]'
-                            : 'border border-[#c9d6e4] bg-white text-[#0b2545] shadow-[0_1px_2px_rgba(11,37,69,0.08)] hover:border-[#166534]'
+                            ? 'border border-[#e0861a] bg-gradient-to-br from-[#f2661d] to-[#feb249] text-[#1a0d03] shadow-[0_4px_12px_rgba(242,102,29,0.35)]'
+                            : 'border border-[#c9d6e4] bg-white text-[#0b2545] shadow-[0_1px_2px_rgba(11,37,69,0.08)] hover:border-[#f2661d]'
                         }`}
                       >
                         {seat}
@@ -270,10 +270,10 @@ function BookingContent() {
                         onClick={() => toggleSeat(seat)}
                         className={`h-9 min-w-0 grow basis-0 rounded-[9px] text-[11.5px] font-bold transition ${
                           isBooked
-                            ? 'cursor-not-allowed border border-[#5c0f12] bg-[#7f1d1d] text-white/85'
+                            ? 'cursor-not-allowed border border-[#c3cbd6] bg-[#d5dbe3] text-[#8a95a6] line-through decoration-[#8a95a6]/70'
                             : isSelected
-                            ? 'border border-[#0f3d22] bg-[#166534] text-white shadow-[0_4px_12px_rgba(22,101,52,0.35)]'
-                            : 'border border-[#c9d6e4] bg-white text-[#0b2545] shadow-[0_1px_2px_rgba(11,37,69,0.08)] hover:border-[#166534]'
+                            ? 'border border-[#e0861a] bg-gradient-to-br from-[#f2661d] to-[#feb249] text-[#1a0d03] shadow-[0_4px_12px_rgba(242,102,29,0.35)]'
+                            : 'border border-[#c9d6e4] bg-white text-[#0b2545] shadow-[0_1px_2px_rgba(11,37,69,0.08)] hover:border-[#f2661d]'
                         }`}
                       >
                         {seat}
