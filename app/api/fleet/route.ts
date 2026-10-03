@@ -4,7 +4,7 @@ import { connectToDatabase, isDuplicateKeyError } from '@/lib/db'
 import { getAdminFromCookies } from '@/lib/auth'
 import { FleetBus } from '@/lib/models'
 import { BUS_TYPES, MAX_BUS_SEATS, cleanLogoUrl, cleanName, cleanPlate, nameKey, plateKey } from '@/lib/names'
-import { DEFAULT_COMMISSION_RATE } from '@/lib/tickets'
+import { companyRate } from '@/lib/commission'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -49,8 +49,6 @@ export async function POST(req: NextRequest) {
     const busType = BUS_TYPES.includes(body.busType) ? body.busType : null
     const logoUrl = cleanLogoUrl(body.logoUrl)
     const plateNumber = cleanPlate(body.plateNumber)
-    const commissionRate =
-      body.commissionRate === undefined || body.commissionRate === '' ? DEFAULT_COMMISSION_RATE : Number(body.commissionRate)
 
     if (name.length < 2 || name.length > 60) {
       return NextResponse.json({ error: 'Give the bus a name (2 to 60 letters)' }, { status: 400 })
@@ -67,9 +65,6 @@ export async function POST(req: NextRequest) {
     if (plateNumber === null) {
       return NextResponse.json({ error: 'Type the number plate, e.g. DHAKA METRO-BA 11-2345' }, { status: 400 })
     }
-    if (!Number.isFinite(commissionRate) || commissionRate < 0 || commissionRate > 50) {
-      return NextResponse.json({ error: 'Commission must be between 0 and 50%' }, { status: 400 })
-    }
 
     const { db } = await connectToDatabase()
     const company =
@@ -79,6 +74,8 @@ export async function POST(req: NextRequest) {
     if (!company) {
       return NextResponse.json({ error: 'Choose an approved bus company' }, { status: 400 })
     }
+    // The bus takes its company's commission (set in Admin → Companies).
+    const commissionRate = await companyRate(db, company._id.toString())
 
     const bus: FleetBus = {
       name,

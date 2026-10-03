@@ -471,7 +471,6 @@ function InvoiceView() {
                   </span>
                   <span className="text-[12px] text-[#5b6668] sm:text-right">
                     <span className="sm:hidden">Commission </span>−{taka(l.commission)}
-                    {l.commissionRate > 0 && <span className="text-[10.5px]"> ({l.commissionRate}%)</span>}
                   </span>
                   <span className="text-right text-[12.5px] font-bold">
                     <span className="font-normal text-[#7a8587] sm:hidden">Company gets </span>

@@ -6,6 +6,8 @@ import { findCompanyByName } from '@/lib/companies'
 import { Company } from '@/lib/models'
 import { cleanName } from '@/lib/names'
 import { temporaryPassword } from '@/lib/passwords'
+import { effectiveRate, parseRate } from '@/lib/commission'
+import { DEFAULT_COMMISSION_RATE } from '@/lib/tickets'
 
 export const dynamic = 'force-dynamic'
 
@@ -20,12 +22,19 @@ export async function GET() {
     .find({}, { projection: { passwordHash: 0 } })
     .sort({ createdAt: -1 })
     .toArray()
-  return NextResponse.json({ companies })
+  // Older companies have their rate on their buses only; show that one.
+  const busRates = await db
+    .collection('fleet')
+    .aggregate([{ $match: { commissionRate: { $type: 'number' } } }, { $group: { _id: '$companyId', rate: { $first: '$commissionRate' } } }])
+    .toArray()
+  const busRate = new Map(busRates.map((r) => [String(r._id), r.rate]))
+  return NextResponse.json({ companies: companies.map((c) => ({ ...c, commissionRate: effectiveRate(c, busRate.get(c._id.toString())) })) })
 }
 
 /**
  * The admin adds a bus company directly, already approved, with a generated password that is
- * shown once to pass on. Each company name and email can be used only once.
+ * shown once to pass on, and BusHub's commission for all of its buses. Each company name and
+ * email can be used only once.
  */
 export async function POST(req: NextRequest) {
   try {
@@ -47,6 +56,10 @@ export async function POST(req: NextRequest) {
     if (!ownerName || !phone) {
       return NextResponse.json({ error: 'Enter the contact person and phone' }, { status: 400 })
     }
+    const commissionRate = body.commissionRate === undefined || body.commissionRate === '' ? DEFAULT_COMMISSION_RATE : parseRate(body.commissionRate)
+    if (commissionRate === null) {
+      return NextResponse.json({ error: 'Commission must be a number from 0 to 50 (%)' }, { status: 400 })
+    }
 
     const { db } = await connectToDatabase()
     const sameName = await findCompanyByName(db, name)
@@ -66,6 +79,7 @@ export async function POST(req: NextRequest) {
       phone,
       passwordHash: await bcrypt.hash(password, 10),
       status: 'approved',
+      commissionRate,
       createdAt: new Date().toISOString(),
     }
     const result = await db.collection('companies').insertOne({ ...company } as any)

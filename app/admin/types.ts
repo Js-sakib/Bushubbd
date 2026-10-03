@@ -65,6 +65,8 @@ export interface CompanyRow {
   phone: string
   status: string
   createdAt: string
+  /** BusHub's commission on all the company's tickets, in percent. */
+  commissionRate?: number
   /** Set when the operator used "Forgot password"; cleared once the admin resets it. */
   passwordResetRequestedAt?: string
 }

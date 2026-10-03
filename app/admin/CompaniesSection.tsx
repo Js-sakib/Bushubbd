@@ -9,7 +9,7 @@ import type { CompanyPrefill, CompanyRow } from './types'
 /** A password to pass on once: after a reset, or for a company the admin just added (isNew). */
 type NewLogin = { name: string; email: string; phone: string; password: string; isNew?: boolean }
 
-const EMPTY_COMPANY = { name: '', ownerName: '', phone: '', email: '' }
+const EMPTY_COMPANY = { name: '', ownerName: '', phone: '', email: '', commissionRate: '10' }
 
 const STATUS_STYLE: Record<string, string> = {
   approved: 'bg-[#34d399]/[0.13] text-[#6ee7b7]',
@@ -138,6 +138,27 @@ export default function CompaniesSection({
     }
   }
 
+  /** BusHub's commission for the company: set when it was added, changed here only if needed. */
+  const editCommission = async (c: CompanyRow) => {
+    const next = prompt(
+      `BusHub commission for ${c.name}, in % (0 to 50).\n\nAll their buses use it. Trips still to come use the new rate from their next sale; tickets already sold keep their split.`,
+      String(c.commissionRate ?? 10)
+    )
+    if (next === null) return
+    const res = await fetch(`/api/companies/${c._id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ commissionRate: next }),
+    })
+    const data = await res.json().catch(() => null)
+    if (!res.ok) {
+      toast.error(data?.error || 'Could not change the commission')
+      return
+    }
+    toast.success(`${c.name}: ${data.commissionRate}% commission`)
+    onChanged()
+  }
+
   const startReset = (company: CompanyRow) => {
     setNewLogin(null)
     setTypedPassword('')
@@ -225,6 +246,23 @@ export default function CompaniesSection({
             <input required placeholder="Contact person" value={companyForm.ownerName} onChange={(e) => setCompanyForm({ ...companyForm, ownerName: e.target.value })} className="input-dark" aria-label="Contact person" />
             <input required type="tel" placeholder="Phone (01…)" value={companyForm.phone} onChange={(e) => setCompanyForm({ ...companyForm, phone: e.target.value })} className="input-dark" aria-label="Phone" />
             <input required type="email" placeholder="Email for their login" value={companyForm.email} onChange={(e) => setCompanyForm({ ...companyForm, email: e.target.value })} className="input-dark" aria-label="Login email" />
+            <label className="relative flex sm:col-span-2">
+              <input
+                required
+                type="number"
+                min={0}
+                max={50}
+                step="0.5"
+                inputMode="decimal"
+                placeholder="Commission"
+                value={companyForm.commissionRate}
+                onChange={(e) => setCompanyForm({ ...companyForm, commissionRate: e.target.value })}
+                className="input-dark w-full pr-36"
+                aria-label="BusHub commission percent"
+              />
+              <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[12px] font-semibold text-[#8e9a9d]">% BusHub commission</span>
+            </label>
+            <p className="-mt-1 text-[11.5px] text-[#78868a] sm:col-span-2">Set once for this company; all its buses use it. You can change it later here if needed.</p>
             <button type="submit" disabled={saving} className="glass-btn h-12 sm:col-span-2">
               {saving ? 'Adding…' : 'Add company and create login'}
             </button>
@@ -315,6 +353,7 @@ export default function CompaniesSection({
                   <span className="truncate text-[11.5px] text-[#6e7b7e]">
                     {c.email} · {c.phone}
                   </span>
+                  <span className="text-[11.5px] font-bold text-[#f5a524]">{c.commissionRate ?? 10}% BusHub commission</span>
                   {c.passwordResetRequestedAt && <span className="text-[11.5px] font-bold text-[#f5a524]">Asked for a new password</span>}
                 </div>
                 <span className={`inline-flex h-6 shrink-0 items-center rounded-full px-2.5 text-[11px] font-bold capitalize ${STATUS_STYLE[c.status] || STATUS_STYLE.pending}`}>
@@ -342,6 +381,13 @@ export default function CompaniesSection({
                   }
                 >
                   Reset password
+                </button>
+                <button
+                  type="button"
+                  onClick={() => editCommission(c)}
+                  className="h-9 rounded-full border border-white/10 bg-white/[0.05] px-3.5 text-[12px] font-bold text-[#c4cdcf] transition hover:bg-white/[0.09]"
+                >
+                  Edit commission
                 </button>
               </div>
             </li>
