@@ -94,15 +94,15 @@ export default function CounterView() {
               </div>
               <div className="grid grid-cols-3 gap-2 text-center">
                 <div className="rounded-xl bg-black/25 py-2">
-                  <div className="display text-[18px] font-bold text-[#7de8bd]">{c.free}</div>
+                  <div className="display text-[18px] font-bold text-[#3fd0c9]">{c.free}</div>
                   <div className="text-[10.5px] text-[#aaa598]">Free</div>
                 </div>
                 <div className="rounded-xl bg-black/25 py-2">
-                  <div className="display text-[18px] font-bold text-[#d99d78]">{c.online + c.held}</div>
+                  <div className="display text-[18px] font-bold text-[#53d3d1]">{c.online + c.held}</div>
                   <div className="text-[10.5px] text-[#aaa598]">BusHub</div>
                 </div>
                 <div className="rounded-xl bg-black/25 py-2">
-                  <div className="display text-[18px] font-bold text-[#a78bfa]">{c.counter}</div>
+                  <div className="display text-[18px] font-bold text-[#86c6d1]">{c.counter}</div>
                   <div className="text-[10.5px] text-[#aaa598]">Counter</div>
                 </div>
               </div>

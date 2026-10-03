@@ -6,11 +6,11 @@ import type { CompanyTrip } from './types'
 export type SeatKind = 'free' | 'online' | 'held' | 'counter' | 'mine'
 
 const STYLES: Record<SeatKind, string> = {
-  free: 'border border-[#5aa287] bg-[#1d5a49] text-[#7de3b8] hover:border-[#7de8bd]',
-  online: 'border border-[#cc8b65] bg-gradient-to-br from-[#f2661d] to-[#f5a524] text-[#170b02]',
-  held: 'border border-dashed border-[#cc8b65] bg-[#f5a524]/[0.08] text-[#d99d78]',
-  counter: 'border border-[#8b6dff] bg-[#5b3fd6] text-white',
-  mine: 'border-2 border-white bg-[#6d4aff] text-white',
+  free: 'border border-[#0dabab] bg-[#0a4f5a] text-[#8ee8e4] hover:border-[#3fd0c9]',
+  online: 'border border-[#cc8b65] bg-gradient-to-br from-[#f2661d] to-[#feb249] text-[#170b02]',
+  held: 'border border-dashed border-[#cc8b65] bg-[#feb249]/[0.08] text-[#53d3d1]',
+  counter: 'border border-[#5eb1bf] bg-[#4a9aa8] text-white',
+  mine: 'border-2 border-white bg-[#5eb1bf] text-white',
 }
 
 export const SEAT_LEGEND: { kind: SeatKind; label: string }[] = [

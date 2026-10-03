@@ -40,11 +40,11 @@ export default function PaymentsPanel({ data }: { data: PaymentsData | null }) {
         </a>
       )}
       {toApprove.length > 0 && (
-        <a href={`/invoice/${toApprove[0]._id}`} className="flex items-center gap-3 rounded-2xl border border-[#cc8b65]/40 bg-[#f5a524]/[0.08] px-4 py-3">
-          <span className="grow text-[13px] font-semibold text-[#fde68a]">
+        <a href={`/invoice/${toApprove[0]._id}`} className="flex items-center gap-3 rounded-2xl border border-[#cc8b65]/40 bg-[#feb249]/[0.08] px-4 py-3">
+          <span className="grow text-[13px] font-semibold text-[#f9f0a8]">
             {toApprove.length === 1 ? `Invoice ${toApprove[0].number} (${taka(toApprove[0].totals.payout)}) needs your approval.` : `${toApprove.length} invoices need your approval.`}
           </span>
-          <span className="text-[12.5px] font-bold text-[#fbbf24]">Review ›</span>
+          <span className="text-[12.5px] font-bold text-[#f6e879]">Review ›</span>
         </a>
       )}
 
@@ -62,7 +62,7 @@ export default function PaymentsPanel({ data }: { data: PaymentsData | null }) {
             {data.invoiced > 0 && <span className="text-[11.5px] text-[#959488]">On invoices waiting for payment: {taka(data.invoiced)}</span>}
             {data.owed.tickets === 0 && data.invoiced === 0 && <span className="text-[11.5px] text-[#959488]">Nothing waiting</span>}
           </div>
-          <span className="shrink-0 text-[17px] font-bold text-[#d99d78]">{taka(data.owed.payout + data.invoiced)}</span>
+          <span className="shrink-0 text-[17px] font-bold text-[#53d3d1]">{taka(data.owed.payout + data.invoiced)}</span>
         </div>
         <div className="flex items-start justify-between gap-3">
           <div className="flex flex-col">
@@ -82,23 +82,23 @@ export default function PaymentsPanel({ data }: { data: PaymentsData | null }) {
         )}
         <div className="flex items-start justify-between gap-3 border-t border-white/[0.06] pt-2.5">
           <span className="text-[13px] text-[#dad3c8]">Received and signed so far</span>
-          <span className="shrink-0 text-[14px] font-bold text-[#7de8bd]">{taka(received)}</span>
+          <span className="shrink-0 text-[14px] font-bold text-[#3fd0c9]">{taka(received)}</span>
         </div>
       </div>
 
       <div className="card-2 overflow-hidden">
-        <div className="border-b border-[#1b4a3f] px-4 py-3">
+        <div className="border-b border-[#1b4560] px-4 py-3">
           <span className="label-xs">Invoices from BusHub</span>
         </div>
         {data.invoices.length > 3 && (
-          <div className="border-b border-[#1b4a3f] px-3 py-2.5">
+          <div className="border-b border-[#1b4560] px-3 py-2.5">
             <SearchBox value={search} onChange={setSearch} placeholder="Search invoice number, date, status" />
           </div>
         )}
         {data.invoices
           .filter((i) => matches(search, i.number, i.from, i.to, formatTripDate(i.from), formatTripDate(i.to), statusOf(i).label, i.totals.payout))
           .map((i) => (
-          <a key={i._id} href={`/invoice/${i._id}`} className="flex items-start gap-3 border-b border-[#1b4a3f] px-4 py-3 last:border-b-0 hover:bg-white/[0.03]">
+          <a key={i._id} href={`/invoice/${i._id}`} className="flex items-start gap-3 border-b border-[#1b4560] px-4 py-3 last:border-b-0 hover:bg-white/[0.03]">
             <div className="flex min-w-0 grow flex-col gap-0.5">
               <span className="font-mono text-[13px] font-bold">{i.number}</span>
               <span className="text-[11.5px] text-[#b8b2a6]">
@@ -109,11 +109,11 @@ export default function PaymentsPanel({ data }: { data: PaymentsData | null }) {
             <div className="flex shrink-0 flex-col items-end gap-1.5">
               <span className="text-[14px] font-bold">{taka(i.totals.payout)}</span>
               {i.status === 'unpaid' && !i.approval ? (
-                <span className="rounded-full bg-gradient-to-r from-[#f2661d] to-[#f5a524] px-3 py-1 text-[11.5px] font-bold text-[#1a0d03]">Review & approve</span>
+                <span className="rounded-full bg-gradient-to-r from-[#f2661d] to-[#feb249] px-3 py-1 text-[11.5px] font-bold text-[#1a0d03]">Review & approve</span>
               ) : i.status === 'paid' ? (
                 <span className="rounded-full bg-[#60a5fa] px-3 py-1 text-[11.5px] font-bold text-[#100c0d]">Done ›</span>
               ) : (
-                <span className="text-[10.5px] text-[#d99d78]">Open ›</span>
+                <span className="text-[10.5px] text-[#53d3d1]">Open ›</span>
               )}
             </div>
           </a>

@@ -69,35 +69,35 @@ export default function StaffSales({ trips, period }: { trips: CompanyTrip[]; pe
 
   return (
     <div className="card-2 overflow-hidden">
-      <div className="flex flex-col gap-0.5 border-b border-[#1b4a3f] px-4 py-3">
+      <div className="flex flex-col gap-0.5 border-b border-[#1b4560] px-4 py-3">
         <span className="label-xs">Who sold seats</span>
         <span className="text-[11px] text-[#88908a]">{period}</span>
       </div>
 
-      <div className="flex flex-col gap-2.5 border-b border-[#1b4a3f] px-4 py-3.5">
+      <div className="flex flex-col gap-2.5 border-b border-[#1b4560] px-4 py-3.5">
         <div className="flex items-end justify-between gap-3">
           <span className="text-[13px] text-[#dad3c8]">
             <span className="display text-[22px] font-bold text-white">{sold}</span> of {totalSeats} seats sold
           </span>
-          <span className="text-[12px] font-semibold text-[#7de8bd]">{notSold} not sold</span>
+          <span className="text-[12px] font-semibold text-[#3fd0c9]">{notSold} not sold</span>
         </div>
-        <div className="flex h-2.5 overflow-hidden rounded-full bg-[#1d5a49]">
-          <span style={{ width: pct(online) }} className="bg-gradient-to-r from-[#f2661d] to-[#f5a524]" />
-          <span style={{ width: pct(counter) }} className="bg-[#6d4aff]" />
+        <div className="flex h-2.5 overflow-hidden rounded-full bg-[#0a4f5a]">
+          <span style={{ width: pct(online) }} className="bg-gradient-to-r from-[#f2661d] to-[#feb249]" />
+          <span style={{ width: pct(counter) }} className="bg-[#5eb1bf]" />
         </div>
       </div>
 
-      <div className="flex items-center gap-3 border-b border-[#1b4a3f] px-4 py-3">
+      <div className="flex items-center gap-3 border-b border-[#1b4560] px-4 py-3">
         <div className="flex min-w-0 grow flex-col">
-          <span className="text-[13.5px] font-semibold text-[#d99d78]">BusHub online</span>
+          <span className="text-[13.5px] font-semibold text-[#53d3d1]">BusHub online</span>
           <span className="text-[11.5px] text-[#959488]">Tickets bought on bushubbd.com · {taka(onlineMoney)}</span>
         </div>
         <span className="display shrink-0 text-[20px] font-bold">{online}</span>
       </div>
 
-      <div className="flex items-center gap-3 border-b border-[#1b4a3f] px-4 py-3">
+      <div className="flex items-center gap-3 border-b border-[#1b4560] px-4 py-3">
         <div className="flex min-w-0 grow flex-col">
-          <span className="text-[13.5px] font-semibold text-[#a78bfa]">Counter total</span>
+          <span className="text-[13.5px] font-semibold text-[#86c6d1]">Counter total</span>
           <span className="text-[11.5px] text-[#959488]">
             All counters · {taka(counterMoney)} · {counterToday} today
           </span>
@@ -105,33 +105,33 @@ export default function StaffSales({ trips, period }: { trips: CompanyTrip[]; pe
         <span className="display shrink-0 text-[20px] font-bold">{counter}</span>
       </div>
 
-      <div className="flex items-center gap-3 border-b border-[#1b4a3f] px-4 py-3">
+      <div className="flex items-center gap-3 border-b border-[#1b4560] px-4 py-3">
         <div className="flex min-w-0 grow flex-col">
-          <span className="text-[13.5px] font-semibold text-[#7de8bd]">Not sold</span>
+          <span className="text-[13.5px] font-semibold text-[#3fd0c9]">Not sold</span>
           <span className="text-[11.5px] text-[#959488]">Empty seats on these trips</span>
         </div>
         <span className="display shrink-0 text-[20px] font-bold">{notSold}</span>
       </div>
 
       {sellers.length > 0 && (
-        <div className="border-b border-[#1b4a3f] bg-white/[0.02] px-4 py-2">
+        <div className="border-b border-[#1b4560] bg-white/[0.02] px-4 py-2">
           <span className="label-xs">Each counter</span>
         </div>
       )}
 
       {sellers.map((s, i) => (
-        <details key={`${s.name}-${i}`} className="group border-b border-[#1b4a3f] last:border-b-0">
+        <details key={`${s.name}-${i}`} className="group border-b border-[#1b4560] last:border-b-0">
           <summary className="flex cursor-pointer list-none items-center gap-3 px-4 py-3 marker:hidden">
             <div className="flex min-w-0 grow flex-col">
-              <span className="truncate text-[13.5px] font-semibold text-[#c4b5fd]">{s.name}</span>
+              <span className="truncate text-[13.5px] font-semibold text-[#a9d8e0]">{s.name}</span>
               <span className="text-[11.5px] text-[#959488]">
                 {s.seats} seat{s.seats === 1 ? '' : 's'} · {taka(s.value)} at ticket price
               </span>
-              <span className="text-[10.5px] text-[#d99d78] group-open:hidden">Show trips ›</span>
-              <span className="hidden text-[10.5px] text-[#d99d78] group-open:inline">Hide trips ‹</span>
+              <span className="text-[10.5px] text-[#53d3d1] group-open:hidden">Show trips ›</span>
+              <span className="hidden text-[10.5px] text-[#53d3d1] group-open:inline">Hide trips ‹</span>
             </div>
             <div className="flex shrink-0 flex-col items-end">
-              <span className="display text-[20px] font-bold leading-none text-[#a78bfa]">{s.today}</span>
+              <span className="display text-[20px] font-bold leading-none text-[#86c6d1]">{s.today}</span>
               <span className="text-[10.5px] text-[#aaa598]">today</span>
             </div>
           </summary>

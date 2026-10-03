@@ -109,7 +109,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           position="top-center"
           containerClassName="no-print"
           toastOptions={{
-            style: { background: '#0d3c32', color: '#f3eee6', border: '1px solid #2a5d50' },
+            style: { background: '#08324d', color: '#fbeceb', border: '1px solid #2a5874' },
           }}
         />
       </body>

@@ -70,8 +70,8 @@ export default function VerifyTicket() {
   if (tooMany) {
     return (
       <div className="mx-auto mt-6 max-w-md px-1">
-        <div className="flex flex-col items-center gap-3 rounded-[22px] border-2 border-[#cc8b65] bg-[#f5a524]/[0.08] p-8 text-center">
-          <h1 className="text-2xl font-bold text-[#d99d78]">Too many checks</h1>
+        <div className="flex flex-col items-center gap-3 rounded-[22px] border-2 border-[#cc8b65] bg-[#feb249]/[0.08] p-8 text-center">
+          <h1 className="text-2xl font-bold text-[#53d3d1]">Too many checks</h1>
           <p className="text-[13px] leading-relaxed text-[#b8b2a6]">
             Too many wrong ticket codes were checked from this connection. Please wait 10 minutes and scan the QR again.
           </p>
@@ -103,12 +103,12 @@ export default function VerifyTicket() {
     <div className="mx-auto mt-6 max-w-md px-1">
       <div
         className={`flex flex-col items-center gap-3 rounded-[22px] border-2 p-7 text-center ${
-          result.valid ? 'border-[#7de8bd] bg-[#7de8bd]/[0.08]' : 'border-[#f87171] bg-[#f87171]/[0.08]'
+          result.valid ? 'border-[#3fd0c9] bg-[#3fd0c9]/[0.08]' : 'border-[#f87171] bg-[#f87171]/[0.08]'
         }`}
       >
         <span
           className={`flex h-16 w-16 items-center justify-center rounded-full ${
-            result.valid ? 'bg-[#7de8bd]/[0.15] text-[#7de8bd]' : 'bg-[#f87171]/[0.15] text-[#f87171]'
+            result.valid ? 'bg-[#3fd0c9]/[0.15] text-[#3fd0c9]' : 'bg-[#f87171]/[0.15] text-[#f87171]'
           }`}
         >
           {result.valid ? (
@@ -123,7 +123,7 @@ export default function VerifyTicket() {
           )}
         </span>
 
-        <h1 className={`text-2xl font-bold ${result.valid ? 'text-[#7de8bd]' : 'text-[#f87171]'}`}>
+        <h1 className={`text-2xl font-bold ${result.valid ? 'text-[#3fd0c9]' : 'text-[#f87171]'}`}>
           {result.valid ? 'Valid ticket' : 'Not valid'}
         </h1>
 
@@ -134,7 +134,7 @@ export default function VerifyTicket() {
         )}
 
         {result.checkedIn && (
-          <p className="text-[13px] font-semibold text-[#d99d78]">
+          <p className="text-[13px] font-semibold text-[#53d3d1]">
             Already boarded {result.checkedInAt ? `at ${new Date(result.checkedInAt).toLocaleString()}` : ''}
           </p>
         )}
@@ -169,9 +169,9 @@ export default function VerifyTicket() {
           </div>
           <div className="flex items-center justify-between gap-3">
             <span className="text-xs text-[#aaa598]">Seats</span>
-            <span className="text-sm font-bold text-[#d99d78]">{result.seats.join(', ')}</span>
+            <span className="text-sm font-bold text-[#53d3d1]">{result.seats.join(', ')}</span>
           </div>
-          <div className="flex items-center justify-between gap-3 border-t border-[#1f4f43] pt-2.5">
+          <div className="flex items-center justify-between gap-3 border-t border-[#1f4a66] pt-2.5">
             <span className="text-xs text-[#aaa598]">Valid until</span>
             <span className="text-[13px] font-semibold">
               {/* Always Dhaka time: a phone set to another zone must not show a different cutoff. */}

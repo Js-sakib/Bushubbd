@@ -77,22 +77,22 @@ const NUM_FMTS = '<numFmts count="3"><numFmt numFmtId="164" formatCode="#,##0;[R
 const FONTS = [
   '<font><sz val="10.5"/><color rgb="FF1F2A2C"/><name val="Calibri"/></font>', // 0 body
   '<font><b/><sz val="10.5"/><color rgb="FF1F2A2C"/><name val="Calibri"/></font>', // 1 bold
-  '<font><b/><sz val="16"/><color rgb="FF013328"/><name val="Calibri"/></font>', // 2 title
+  '<font><b/><sz val="16"/><color rgb="FF002447"/><name val="Calibri"/></font>', // 2 title
   '<font><b/><sz val="10.5"/><color rgb="FFFFFFFF"/><name val="Calibri"/></font>', // 3 header
   '<font><sz val="10"/><color rgb="FF5B6B6E"/><name val="Calibri"/></font>', // 4 notes
 ]
 const FILLS = [
   '<fill><patternFill patternType="none"/></fill>',
   '<fill><patternFill patternType="gray125"/></fill>',
-  '<fill><patternFill patternType="solid"><fgColor rgb="FF013328"/><bgColor indexed="64"/></patternFill></fill>', // 2 header
-  '<fill><patternFill patternType="solid"><fgColor rgb="FFF5F1EA"/><bgColor indexed="64"/></patternFill></fill>', // 3 band
-  '<fill><patternFill patternType="solid"><fgColor rgb="FFF1DFD2"/><bgColor indexed="64"/></patternFill></fill>', // 4 total
-  '<fill><patternFill patternType="solid"><fgColor rgb="FFCC8B65"/><bgColor indexed="64"/></patternFill></fill>', // 5 accent
+  '<fill><patternFill patternType="solid"><fgColor rgb="FF002447"/><bgColor indexed="64"/></patternFill></fill>', // 2 header
+  '<fill><patternFill patternType="solid"><fgColor rgb="FFFBF3F2"/><bgColor indexed="64"/></patternFill></fill>', // 3 band
+  '<fill><patternFill patternType="solid"><fgColor rgb="FFFBF6C9"/><bgColor indexed="64"/></patternFill></fill>', // 4 total
+  '<fill><patternFill patternType="solid"><fgColor rgb="FFFEB249"/><bgColor indexed="64"/></patternFill></fill>', // 5 accent
 ]
 const BORDERS = [
   '<border><left/><right/><top/><bottom/><diagonal/></border>',
   '<border><left style="thin"><color rgb="FFD3DCDE"/></left><right style="thin"><color rgb="FFD3DCDE"/></right><top style="thin"><color rgb="FFD3DCDE"/></top><bottom style="thin"><color rgb="FFD3DCDE"/></bottom><diagonal/></border>',
-  '<border><left style="thin"><color rgb="FFC9C0B3"/></left><right style="thin"><color rgb="FFC9C0B3"/></right><top style="medium"><color rgb="FFCC8B65"/></top><bottom style="medium"><color rgb="FFCC8B65"/></bottom><diagonal/></border>',
+  '<border><left style="thin"><color rgb="FFC5CEDA"/></left><right style="thin"><color rgb="FFC5CEDA"/></right><top style="medium"><color rgb="FFFEB249"/></top><bottom style="medium"><color rgb="FFFEB249"/></bottom><diagonal/></border>',
 ]
 const KIND_FMT: Record<Kind, number> = { text: 0, wrap: 0, int: 3, money: 164, date: 165, datetime: 166 }
 const KINDS: Kind[] = ['text', 'wrap', 'int', 'money', 'date', 'datetime']
@@ -207,7 +207,7 @@ function sheetXml(sheet: Sheet, index: number): { xml: string; filter: string } 
   const xml =
     '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
     '<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">' +
-    `<sheetPr><tabColor rgb="${index === 0 ? 'FFCC8B65' : 'FF013328'}"/><pageSetUpPr fitToPage="1"/></sheetPr>` +
+    `<sheetPr><tabColor rgb="${index === 0 ? 'FFFEB249' : 'FF002447'}"/><pageSetUpPr fitToPage="1"/></sheetPr>` +
     `<sheetViews><sheetView workbookViewId="0"${index === 0 ? ' tabSelected="1"' : ''} showGridLines="0"><pane xSplit="1" ySplit="${headRow}" topLeftCell="B${first}" activePane="bottomRight" state="frozen"/><selection pane="bottomRight" activeCell="B${first}" sqref="B${first}"/></sheetView></sheetViews>` +
     '<sheetFormatPr defaultRowHeight="15"/>' +
     `<cols>${cols.map((col, c) => `<col min="${c + 1}" max="${c + 1}" width="${width(col, sheet.rows, c)}" customWidth="1"/>`).join('')}</cols>` +

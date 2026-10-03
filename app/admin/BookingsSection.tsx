@@ -183,10 +183,10 @@ export default function BookingsSection({
           Seats: <b className="text-[#e3dcd2]">{sold.reduce((n, b) => n + b.seats.length, 0)}</b>
         </span>
         <span>
-          BusHub commission: <b className="text-[#d99d78]">{taka(sold.reduce((n, b) => n + (b.commissionAmount || 0), 0))}</b>
+          BusHub commission: <b className="text-[#53d3d1]">{taka(sold.reduce((n, b) => n + (b.commissionAmount || 0), 0))}</b>
         </span>
         {visible.length > 0 && (
-          <button type="button" onClick={() => select(visible.map((b) => b._id), true)} className="ml-auto font-bold text-[#d99d78]">
+          <button type="button" onClick={() => select(visible.map((b) => b._id), true)} className="ml-auto font-bold text-[#53d3d1]">
             Select all shown
           </button>
         )}

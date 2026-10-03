@@ -76,22 +76,22 @@ export default function PayoutsPanel() {
       {toSign > 0 && <p className="px-1 text-[12px] text-[#93c5fd]">{toSign} paid invoice{toSign === 1 ? ' is' : 's are'} waiting for the company to sign.</p>}
 
       <div className="card-2 overflow-hidden">
-        <div className="border-b border-[#1b4a3f] px-4 py-3">
+        <div className="border-b border-[#1b4560] px-4 py-3">
           <span className="label-xs">Each company · after commission</span>
         </div>
         {companies.map((c) => (
-          <div key={c._id} className="flex flex-col gap-2.5 border-b border-[#1b4a3f] px-4 py-3.5 last:border-b-0">
+          <div key={c._id} className="flex flex-col gap-2.5 border-b border-[#1b4560] px-4 py-3.5 last:border-b-0">
             <div className="flex items-start justify-between gap-3">
               <div className="flex min-w-0 flex-col">
                 <span className="truncate text-[14px] font-bold">{c.name}</span>
                 <span className="text-[11.5px] text-[#b8b2a6]">
                   {c.owed.tickets} ticket{c.owed.tickets === 1 ? '' : 's'} · {c.owed.seats} seats · price {taka(c.owed.ticketTotal)} · commission {taka(c.owed.commission)}
                 </span>
-                {c.invoiced > 0 && <span className="text-[11.5px] text-[#fbbf24]">Already invoiced, not paid: {taka(c.invoiced)}</span>}
+                {c.invoiced > 0 && <span className="text-[11.5px] text-[#f6e879]">Already invoiced, not paid: {taka(c.invoiced)}</span>}
                 {c.later.tickets > 0 && <span className="text-[11.5px] text-[#88908a]">Later: {taka(c.later.payout)} for trips still to leave</span>}
                 {c.refunds > 0 && <span className="text-[11.5px] text-[#fca5a5]">Refunds to take back: −{taka(c.refunds)} (from the next payment)</span>}
               </div>
-              <span className="shrink-0 text-[17px] font-bold text-[#d99d78]">{taka(c.owed.payout)}</span>
+              <span className="shrink-0 text-[17px] font-bold text-[#53d3d1]">{taka(c.owed.payout)}</span>
             </div>
             {c.owed.tickets > 0 && (
               <button type="button" disabled={busy === c._id} onClick={() => makeInvoice(c)} className="glass-btn h-11 text-sm">
@@ -106,11 +106,11 @@ export default function PayoutsPanel() {
       </div>
 
       <div className="card-2 overflow-hidden">
-        <div className="border-b border-[#1b4a3f] px-4 py-3">
+        <div className="border-b border-[#1b4560] px-4 py-3">
           <span className="label-xs">Invoices</span>
         </div>
         {invoices.map((i) => (
-          <a key={i._id} href={`/invoice/${i._id}?as=admin`} className="flex items-start gap-3 border-b border-[#1b4a3f] px-4 py-3 last:border-b-0 hover:bg-white/[0.03]">
+          <a key={i._id} href={`/invoice/${i._id}?as=admin`} className="flex items-start gap-3 border-b border-[#1b4560] px-4 py-3 last:border-b-0 hover:bg-white/[0.03]">
             <div className="flex min-w-0 grow flex-col gap-0.5">
               <span className="truncate text-[13.5px] font-bold">
                 <span className="font-mono">{i.number}</span> · {i.companyName}
@@ -122,7 +122,7 @@ export default function PayoutsPanel() {
             </div>
             <div className="flex shrink-0 flex-col items-end">
               <span className="text-[14px] font-bold">{taka(i.totals.payout)}</span>
-              <span className="text-[10.5px] text-[#d99d78]">Open ›</span>
+              <span className="text-[10.5px] text-[#53d3d1]">Open ›</span>
             </div>
           </a>
         ))}

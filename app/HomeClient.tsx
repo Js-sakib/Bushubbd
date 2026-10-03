@@ -80,7 +80,7 @@ export default function HomeClient() {
   return (
     <div className="px-5 pb-4 pt-5">
       <section className="flex flex-col gap-3">
-        <span className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#d99d78]">
+        <span className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#53d3d1]">
           Online bus tickets · Bangladesh
         </span>
         <h1 className="text-[36px] font-bold leading-[1.08] sm:text-5xl">
@@ -117,7 +117,7 @@ export default function HomeClient() {
               onClick={() => setTrip(option.key)}
               className={`h-10 grow rounded-full text-[13px] font-bold transition ${
                 trip === option.key
-                  ? 'bg-gradient-to-br from-[#f2661d] to-[#f5a524] text-[#170b02] shadow-[0_6px_16px_rgba(242,102,29,0.32)]'
+                  ? 'bg-gradient-to-br from-[#f2661d] to-[#feb249] text-[#170b02] shadow-[0_6px_16px_rgba(242,102,29,0.32)]'
                   : 'text-[#b8b2a6] hover:text-[#e8eef0]'
               }`}
             >
@@ -159,7 +159,7 @@ export default function HomeClient() {
             type="button"
             onClick={handleSwap}
             aria-label="Swap origin and destination"
-            className="h-11 w-11 shrink-0 self-center rounded-full border border-white/10 bg-white/[0.06] text-[#d99d78] transition hover:border-[#cc8b65]"
+            className="h-11 w-11 shrink-0 self-center rounded-full border border-white/10 bg-white/[0.06] text-[#53d3d1] transition hover:border-[#cc8b65]"
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mx-auto h-[19px] w-[19px]">
               <path d="M7 4v16" />
@@ -222,7 +222,7 @@ export default function HomeClient() {
         <section className="mt-8 flex flex-col gap-3">
           <div className="flex items-baseline justify-between gap-3">
             <h2 className="text-[17px] font-bold">Popular routes</h2>
-            <a href="/routes" className="text-[12.5px] font-semibold text-[#d99d78] hover:underline">
+            <a href="/routes" className="text-[12.5px] font-semibold text-[#53d3d1] hover:underline">
               All routes →
             </a>
           </div>
@@ -263,7 +263,7 @@ export default function HomeClient() {
         </div>
 
         <div className="flex items-start gap-3.5 glass-lite p-3.5">
-          <span className="flex h-[38px] w-[38px] shrink-0 items-center justify-center rounded-xl bg-[#f5a524]/[0.14] text-[#d99d78]">
+          <span className="flex h-[38px] w-[38px] shrink-0 items-center justify-center rounded-xl bg-[#feb249]/[0.14] text-[#53d3d1]">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-[19px] w-[19px]">
               <circle cx="12" cy="12" r="9" />
               <path d="M12 7v5l3 2" />
@@ -294,7 +294,7 @@ export default function HomeClient() {
         </div>
       </section>
 
-      <section className="mt-6 flex items-center gap-3.5 rounded-[20px] border border-[#245b4b] bg-gradient-to-br from-[#013328]/90 to-[#0d3c32]/90 p-4">
+      <section className="mt-6 flex items-center gap-3.5 rounded-[20px] border border-[#24546e] bg-gradient-to-br from-[#002447]/90 to-[#08324d]/90 p-4">
         <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[14px] bg-[#2dd4bf]/[0.16] text-[#2dd4bf]">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-[22px] w-[22px]">
             <path d="M21 11.5a8.4 8.4 0 0 1-12.3 7.4L3 20.5l1.7-5.5A8.4 8.4 0 1 1 21 11.5z" />

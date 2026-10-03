@@ -49,7 +49,7 @@ export default function ForgotPassword() {
 
         {sent ? (
           <div className="flex flex-col gap-4">
-            <div className="flex flex-col items-center gap-3 rounded-2xl border border-[#245b4b] bg-[#013328]/40 p-5 text-center">
+            <div className="flex flex-col items-center gap-3 rounded-2xl border border-[#24546e] bg-[#002447]/40 p-5 text-center">
               <span className="flex h-12 w-12 items-center justify-center rounded-full bg-[#2dd4bf]/[0.16] text-[#2dd4bf]">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" className="h-6 w-6">
                   <path d="M5 12.5 10 17l9-10" />
@@ -92,7 +92,7 @@ export default function ForgotPassword() {
             <button
               type="button"
               onClick={() => router.push(companyPath('/company/login'))}
-              className="text-center text-[12.5px] font-semibold text-[#aaa598] hover:text-[#d99d78]"
+              className="text-center text-[12.5px] font-semibold text-[#aaa598] hover:text-[#53d3d1]"
             >
               Back to sign in
             </button>

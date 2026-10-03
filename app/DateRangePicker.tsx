@@ -76,9 +76,9 @@ function Month({
               aria-pressed={Boolean(isEnd || inside)}
               className={`relative mx-auto flex h-9 w-full items-center justify-center text-[13px] font-semibold transition ${
                 isEnd
-                  ? 'rounded-[10px] bg-[#f5a524] text-[#1a0d03]'
+                  ? 'rounded-[10px] bg-[#feb249] text-[#1a0d03]'
                   : inside
-                    ? 'bg-[#f5a524]/[0.16] text-[#fde7c0]'
+                    ? 'bg-[#feb249]/[0.16] text-[#fde7c0]'
                     : 'rounded-[10px] text-[#e3dcd2] hover:bg-white/[0.08]'
               } ${d === today && !isEnd ? 'ring-1 ring-inset ring-white/40 rounded-[10px]' : ''}`}
             >
@@ -189,7 +189,7 @@ export default function DateRangePicker({
           aria-expanded={open}
           className={`input-dark flex min-w-0 grow items-center gap-2.5 text-left ${open ? '!border-[#cc8b65]' : ''}`}
         >
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="h-4 w-4 shrink-0 text-[#d99d78]">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="h-4 w-4 shrink-0 text-[#53d3d1]">
             <rect x="3.5" y="5" width="17" height="15.5" rx="2.5" />
             <path d="M3.5 10h17M8 3v4M16 3v4" />
           </svg>

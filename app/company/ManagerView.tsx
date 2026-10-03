@@ -78,28 +78,28 @@ function TripCard({ trip, open, onToggle, onChanged }: { trip: CompanyTrip; open
             <span className="text-[10.5px] text-[#aaa598]">sold</span>
           </div>
         </div>
-        <div className="flex h-2.5 overflow-hidden rounded-full bg-[#1d5a49]">
-          <span style={{ width: pct(c.online) }} className="bg-gradient-to-r from-[#f2661d] to-[#f5a524]" />
-          <span style={{ width: pct(c.held) }} className="bg-[#f5a524]/40" />
-          <span style={{ width: pct(c.counter) }} className="bg-[#6d4aff]" />
+        <div className="flex h-2.5 overflow-hidden rounded-full bg-[#0a4f5a]">
+          <span style={{ width: pct(c.online) }} className="bg-gradient-to-r from-[#f2661d] to-[#feb249]" />
+          <span style={{ width: pct(c.held) }} className="bg-[#feb249]/40" />
+          <span style={{ width: pct(c.counter) }} className="bg-[#5eb1bf]" />
         </div>
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11.5px]">
-          <span className="text-[#d99d78]">BusHub {c.online}</span>
-          {c.held > 0 && <span className="text-[#d99d78]/70">Buying now {c.held}</span>}
-          <span className="text-[#a78bfa]">Counter {c.counter}</span>
-          <span className="text-[#7de8bd]">Free {c.free}</span>
-          <span className="ml-auto text-[#d99d78]">{open ? 'Hide seats ‹' : 'Seat map ›'}</span>
+          <span className="text-[#53d3d1]">BusHub {c.online}</span>
+          {c.held > 0 && <span className="text-[#53d3d1]/70">Buying now {c.held}</span>}
+          <span className="text-[#86c6d1]">Counter {c.counter}</span>
+          <span className="text-[#3fd0c9]">Free {c.free}</span>
+          <span className="ml-auto text-[#53d3d1]">{open ? 'Hide seats ‹' : 'Seat map ›'}</span>
         </div>
       </button>
       {open && (
-        <div className="flex flex-col gap-4 border-t border-[#1b4a3f] bg-black/15 px-4 py-4">
+        <div className="flex flex-col gap-4 border-t border-[#1b4560] bg-black/15 px-4 py-4">
           <SeatMap trip={trip} busySeat={busySeat} onTap={trip.departed ? undefined : tap} />
           {bySeller.size > 0 && (
             <div className="flex flex-col gap-1.5">
               <span className="label-xs">Sold at the counter</span>
               {Array.from(bySeller).map(([seller, seats]) => (
                 <div key={seller} className="flex items-start justify-between gap-3 text-[12.5px]">
-                  <span className="font-semibold text-[#c4b5fd]">{seller}</span>
+                  <span className="font-semibold text-[#a9d8e0]">{seller}</span>
                   <span className="text-right text-[#dad3c8]">
                     {seats.length} · {seats.join(', ')}
                   </span>
@@ -121,7 +121,7 @@ function TripCard({ trip, open, onToggle, onChanged }: { trip: CompanyTrip; open
                       {t.bookedAt ? ` · ${dhakaTime(t.bookedAt)}` : ''}
                     </span>
                   </span>
-                  <span className={`shrink-0 font-semibold ${t.boarded ? 'text-[#7de8bd]' : 'text-[#b8b2a6]'}`}>{t.boarded ? 'Boarded ✓' : taka(t.payout)}</span>
+                  <span className={`shrink-0 font-semibold ${t.boarded ? 'text-[#3fd0c9]' : 'text-[#b8b2a6]'}`}>{t.boarded ? 'Boarded ✓' : taka(t.payout)}</span>
                 </div>
               ))}
             </div>
@@ -198,14 +198,14 @@ export default function ManagerView({ companyName }: { companyName: string }) {
   return (
     <div className="mt-5 flex flex-col gap-4">
       <div className="grid grid-cols-3 gap-2.5">
-        <div className="flex flex-col gap-1 rounded-[18px] bg-gradient-to-br from-[#b97b55] to-[#8e5636] p-3.5">
-          <span className="text-[11px] font-bold text-[#f7e6d6]">Upcoming trips</span>
+        <div className="flex flex-col gap-1 rounded-[18px] bg-gradient-to-br from-[#0dabab] to-[#0a7479] p-3.5">
+          <span className="text-[11px] font-bold text-[#d9fbfa]">Upcoming trips</span>
           <span className="display text-[24px] font-bold leading-none text-white">{upcoming.length}</span>
         </div>
-        <div className="flex flex-col gap-1 rounded-[18px] bg-gradient-to-br from-[#5b3fd6] to-[#3f2a9e] p-3.5">
-          <span className="text-[11px] font-bold text-[#ddd3ff]">Seats sold</span>
+        <div className="flex flex-col gap-1 rounded-[18px] bg-gradient-to-br from-[#4a9aa8] to-[#2c6a78] p-3.5">
+          <span className="text-[11px] font-bold text-[#e0f3f6]">Seats sold</span>
           <span className="display text-[24px] font-bold leading-none text-white">{sold.online + sold.counter}</span>
-          <span className="text-[10.5px] text-[#ddd3ff]">
+          <span className="text-[10.5px] text-[#e0f3f6]">
             {sold.online} online · {sold.counter} counter
           </span>
         </div>

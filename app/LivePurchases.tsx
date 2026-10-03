@@ -124,21 +124,21 @@ export default function LivePurchases() {
         visible ? 'translate-y-0 opacity-100' : 'pointer-events-none translate-y-4 opacity-0 motion-reduce:translate-y-0'
       }`}
     >
-      <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-[#0d3c32]/95 py-3 pl-3 pr-2 shadow-[0_18px_50px_rgba(0,0,0,0.6)] backdrop-blur-xl">
+      <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-[#08324d]/95 py-3 pl-3 pr-2 shadow-[0_18px_50px_rgba(0,0,0,0.6)] backdrop-blur-xl">
         <a href={routePath(current.from, current.to)} className="flex min-w-0 grow items-center gap-3">
-          <span className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#f2661d] to-[#f5a524] text-[#1a0d03] shadow-[0_6px_18px_rgba(242,102,29,0.35)]">
+          <span className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#f2661d] to-[#feb249] text-[#1a0d03] shadow-[0_6px_18px_rgba(242,102,29,0.35)]">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
               <path d="M3 8.5V6.5A1.5 1.5 0 0 1 4.5 5h15A1.5 1.5 0 0 1 21 6.5v2a2.5 2.5 0 0 0 0 5v2a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 15.5v-2a2.5 2.5 0 0 0 0-5z" />
               <path d="M14 5v12" strokeDasharray="2 2" />
             </svg>
             <span className="absolute -right-0.5 -top-0.5 flex h-3 w-3">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#7de8bd] opacity-60 motion-reduce:animate-none" />
-              <span className="relative inline-flex h-3 w-3 rounded-full border-2 border-[#0b3a30] bg-[#7de8bd]" />
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#3fd0c9] opacity-60 motion-reduce:animate-none" />
+              <span className="relative inline-flex h-3 w-3 rounded-full border-2 border-[#06304a] bg-[#3fd0c9]" />
             </span>
           </span>
           <span className="flex min-w-0 flex-col">
             <span className="text-[11.5px] font-semibold text-[#b8b2a6]">Someone booked a ticket</span>
-            <span className="truncate text-[14.5px] font-bold text-[#f3eee6]">
+            <span className="truncate text-[14.5px] font-bold text-[#fbeceb]">
               {current.from} → {current.to}
             </span>
             <span className="text-[11.5px] text-[#aaa598]">
@@ -150,7 +150,7 @@ export default function LivePurchases() {
           type="button"
           onClick={close}
           aria-label="Hide these messages"
-          className="flex h-8 w-8 shrink-0 items-center justify-center self-start rounded-full text-[#959488] transition hover:bg-white/[0.06] hover:text-[#f3eee6]"
+          className="flex h-8 w-8 shrink-0 items-center justify-center self-start rounded-full text-[#959488] transition hover:bg-white/[0.06] hover:text-[#fbeceb]"
         >
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" className="h-4 w-4">
             <path d="M6 6l12 12M18 6 6 18" />

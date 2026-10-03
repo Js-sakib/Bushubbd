@@ -9,10 +9,10 @@ import type { CompanyTrip } from './types'
 const COLUMNS: { label: string; tone?: string; value: (m: ReturnType<typeof addMoney>, trips: number) => string }[] = [
   { label: 'Trips', value: (_, n) => String(n) },
   { label: 'Seats sold', value: (m) => `${m.seats.online + m.seats.counter}/${m.seats.total}` },
-  { label: 'Counter', tone: 'text-[#c4b5fd]', value: (m) => taka(m.counter.total) },
-  { label: 'BusHub sales', tone: 'text-[#d99d78]', value: (m) => taka(m.online.total) },
+  { label: 'Counter', tone: 'text-[#a9d8e0]', value: (m) => taka(m.counter.total) },
+  { label: 'BusHub sales', tone: 'text-[#53d3d1]', value: (m) => taka(m.online.total) },
   { label: 'BusHub fee', value: (m) => taka(-m.online.fee) },
-  { label: 'From BusHub', tone: 'text-[#d99d78]', value: (m) => taka(m.online.payout) },
+  { label: 'From BusHub', tone: 'text-[#53d3d1]', value: (m) => taka(m.online.payout) },
   { label: 'Fuel', tone: 'text-[#fca5a5]', value: (m) => taka(m.costs.fuel) },
   { label: 'Road', tone: 'text-[#fca5a5]', value: (m) => taka(m.costs.road) },
   { label: 'Toll', tone: 'text-[#fca5a5]', value: (m) => taka(m.costs.toll) },
@@ -37,12 +37,12 @@ export default function DateTable({ trips }: { trips: CompanyTrip[] }) {
           {c.value(m, n)}
         </td>
       ))}
-      <td className={`whitespace-nowrap px-2.5 py-2.5 text-right text-[13px] font-bold tabular-nums ${m.left < 0 ? 'text-[#f87171]' : 'text-[#7de8bd]'}`}>{taka(m.left)}</td>
+      <td className={`whitespace-nowrap px-2.5 py-2.5 text-right text-[13px] font-bold tabular-nums ${m.left < 0 ? 'text-[#f87171]' : 'text-[#3fd0c9]'}`}>{taka(m.left)}</td>
     </>
   )
   const sumRow = (key: string, label: string, sub: string, list: DayBusMoney[], strong: boolean) => (
-    <tr key={key} className={`border-t border-[#1b4a3f] font-bold ${strong ? 'bg-[#f5a524]/[0.08]' : 'bg-white/[0.04]'}`}>
-      <th scope="row" className={`sticky left-0 z-10 px-3 py-2.5 text-left ${strong ? 'bg-[#2a2016]' : 'bg-[#0f4035]'}`}>
+    <tr key={key} className={`border-t border-[#1b4560] font-bold ${strong ? 'bg-[#feb249]/[0.08]' : 'bg-white/[0.04]'}`}>
+      <th scope="row" className={`sticky left-0 z-10 px-3 py-2.5 text-left ${strong ? 'bg-[#2a2016]' : 'bg-[#0b3753]'}`}>
         <span className="block whitespace-nowrap text-[12.5px]">{label}</span>
         <span className="block whitespace-nowrap text-[10.5px] font-normal text-[#aaa598]">{sub}</span>
       </th>
@@ -52,7 +52,7 @@ export default function DateTable({ trips }: { trips: CompanyTrip[] }) {
 
   return (
     <div className="card-2 overflow-hidden">
-      <div className="flex flex-col gap-0.5 border-b border-[#1b4a3f] px-4 py-3">
+      <div className="flex flex-col gap-0.5 border-b border-[#1b4560] px-4 py-3">
         <span className="label-xs">Date by date · bus by bus</span>
         <span className="text-[11px] text-[#88908a]">Each day&apos;s sales, BusHub money and costs for every bus. Slide sideways for every column.</span>
       </div>
@@ -60,7 +60,7 @@ export default function DateTable({ trips }: { trips: CompanyTrip[] }) {
         <table className="w-full min-w-[1000px] border-collapse">
           <thead>
             <tr className="text-[10px] font-bold uppercase tracking-[0.08em] text-[#88908a]">
-              <th className="sticky left-0 z-10 bg-[#0b3a30] px-3 py-2.5 text-left">Date · bus</th>
+              <th className="sticky left-0 z-10 bg-[#06304a] px-3 py-2.5 text-left">Date · bus</th>
               {COLUMNS.map((c) => (
                 <th key={c.label} className="px-2.5 py-2.5 text-right leading-tight">
                   {c.label}
@@ -75,8 +75,8 @@ export default function DateTable({ trips }: { trips: CompanyTrip[] }) {
               const dayRows = rows.filter((r) => r.date === date)
               return [
                 ...dayRows.map((r) => (
-                  <tr key={`${date}|${r.plateNumber}|${r.busName}`} className="border-t border-[#1b4a3f]">
-                    <th scope="row" className="sticky left-0 z-10 bg-[#0b3a30] px-3 py-2 text-left font-normal">
+                  <tr key={`${date}|${r.plateNumber}|${r.busName}`} className="border-t border-[#1b4560]">
+                    <th scope="row" className="sticky left-0 z-10 bg-[#06304a] px-3 py-2 text-left font-normal">
                       <span className="block whitespace-nowrap text-[11px] text-[#aaa598]">
                         {rest.join(' ')} · {day}
                       </span>

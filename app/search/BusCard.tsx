@@ -43,7 +43,7 @@ export default function BusCard({
     <div
       className={`flex flex-col gap-3.5 glass-lite p-4 transition ${
         selected
-          ? '!border-[#cc8b65] !shadow-[0_0_0_1px_rgba(245,165,36,0.35),0_14px_40px_rgba(0,0,0,0.32)]'
+          ? '!border-[#cc8b65] !shadow-[0_0_0_1px_rgba(254,178,73,0.35),0_14px_40px_rgba(0,0,0,0.32)]'
           : soldOut
             ? 'opacity-60'
             : ''
@@ -58,7 +58,7 @@ export default function BusCard({
           </span>
         </div>
         <div className="flex flex-col items-end gap-0.5">
-          <span className="display text-[19px] font-bold text-[#d99d78]">৳{bus.price}</span>
+          <span className="display text-[19px] font-bold text-[#53d3d1]">৳{bus.price}</span>
           <span className="text-[11px] text-[#aaa598]">per seat</span>
         </div>
       </div>
@@ -69,12 +69,12 @@ export default function BusCard({
           <span className="text-[11px] text-[#aaa598]">{bus.from}</span>
         </div>
         <div className="flex grow items-center gap-1.5">
-          <span className="h-px grow bg-[#2c6052]" />
+          <span className="h-px grow bg-[#2c5a77]" />
           <svg viewBox="0 0 24 24" fill="none" stroke="#f2661d" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5">
             <rect x="3" y="4" width="18" height="12.5" rx="3" />
             <path d="M3 11h18" />
           </svg>
-          <span className="h-px grow bg-[#2c6052]" />
+          <span className="h-px grow bg-[#2c5a77]" />
         </div>
         <div className="flex flex-col items-end">
           <span className="text-[15px] font-bold">{bus.arrivalTime || '—'}</span>
@@ -84,7 +84,7 @@ export default function BusCard({
 
       {bus.boardingPoint && (
         <div className="flex items-center gap-1.5 text-[12px] text-[#cfc8bc]">
-          <svg viewBox="0 0 24 24" fill="none" stroke="#f5a524" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5 shrink-0">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#feb249" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5 shrink-0">
             <path d="M12 21s-6.5-5.6-6.5-11A6.5 6.5 0 0 1 18.5 10c0 5.4-6.5 11-6.5 11z" />
             <circle cx="12" cy="10" r="2.3" />
           </svg>
@@ -102,7 +102,7 @@ export default function BusCard({
         ) : (
           <span
             className={`inline-flex h-[26px] items-center rounded-full px-2.5 text-[11.5px] font-bold ${
-              scarce ? 'bg-[#f5a524]/[0.13] text-[#d99d78]' : 'bg-[#7de8bd]/[0.13] text-[#7de8bd]'
+              scarce ? 'bg-[#feb249]/[0.13] text-[#53d3d1]' : 'bg-[#3fd0c9]/[0.13] text-[#3fd0c9]'
             }`}
           >
             {seatsLeft} seats left

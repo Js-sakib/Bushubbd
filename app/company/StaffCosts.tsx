@@ -97,7 +97,7 @@ export default function StaffCosts() {
         </div>
       )}
 
-      <p className="rounded-2xl border border-[#245b4b] bg-[#013328]/40 px-4 py-3 text-[12px] leading-relaxed text-[#c4beb2]">
+      <p className="rounded-2xl border border-[#24546e] bg-[#002447]/40 px-4 py-3 text-[12px] leading-relaxed text-[#c4beb2]">
         Your manager sees every cost you add. Made a mistake? You can remove your own cost within an hour; after that, ask your
         manager.
       </p>

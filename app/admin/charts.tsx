@@ -4,7 +4,7 @@ import { useState } from 'react'
 
 /**
  * Chart marks for the admin dashboard. Colours were checked with the dataviz palette
- * validator against the glass surface (#0d3c32): both sit in the dark lightness band, clear
+ * validator against the glass surface (#08324d): both sit in the dark lightness band, clear
  * 3:1 contrast and stay apart under colour-blind simulation.
  */
 export const ACCENT = '#e8601a'
@@ -22,7 +22,7 @@ export function Tooltip({ value, label, style }: { value: string; label: string;
     <div
       role="status"
       style={style}
-      className="pointer-events-none absolute z-20 flex -translate-x-1/2 flex-col items-center whitespace-nowrap rounded-xl border border-white/10 bg-[#012a21]/95 px-2.5 py-1.5 shadow-[0_8px_24px_rgba(0,0,0,0.45)] backdrop-blur"
+      className="pointer-events-none absolute z-20 flex -translate-x-1/2 flex-col items-center whitespace-nowrap rounded-xl border border-white/10 bg-[#001d3a]/95 px-2.5 py-1.5 shadow-[0_8px_24px_rgba(0,0,0,0.45)] backdrop-blur"
     >
       <span className="text-[12.5px] font-bold text-white">{value}</span>
       <span className="text-[10.5px] text-[#aaa598]">{label}</span>
@@ -91,7 +91,7 @@ export function Sparkline({
       {/* Current value: an 8px accent dot with a surface ring so it stays legible on the line.
           Drawn in HTML because the stretched SVG would squash a circle into an oval. */}
       <span
-        className="pointer-events-none absolute h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-[#0d3c32]"
+        className="pointer-events-none absolute h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-[#08324d]"
         style={{
           left: `${((hover !== null ? pts[hover] : last)[0] / W) * 100}%`,
           top: `${((hover !== null ? pts[hover] : last)[1] / H) * 100}%`,

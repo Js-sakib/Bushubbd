@@ -25,7 +25,7 @@ function DeltaChip({ delta, upIsGood = true }: { delta: Delta; upIsGood?: boolea
   return (
     <span
       className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-bold ${
-        good === null ? 'bg-white/[0.07] text-[#b8b2a6]' : good ? 'bg-[#7de8bd]/[0.14] text-[#6ee7b7]' : 'bg-[#f87171]/[0.14] text-[#fca5a5]'
+        good === null ? 'bg-white/[0.07] text-[#b8b2a6]' : good ? 'bg-[#3fd0c9]/[0.14] text-[#5fdcd5]' : 'bg-[#f87171]/[0.14] text-[#fca5a5]'
       }`}
     >
       <svg viewBox="0 0 12 12" className={`h-2.5 w-2.5 ${flat ? 'hidden' : up ? '' : 'rotate-180'}`} fill="currentColor" aria-hidden>
@@ -167,7 +167,7 @@ export default function Overview({
           series={series.map((d) => d.tickets)}
           labels={labels}
           format={(v) => `${count(v)} tickets`}
-          glow="linear-gradient(135deg,#f2661d,#f5a524)"
+          glow="linear-gradient(135deg,#f2661d,#feb249)"
           icon={icons.ticket}
         />
         <StatTile
@@ -243,7 +243,7 @@ export default function Overview({
             <div className="grid grid-cols-2 gap-3 px-5 pb-5">
               {[
                 { label: 'Website', value: channels.web, key: '#93c5fd' },
-                { label: 'WhatsApp', value: channels.whatsapp, key: '#86efac' },
+                { label: 'WhatsApp', value: channels.whatsapp, key: '#5fdcd5' },
               ].map((c) => (
                 <div key={c.label} className="flex flex-col gap-1 rounded-2xl border border-white/[0.06] bg-white/[0.03] p-3.5">
                   <span className="flex items-center gap-1.5 text-[11.5px] font-semibold text-[#b8b2a6]">
@@ -265,7 +265,7 @@ export default function Overview({
         title="Recent bookings"
         subtitle="Newest first"
         action={
-          <button type="button" onClick={onSeeAllBookings} className="rounded-full border border-white/10 bg-white/[0.05] px-3.5 py-1.5 text-[12px] font-bold text-[#d99d78] transition hover:bg-white/[0.09]">
+          <button type="button" onClick={onSeeAllBookings} className="rounded-full border border-white/10 bg-white/[0.05] px-3.5 py-1.5 text-[12px] font-bold text-[#53d3d1] transition hover:bg-white/[0.09]">
             See all
           </button>
         }
@@ -286,7 +286,7 @@ export default function Overview({
             )}
             <div className="flex items-center justify-between border-t border-white/[0.07] pt-3.5">
               <span className="text-[12.5px] font-semibold text-[#b8b2a6]">Total to pay out</span>
-              <span className="display text-[19px] font-bold text-[#d99d78]">{taka(totals.owed)}</span>
+              <span className="display text-[19px] font-bold text-[#53d3d1]">{taka(totals.owed)}</span>
             </div>
           </div>
         </Card>

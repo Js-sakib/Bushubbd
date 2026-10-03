@@ -16,7 +16,7 @@ interface StaffRow {
 }
 
 const ROLE_INFO = {
-  counter: { label: 'Counter', badge: 'bg-[#6d4aff]/[0.18] text-[#b9a6ff]', hint: 'Sells seats at the counter and adds trips' },
+  counter: { label: 'Counter', badge: 'bg-[#5eb1bf]/[0.18] text-[#9fd0d9]', hint: 'Sells seats at the counter and adds trips' },
   scanner: { label: 'Scanner', badge: 'bg-[#2dd4bf]/[0.15] text-[#5eead4]', hint: 'Bus staff (supervisor, conductor): scans tickets and adds trip costs' },
 }
 
@@ -95,8 +95,8 @@ export default function StaffPanel() {
   return (
     <div className="flex flex-col gap-4 lg:grid lg:grid-cols-2 lg:items-start">
       {shown && (
-        <div className="flex flex-col gap-3 rounded-2xl border border-[#7de8bd]/40 bg-[#7de8bd]/[0.08] p-4 lg:col-span-2">
-          <span className="text-[13.5px] font-bold text-[#6ee7b7]">Login ready for {shown.name}</span>
+        <div className="flex flex-col gap-3 rounded-2xl border border-[#3fd0c9]/40 bg-[#3fd0c9]/[0.08] p-4 lg:col-span-2">
+          <span className="text-[13.5px] font-bold text-[#5fdcd5]">Login ready for {shown.name}</span>
           <div className="rounded-xl bg-black/30 p-3 font-mono text-[12.5px] leading-relaxed text-[#e3dcd2]">
             Email: {shown.email}
             <br />
@@ -138,7 +138,7 @@ export default function StaffPanel() {
               type="button"
               onClick={() => setForm({ ...form, role })}
               className={`flex flex-col items-start gap-0.5 rounded-2xl border px-3.5 py-2.5 text-left ${
-                form.role === role ? 'border-[#cc8b65] bg-[#f5a524]/[0.08]' : 'border-white/[0.08] bg-black/20'
+                form.role === role ? 'border-[#cc8b65] bg-[#feb249]/[0.08]' : 'border-white/[0.08] bg-black/20'
               }`}
             >
               <span className="text-[13.5px] font-bold">{ROLE_INFO[role].label}</span>
@@ -155,11 +155,11 @@ export default function StaffPanel() {
       </form>
 
       <div className="card-2 overflow-hidden">
-        <div className="border-b border-[#1b4a3f] px-4 py-3">
+        <div className="border-b border-[#1b4560] px-4 py-3">
           <span className="label-xs">Staff logins</span>
         </div>
         {(staff?.length || 0) > 4 && (
-          <div className="border-b border-[#1b4a3f] px-3 py-2.5">
+          <div className="border-b border-[#1b4560] px-3 py-2.5">
             <SearchBox value={search} onChange={setSearch} placeholder="Search name, email, counter or scanner" />
           </div>
         )}
@@ -168,7 +168,7 @@ export default function StaffPanel() {
           <div className="px-4 py-8 text-center text-sm text-[#aaa598]">No staff logins yet. Add one for each counter and each scanner phone.</div>
         )}
         {staff?.filter((row) => matches(search, row.name, row.email, ROLE_INFO[row.role].label, row.status === 'disabled' ? 'off' : 'active')).map((row) => (
-          <div key={row._id} className="flex flex-col gap-2.5 border-b border-[#1b4a3f] px-4 py-3 last:border-b-0">
+          <div key={row._id} className="flex flex-col gap-2.5 border-b border-[#1b4560] px-4 py-3 last:border-b-0">
             <div className="flex items-center gap-2.5">
               <div className="flex min-w-0 grow flex-col">
                 <span className={`truncate text-[14px] font-semibold ${row.status === 'disabled' ? 'text-[#88908a] line-through' : ''}`}>{row.name}</span>
@@ -184,7 +184,7 @@ export default function StaffPanel() {
                   const json = await patch(row, { resetPassword: true })
                   if (json?.password) setShown({ name: row.name, email: row.email, password: json.password, role: ROLE_INFO[row.role].label })
                 }}
-                className="h-8 rounded-full border border-white/10 bg-white/[0.05] px-3 text-[11.5px] font-bold text-[#d99d78]"
+                className="h-8 rounded-full border border-white/10 bg-white/[0.05] px-3 text-[11.5px] font-bold text-[#53d3d1]"
               >
                 New password
               </button>

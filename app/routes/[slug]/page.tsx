@@ -130,9 +130,9 @@ export default async function RoutePage({ params }: { params: { slug: string } }
       <JsonLd data={faqData} />
 
       <nav aria-label="Breadcrumb" className="flex flex-wrap items-center gap-1.5 text-[12px] text-[#959488]">
-        <a href="/" className="hover:text-[#d99d78]">Home</a>
+        <a href="/" className="hover:text-[#53d3d1]">Home</a>
         <span aria-hidden>›</span>
-        <a href="/routes" className="hover:text-[#d99d78]">Bus routes</a>
+        <a href="/routes" className="hover:text-[#53d3d1]">Bus routes</a>
         <span aria-hidden>›</span>
         <span className="text-[#cfc8bc]">
           {from} to {to}
@@ -140,7 +140,7 @@ export default async function RoutePage({ params }: { params: { slug: string } }
       </nav>
 
       <section className="mt-4 flex flex-col gap-3">
-        <span className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#d99d78]">Bus route</span>
+        <span className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#53d3d1]">Bus route</span>
         <h1 className="text-[32px] font-bold leading-[1.1] sm:text-[42px]">
           {from} to {to} bus tickets
         </h1>
@@ -155,7 +155,7 @@ export default async function RoutePage({ params }: { params: { slug: string } }
         <div className="mt-5 grid grid-cols-3 gap-2.5 sm:max-w-xl">
           <div className="flex flex-col gap-1 glass-lite p-3">
             <span className="label-xs">Fares from</span>
-            <span className="text-lg font-bold text-[#d99d78]">{taka(cheapest)}</span>
+            <span className="text-lg font-bold text-[#53d3d1]">{taka(cheapest)}</span>
           </div>
           <div className="flex flex-col gap-1 glass-lite p-3">
             <span className="label-xs">Upcoming trips</span>
@@ -219,7 +219,7 @@ export default async function RoutePage({ params }: { params: { slug: string } }
                     </span>
                   </div>
                   <div className="flex shrink-0 flex-col items-end gap-1">
-                    <span className="text-base font-bold text-[#d99d78]">{taka(trip.price)}</span>
+                    <span className="text-base font-bold text-[#53d3d1]">{taka(trip.price)}</span>
                     <span className={`text-[11.5px] ${trip.seatsLeft > 0 ? 'text-[#2dd4bf]' : 'text-[#959488]'}`}>
                       {trip.seatsLeft > 0 ? `${trip.seatsLeft} seats left` : 'Sold out'}
                     </span>
@@ -240,7 +240,7 @@ export default async function RoutePage({ params }: { params: { slug: string } }
             { t: 'Pay and travel', b: 'Pay with bKash or Nagad. Your QR ticket arrives on WhatsApp straight away.' },
           ].map((step, i) => (
             <li key={step.t} className="flex flex-col gap-2 glass-lite p-3.5">
-              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#f5a524]/[0.14] text-sm font-bold text-[#d99d78]">
+              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#feb249]/[0.14] text-sm font-bold text-[#53d3d1]">
                 {i + 1}
               </span>
               <span className="text-sm font-bold">{step.t}</span>
@@ -258,7 +258,7 @@ export default async function RoutePage({ params }: { params: { slug: string } }
               <summary className="cursor-pointer list-none text-sm font-bold marker:hidden">
                 <span className="flex items-center justify-between gap-3">
                   {f.q}
-                  <span aria-hidden className="text-[#d99d78] transition group-open:rotate-45">+</span>
+                  <span aria-hidden className="text-[#53d3d1] transition group-open:rotate-45">+</span>
                 </span>
               </summary>
               <p className="mt-2 text-[12.5px] leading-relaxed text-[#b8b2a6]">{f.a}</p>

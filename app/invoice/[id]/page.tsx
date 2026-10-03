@@ -103,7 +103,7 @@ function PaymentFields({
             key={m}
             type="button"
             onClick={() => setMethod(m)}
-            className={`rounded-xl border px-2 py-2 text-[12.5px] font-bold ${method === m ? 'border-[#cc8b65] bg-[#f5a524]/[0.12] text-[#d99d78]' : 'border-white/10 text-[#cfc8bc]'}`}
+            className={`rounded-xl border px-2 py-2 text-[12.5px] font-bold ${method === m ? 'border-[#cc8b65] bg-[#feb249]/[0.12] text-[#53d3d1]' : 'border-white/10 text-[#cfc8bc]'}`}
           >
             {PAY_METHOD_LABELS[m]}
           </button>
@@ -159,11 +159,11 @@ function AdminActions({ inv, onDone }: { inv: Invoice; onDone: () => void }) {
         <>
           <span className="display text-[16px] font-bold">Pay {taka(inv.totals.payout)} to {inv.companyName}</span>
           {inv.approval ? (
-            <span className="text-[12.5px] font-semibold text-[#c4b5fd]">
+            <span className="text-[12.5px] font-semibold text-[#a9d8e0]">
               ✓ Approved by the company ({inv.approval.by}, {dhakaDateTime(inv.approval.at)})
             </span>
           ) : inv.status === 'unpaid' ? (
-            <span className="text-[12.5px] text-[#fbbf24]">The company has not approved this invoice yet.</span>
+            <span className="text-[12.5px] text-[#f6e879]">The company has not approved this invoice yet.</span>
           ) : null}
           <p className="text-[12.5px] text-[#b8b2a6]">
             Send the money first, then write down how you sent it and the reference (bKash TrxID, bank reference). Cash needs no reference. The company then
@@ -193,7 +193,7 @@ function AdminActions({ inv, onDone }: { inv: Invoice; onDone: () => void }) {
             </button>
           )}
           {inv.status === 'disputed' && canEdit && (
-            <button type="button" onClick={() => setEditing(true)} className="text-[12.5px] font-semibold text-[#d99d78]">
+            <button type="button" onClick={() => setEditing(true)} className="text-[12.5px] font-semibold text-[#53d3d1]">
               Correct the recorded payment instead
             </button>
           )}
@@ -202,7 +202,7 @@ function AdminActions({ inv, onDone }: { inv: Invoice; onDone: () => void }) {
         <>
           <span className="display text-[16px] font-bold">Correct the payment</span>
           {inv.status === 'confirmed' && (
-            <p className="rounded-xl border border-[#cc8b65]/40 bg-[#f5a524]/[0.08] px-3.5 py-2.5 text-[12.5px] text-[#fbbf24]">
+            <p className="rounded-xl border border-[#cc8b65]/40 bg-[#feb249]/[0.08] px-3.5 py-2.5 text-[12.5px] text-[#f6e879]">
               The company already signed this. After a change it has to check and sign again.
             </p>
           )}
@@ -262,7 +262,7 @@ function CompanyActions({ inv, onDone }: { inv: Invoice; onDone: () => void }) {
   }
   if (inv.status === 'unpaid' && inv.approval) {
     return (
-      <p className="no-print rounded-2xl border border-[#a78bfa]/30 bg-[#a78bfa]/[0.08] px-4 py-3 text-[12.5px] text-[#ddd6fe]">
+      <p className="no-print rounded-2xl border border-[#86c6d1]/30 bg-[#86c6d1]/[0.08] px-4 py-3 text-[12.5px] text-[#d4eef2]">
         ✓ You approved this invoice ({inv.approval.by}, {dhakaDateTime(inv.approval.at)}). BusHub will now pay {taka(inv.totals.payout)}; then come back and tap Done.
       </p>
     )
@@ -386,7 +386,7 @@ function InvoiceView() {
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-4">
       <div className="no-print flex items-center justify-between gap-3">
-        <a href={back} className="text-[13px] font-semibold text-[#d99d78]">
+        <a href={back} className="text-[13px] font-semibold text-[#53d3d1]">
           ‹ Back
         </a>
         <button type="button" onClick={() => window.print()} className="glass-btn glass-btn-plain h-10 px-4 text-[13px]">

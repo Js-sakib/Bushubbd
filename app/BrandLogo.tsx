@@ -18,7 +18,7 @@ function MarkShapes({ tone }: { tone: 'dark' | 'light' }) {
       {tone === 'dark' && <rect x="2.5" y="2.5" width="59" height="59" rx="15.5" fill="none" stroke={CREAM} strokeOpacity=".1" />}
       <path d="M22 13V47" stroke={CREAM} strokeWidth="8.4" strokeLinecap="round" fill="none" />
       <circle cx="34.5" cy="38" r="11.2" stroke={CREAM} strokeWidth="8.4" fill="none" />
-      <circle cx="34.5" cy="38" r="3.4" fill="#F5A524" />
+      <circle cx="34.5" cy="38" r="3.4" fill="#feb249" />
       <circle cx="22" cy="13" r="5.6" fill="#F2661D" />
       <circle cx="22" cy="13" r="2.1" fill={INK} />
     </>
@@ -40,7 +40,7 @@ export default function Logo({ className = 'h-9 w-auto', tone = 'dark' }: { clas
     <svg viewBox={`0 0 ${WIDTH} 64`} className={className} role="img" aria-label="BusHub">
       <MarkShapes tone={tone} />
       <path d={BUS} fill={tone === 'dark' ? CREAM : INK} />
-      <path d={HUB} fill={tone === 'dark' ? '#F5A524' : '#B87408'} />
+      <path d={HUB} fill={tone === 'dark' ? '#feb249' : '#B87408'} />
     </svg>
   )
 }

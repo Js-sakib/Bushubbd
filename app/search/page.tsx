@@ -156,11 +156,11 @@ function SearchResults() {
               }`}
             >
               <span className="flex w-full items-center gap-1.5">
-                <span className={`text-[12px] font-bold ${leg === tab.key ? 'text-[#d99d78]' : 'text-[#b8b2a6]'}`}>
+                <span className={`text-[12px] font-bold ${leg === tab.key ? 'text-[#53d3d1]' : 'text-[#b8b2a6]'}`}>
                   {tab.label}
                 </span>
                 {tab.pick && (
-                  <svg viewBox="0 0 24 24" fill="none" stroke="#7de8bd" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="ml-auto h-3.5 w-3.5">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="#3fd0c9" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="ml-auto h-3.5 w-3.5">
                     <path d="m5 12.5 4.5 4.5L19 7" />
                   </svg>
                 )}
@@ -260,11 +260,11 @@ function SearchResults() {
       )}
 
       {isRoundTrip && outboundPick && returnPick && (
-        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-[#013328]/80 px-5 py-3.5 backdrop-blur-xl">
+        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-[#002447]/80 px-5 py-3.5 backdrop-blur-xl">
           <div className="mx-auto flex max-w-5xl items-center gap-3">
             <div className="flex grow flex-col gap-0.5">
               <span className="text-[11.5px] text-[#aaa598]">Both legs chosen · per seat</span>
-              <span className="display text-[19px] font-bold text-[#d99d78]">
+              <span className="display text-[19px] font-bold text-[#53d3d1]">
                 ৳{outboundPick.price + returnPick.price}
               </span>
             </div>

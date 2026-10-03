@@ -185,7 +185,7 @@ function BookingContent() {
       </div>
 
       {returnBusId && (
-        <div className="mt-4 flex items-center gap-2.5 rounded-[14px] border border-[#245b4b] bg-[#013328]/50 px-3.5 py-2.5">
+        <div className="mt-4 flex items-center gap-2.5 rounded-[14px] border border-[#24546e] bg-[#002447]/50 px-3.5 py-2.5">
           <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#2dd4bf]/[0.18] text-[11px] font-bold text-[#2dd4bf]">
             1
           </span>
@@ -199,7 +199,7 @@ function BookingContent() {
         {(['seats', 'details', 'payment'] as const).map((s) => (
           <span
             key={s}
-            className={`h-1.5 grow rounded-full ${step === s ? 'bg-[#f2661d]' : 'bg-[#245549]'}`}
+            className={`h-1.5 grow rounded-full ${step === s ? 'bg-[#f2661d]' : 'bg-[#24506b]'}`}
           />
         ))}
       </div>
@@ -208,11 +208,11 @@ function BookingContent() {
         <div className="mt-5 flex flex-col gap-4">
           <div className="flex items-center gap-4 rounded-[14px] border border-white/[0.08] bg-white/[0.04] px-3.5 py-2.5">
             <span className="inline-flex items-center gap-2 text-[11.5px] font-semibold text-[#dad3c8]">
-              <span className="h-3.5 w-3.5 rounded border border-[#5aa287] bg-[#1d5a49]" />
+              <span className="h-3.5 w-3.5 rounded border border-[#0dabab] bg-[#0a4f5a]" />
               Available
             </span>
             <span className="inline-flex items-center gap-2 text-[11.5px] font-semibold text-[#dad3c8]">
-              <span className="h-3.5 w-3.5 rounded bg-gradient-to-br from-[#f2661d] to-[#f5a524]" />
+              <span className="h-3.5 w-3.5 rounded bg-gradient-to-br from-[#f2661d] to-[#feb249]" />
               Yours
             </span>
             <span className="inline-flex items-center gap-2 text-[11.5px] font-semibold text-[#dad3c8]">
@@ -222,7 +222,7 @@ function BookingContent() {
           </div>
 
           <div className="glass-lite p-4">
-            <div className="flex items-center justify-between border-b border-dashed border-[#275a4d] pb-3">
+            <div className="flex items-center justify-between border-b border-dashed border-[#275470] pb-3">
               <span className="label-xs">Deck</span>
               <span className="inline-flex items-center gap-1.5 text-[11.5px] font-semibold text-[#aaa598]">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-[15px] w-[15px]">
@@ -250,8 +250,8 @@ function BookingContent() {
                           isBooked
                             ? 'cursor-not-allowed border border-dashed border-[#7a3230] bg-[#3a1a1a] text-[#d98a86]'
                             : isSelected
-                            ? 'border border-[#cc8b65] bg-gradient-to-br from-[#f2661d] to-[#f5a524] text-[#170b02]'
-                            : 'border border-[#5aa287] bg-[#1d5a49] text-[#7de3b8] hover:border-[#7de8bd] hover:bg-[#16452f]'
+                            ? 'border border-[#cc8b65] bg-gradient-to-br from-[#f2661d] to-[#feb249] text-[#170b02]'
+                            : 'border border-[#0dabab] bg-[#0a4f5a] text-[#8ee8e4] hover:border-[#3fd0c9] hover:bg-[#0a4550]'
                         }`}
                       >
                         {seat}
@@ -272,8 +272,8 @@ function BookingContent() {
                           isBooked
                             ? 'cursor-not-allowed border border-dashed border-[#7a3230] bg-[#3a1a1a] text-[#d98a86]'
                             : isSelected
-                            ? 'border border-[#cc8b65] bg-gradient-to-br from-[#f2661d] to-[#f5a524] text-[#170b02]'
-                            : 'border border-[#5aa287] bg-[#1d5a49] text-[#7de3b8] hover:border-[#7de8bd] hover:bg-[#16452f]'
+                            ? 'border border-[#cc8b65] bg-gradient-to-br from-[#f2661d] to-[#feb249] text-[#170b02]'
+                            : 'border border-[#0dabab] bg-[#0a4f5a] text-[#8ee8e4] hover:border-[#3fd0c9] hover:bg-[#0a4550]'
                         }`}
                       >
                         {seat}
@@ -294,7 +294,7 @@ function BookingContent() {
                     ? `${selectedSeats.join(', ')} · ${passengers - selectedSeats.length} more to pick`
                     : `${selectedSeats.length} seat${selectedSeats.length === 1 ? '' : 's'} · ${selectedSeats.join(', ')}`}
               </span>
-              <span className="display shrink-0 text-[22px] font-bold text-[#d99d78]">৳{totalPrice}</span>
+              <span className="display shrink-0 text-[22px] font-bold text-[#53d3d1]">৳{totalPrice}</span>
             </div>
             <button type="button" onClick={handleConfirmSeats} className="glass-btn w-full">
               <span className="icon-disc">
@@ -382,7 +382,7 @@ function BookingContent() {
                   aria-label="One bag more"
                   onClick={() => setBags((n) => Math.min(MAX_BAGS, n + 1))}
                   disabled={bags === MAX_BAGS}
-                  className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/[0.06] text-lg font-bold text-[#d99d78] disabled:opacity-40"
+                  className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/[0.06] text-lg font-bold text-[#53d3d1] disabled:opacity-40"
                 >
                   +
                 </button>
@@ -408,7 +408,7 @@ function BookingContent() {
           <div className="flex flex-col gap-4 glass-lite p-4">
             <div className="rounded-2xl border border-white/[0.08] bg-black/25 p-4">
               <p className="text-[12.5px] text-[#aaa598]">Total amount</p>
-              <p className="display mt-1 text-[32px] font-bold leading-none text-[#d99d78]">৳{totalPrice}</p>
+              <p className="display mt-1 text-[32px] font-bold leading-none text-[#53d3d1]">৳{totalPrice}</p>
               <p className="mt-2 text-xs text-[#aaa598]">
                 Seats: {selectedSeats.join(', ')}
                 {bags > 0 && ` · ${bags} bag${bags === 1 ? '' : 's'}`}

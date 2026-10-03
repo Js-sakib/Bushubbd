@@ -209,8 +209,8 @@ export default function AdminDashboard() {
       {/* Colour glows the glass panels blur over. Decoration only. */}
       <div aria-hidden className="pointer-events-none fixed inset-0 -z-10">
         <div className="absolute -left-40 -top-40 h-[480px] w-[480px] rounded-full bg-[#f2661d] opacity-[0.16] blur-[120px]" />
-        <div className="absolute -right-32 top-1/3 h-[420px] w-[420px] rounded-full bg-[#cc8b65] opacity-[0.14] blur-[120px]" />
-        <div className="absolute bottom-0 left-1/3 h-[360px] w-[360px] rounded-full bg-[#e3dcd2] opacity-[0.06] blur-[120px]" />
+        <div className="absolute -right-32 top-1/3 h-[420px] w-[420px] rounded-full bg-[#53d3d1] opacity-[0.12] blur-[120px]" />
+        <div className="absolute bottom-0 left-1/3 h-[360px] w-[360px] rounded-full bg-[#0dabab] opacity-[0.12] blur-[120px]" />
       </div>
 
       {/* Sidebar, computers and tablets in landscape */}
@@ -220,7 +220,7 @@ export default function AdminDashboard() {
             <LogoMark className="h-9 w-9" />
             <div className="flex flex-col leading-tight">
               <span className="display text-[17px] font-bold">BusHub</span>
-              <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#d99d78]">Admin</span>
+              <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#53d3d1]">Admin</span>
             </div>
           </div>
           <nav className="flex flex-col gap-1.5">
@@ -234,7 +234,7 @@ export default function AdminDashboard() {
                   aria-current={active ? 'page' : undefined}
                   className={`flex h-11 items-center gap-3 rounded-2xl px-3.5 text-[14px] font-semibold transition ${
                     active
-                      ? 'bg-gradient-to-r from-[#f2661d] to-[#f5a524] text-[#1a0d03] shadow-[0_8px_24px_rgba(242,102,29,0.35)]'
+                      ? 'bg-gradient-to-r from-[#f2661d] to-[#feb249] text-[#1a0d03] shadow-[0_8px_24px_rgba(242,102,29,0.35)]'
                       : 'text-[#cfc8bc] hover:bg-white/[0.06] hover:text-white'
                   }`}
                 >
@@ -248,7 +248,7 @@ export default function AdminDashboard() {
           <button
             type="button"
             onClick={handleLogout}
-            className="mt-auto flex h-11 items-center gap-3 rounded-2xl px-3.5 text-[14px] font-semibold text-[#d99d78] transition hover:bg-white/[0.06]"
+            className="mt-auto flex h-11 items-center gap-3 rounded-2xl px-3.5 text-[14px] font-semibold text-[#53d3d1] transition hover:bg-white/[0.06]"
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-[19px] w-[19px]">
               <path d="M9 21H5.5A1.5 1.5 0 0 1 4 19.5v-15A1.5 1.5 0 0 1 5.5 3H9" />
@@ -287,7 +287,7 @@ export default function AdminDashboard() {
               />
             </div>
             <span className="hidden items-center gap-2.5 rounded-full border border-white/10 bg-white/[0.04] py-1 pl-1 pr-3.5 sm:flex">
-              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-[#f2661d] to-[#f5a524] text-[12px] font-bold text-[#1a0d03]">A</span>
+              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-[#f2661d] to-[#feb249] text-[12px] font-bold text-[#1a0d03]">A</span>
               <span className="flex flex-col leading-tight">
                 <span className="text-[12.5px] font-bold">Admin</span>
                 <span className="text-[10.5px] text-[#aaa598]">BusHub owner</span>
@@ -350,7 +350,7 @@ export default function AdminDashboard() {
                 onClick={() => go(item.key)}
                 aria-current={active ? 'page' : undefined}
                 className={`relative flex flex-col items-center gap-1 rounded-2xl py-2 text-[10.5px] font-bold transition ${
-                  active ? 'bg-gradient-to-br from-[#f2661d] to-[#f5a524] text-[#1a0d03] shadow-[0_6px_18px_rgba(242,102,29,0.4)]' : 'text-[#b8b2a6]'
+                  active ? 'bg-gradient-to-br from-[#f2661d] to-[#feb249] text-[#1a0d03] shadow-[0_6px_18px_rgba(242,102,29,0.4)]' : 'text-[#b8b2a6]'
                 }`}
               >
                 {item.icon}

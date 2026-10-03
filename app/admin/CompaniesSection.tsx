@@ -14,9 +14,9 @@ type NewLogin = { name: string; email: string; phone: string; password: string; 
 const EMPTY_COMPANY = { name: '', ownerName: '', phone: '', email: '', commissionRate: '10' }
 
 const STATUS_STYLE: Record<string, string> = {
-  approved: 'bg-[#7de8bd]/[0.13] text-[#6ee7b7]',
+  approved: 'bg-[#3fd0c9]/[0.13] text-[#5fdcd5]',
   suspended: 'bg-[#f87171]/[0.13] text-[#fca5a5]',
-  pending: 'bg-[#f5a524]/[0.14] text-[#fbbf24]',
+  pending: 'bg-[#feb249]/[0.14] text-[#f6e879]',
 }
 
 function CloseButton({ onClick, label }: { onClick: () => void; label: string }) {
@@ -51,7 +51,7 @@ function NewLoginCard({ login, onClose }: { login: NewLogin; onClose: () => void
   }
 
   return (
-    <div className="glass flex flex-col gap-3.5 border-[#cc8b65]/60 p-5" style={{ borderColor: 'rgba(245,165,36,0.55)' }}>
+    <div className="glass flex flex-col gap-3.5 border-[#cc8b65]/60 p-5" style={{ borderColor: 'rgba(254,178,73,0.55)' }}>
       <div className="flex items-start justify-between gap-3">
         <div className="flex flex-col gap-1">
           <span className="display text-[16px] font-bold">
@@ -69,7 +69,7 @@ function NewLoginCard({ login, onClose }: { login: NewLogin; onClose: () => void
         </div>
         <div className="flex items-center justify-between gap-3">
           <span className="text-[12px] text-[#aaa598]">Password</span>
-          <span className="select-all font-mono text-[17px] font-bold tracking-wide text-[#d99d78]">{login.password}</span>
+          <span className="select-all font-mono text-[17px] font-bold tracking-wide text-[#53d3d1]">{login.password}</span>
         </div>
       </div>
 
@@ -229,7 +229,7 @@ export default function CompaniesSection({
           className="flex items-center justify-between gap-3 px-5 py-4 text-left"
         >
           <span className="flex items-center gap-3">
-            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-[#f2661d] to-[#f5a524] text-[#1a0d03] shadow-[0_6px_18px_rgba(242,102,29,0.35)]">
+            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-[#f2661d] to-[#feb249] text-[#1a0d03] shadow-[0_6px_18px_rgba(242,102,29,0.35)]">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" className="h-4 w-4">
                 <path d="M12 5v14M5 12h14" />
               </svg>
@@ -280,7 +280,7 @@ export default function CompaniesSection({
             submitReset(typedPassword)
           }}
           className="glass flex flex-col gap-3.5 p-5"
-          style={{ borderColor: 'rgba(245,165,36,0.55)' }}
+          style={{ borderColor: 'rgba(254,178,73,0.55)' }}
         >
           <div className="flex items-start justify-between gap-3">
             <div className="flex flex-col gap-1">
@@ -311,14 +311,14 @@ export default function CompaniesSection({
             </button>
           </div>
           {typedPassword && typedPassword.trim().length < 8 && (
-            <span className="text-[11.5px] text-[#d99d78]">{8 - typedPassword.trim().length} more characters needed</span>
+            <span className="text-[11.5px] text-[#53d3d1]">{8 - typedPassword.trim().length} more characters needed</span>
           )}
         </form>
       )}
 
       {!newLogin && !resetTarget && waiting.length > 0 && (
-        <div className="glass flex flex-col gap-2.5 p-4" style={{ borderColor: 'rgba(245,165,36,0.5)' }}>
-          <span className="text-[13px] font-bold text-[#d99d78]">
+        <div className="glass flex flex-col gap-2.5 p-4" style={{ borderColor: 'rgba(254,178,73,0.5)' }}>
+          <span className="text-[13px] font-bold text-[#53d3d1]">
             {waiting.length === 1 ? '1 operator is' : `${waiting.length} operators are`} waiting for a new password
           </span>
           {waiting.map((c) => (
@@ -329,7 +329,7 @@ export default function CompaniesSection({
                   {c.phone} · {c.email}
                 </span>
               </div>
-              <button type="button" onClick={() => startReset(c)} className="shrink-0 rounded-full bg-[#f5a524] px-3.5 py-2 text-[12.5px] font-bold text-[#2b1a02]">
+              <button type="button" onClick={() => startReset(c)} className="shrink-0 rounded-full bg-[#feb249] px-3.5 py-2 text-[12.5px] font-bold text-[#2b1a02]">
                 Reset
               </button>
             </div>
@@ -350,9 +350,9 @@ export default function CompaniesSection({
         {companies.length === 0 && <p className="px-5 pb-8 pt-4 text-center text-sm text-[#aaa598]">No companies registered yet.</p>}
         <ul className="flex flex-col">
           {rows.map((c) => (
-            <li key={c._id} className={`flex flex-col gap-3 border-t border-white/[0.06] px-5 py-3.5 ${c.passwordResetRequestedAt ? 'bg-[#f5a524]/[0.05]' : ''}`}>
+            <li key={c._id} className={`flex flex-col gap-3 border-t border-white/[0.06] px-5 py-3.5 ${c.passwordResetRequestedAt ? 'bg-[#feb249]/[0.05]' : ''}`}>
               <div className="flex items-start gap-3">
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/[0.05] text-[13px] font-bold text-[#d99d78]">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/[0.05] text-[13px] font-bold text-[#53d3d1]">
                   {(c.name || '?').slice(0, 2).toUpperCase()}
                 </span>
                 <div className="flex min-w-0 grow flex-col gap-0.5">
@@ -361,8 +361,8 @@ export default function CompaniesSection({
                   <span className="truncate text-[11.5px] text-[#88908a]">
                     {c.email} · {c.phone}
                   </span>
-                  <span className="text-[11.5px] font-bold text-[#d99d78]">{c.commissionRate ?? 10}% BusHub commission</span>
-                  {c.passwordResetRequestedAt && <span className="text-[11.5px] font-bold text-[#d99d78]">Asked for a new password</span>}
+                  <span className="text-[11.5px] font-bold text-[#53d3d1]">{c.commissionRate ?? 10}% BusHub commission</span>
+                  {c.passwordResetRequestedAt && <span className="text-[11.5px] font-bold text-[#53d3d1]">Asked for a new password</span>}
                 </div>
                 <span className={`inline-flex h-6 shrink-0 items-center rounded-full px-2.5 text-[11px] font-bold capitalize ${STATUS_STYLE[c.status] || STATUS_STYLE.pending}`}>
                   {c.status}
@@ -370,7 +370,7 @@ export default function CompaniesSection({
               </div>
               <div className="flex flex-wrap gap-2">
                 {c.status !== 'approved' && (
-                  <button type="button" onClick={() => setStatus(c._id, 'approved')} className="h-9 rounded-full bg-[#7de8bd]/[0.14] px-3.5 text-[12px] font-bold text-[#6ee7b7] transition hover:bg-[#7de8bd]/[0.22]">
+                  <button type="button" onClick={() => setStatus(c._id, 'approved')} className="h-9 rounded-full bg-[#3fd0c9]/[0.14] px-3.5 text-[12px] font-bold text-[#5fdcd5] transition hover:bg-[#3fd0c9]/[0.22]">
                     Approve
                   </button>
                 )}
@@ -384,8 +384,8 @@ export default function CompaniesSection({
                   onClick={() => startReset(c)}
                   className={
                     c.passwordResetRequestedAt
-                      ? 'h-9 rounded-full bg-[#f5a524] px-3.5 text-[12px] font-bold text-[#2b1a02]'
-                      : 'h-9 rounded-full border border-white/10 bg-white/[0.05] px-3.5 text-[12px] font-bold text-[#d99d78] transition hover:bg-white/[0.09]'
+                      ? 'h-9 rounded-full bg-[#feb249] px-3.5 text-[12px] font-bold text-[#2b1a02]'
+                      : 'h-9 rounded-full border border-white/10 bg-white/[0.05] px-3.5 text-[12px] font-bold text-[#53d3d1] transition hover:bg-white/[0.09]'
                   }
                 >
                   Reset password

@@ -64,7 +64,7 @@ export default function CompanyRegister() {
 
         <p className="text-center text-[12.5px] text-[#aaa598]">
           Already registered?{' '}
-          <button type="button" onClick={() => router.push(companyPath('/company/login'))} className="font-semibold text-[#d99d78] hover:underline">
+          <button type="button" onClick={() => router.push(companyPath('/company/login'))} className="font-semibold text-[#53d3d1] hover:underline">
             Log in
           </button>
         </p>

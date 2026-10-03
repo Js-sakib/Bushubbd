@@ -17,8 +17,8 @@ export function bookingStatus(b: Booking): StatusKey {
 // A status always shows its word next to the colour, never the colour alone.
 const STATUS: Record<StatusKey, { label: string; className: string; dot: string }> = {
   boarded: { label: 'Boarded', className: 'bg-[#12a594]/[0.16] text-[#5eead4]', dot: 'bg-[#2dd4bf]' },
-  paid: { label: 'Paid', className: 'bg-[#7de8bd]/[0.13] text-[#6ee7b7]', dot: 'bg-[#7de8bd]' },
-  pending: { label: 'Pending', className: 'bg-[#f5a524]/[0.14] text-[#fbbf24]', dot: 'bg-[#f5a524]' },
+  paid: { label: 'Paid', className: 'bg-[#3fd0c9]/[0.13] text-[#5fdcd5]', dot: 'bg-[#3fd0c9]' },
+  pending: { label: 'Pending', className: 'bg-[#feb249]/[0.14] text-[#f6e879]', dot: 'bg-[#feb249]' },
   refunded: { label: 'Refunded', className: 'bg-[#f87171]/[0.13] text-[#fca5a5]', dot: 'bg-[#f87171]' },
   expired: { label: 'Expired', className: 'bg-white/[0.06] text-[#b8b2a6]', dot: 'bg-[#88908a]' },
 }
@@ -40,7 +40,7 @@ function initials(name: string): string {
 
 function Avatar({ name }: { name: string }) {
   return (
-    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#f2661d] to-[#f5a524] text-[12px] font-bold text-[#1a0d03] shadow-[0_4px_14px_rgba(242,102,29,0.3)]">
+    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#f2661d] to-[#feb249] text-[12px] font-bold text-[#1a0d03] shadow-[0_4px_14px_rgba(242,102,29,0.3)]">
       {initials(name)}
     </span>
   )
@@ -48,7 +48,7 @@ function Avatar({ name }: { name: string }) {
 
 function Channel({ source }: { source?: string }) {
   return source === 'whatsapp' ? (
-    <span className="text-[12px] font-semibold text-[#86efac]">WhatsApp</span>
+    <span className="text-[12px] font-semibold text-[#5fdcd5]">WhatsApp</span>
   ) : (
     <span className="text-[12px] font-semibold text-[#93c5fd]">Website</span>
   )
@@ -129,7 +129,7 @@ export default function BookingList({
         {bookings.map((b) => (
           <li
             key={b._id}
-            className={`flex flex-col gap-2.5 border-t border-white/[0.06] px-4 py-3.5 first:border-t-0 ${ticking && selected!.has(b._id) ? 'bg-[#f5a524]/[0.06]' : ''}`}
+            className={`flex flex-col gap-2.5 border-t border-white/[0.06] px-4 py-3.5 first:border-t-0 ${ticking && selected!.has(b._id) ? 'bg-[#feb249]/[0.06]' : ''}`}
           >
             <div className="flex items-center gap-3">
               {ticking && <Tick checked={selected!.has(b._id)} onChange={(on) => onSelect!([b._id], on)} label={`Select booking ${b.bookingCode}`} />}
@@ -186,7 +186,7 @@ export default function BookingList({
           </thead>
           <tbody>
             {bookings.map((b) => (
-              <tr key={b._id} className={`border-t border-white/[0.06] transition hover:bg-white/[0.025] ${ticking && selected!.has(b._id) ? 'bg-[#f5a524]/[0.06]' : ''}`}>
+              <tr key={b._id} className={`border-t border-white/[0.06] transition hover:bg-white/[0.025] ${ticking && selected!.has(b._id) ? 'bg-[#feb249]/[0.06]' : ''}`}>
                 {ticking && (
                   <td className="py-3 pl-5">
                     <Tick checked={selected!.has(b._id)} onChange={(on) => onSelect!([b._id], on)} label={`Select booking ${b.bookingCode}`} />

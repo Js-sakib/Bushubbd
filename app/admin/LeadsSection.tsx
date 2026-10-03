@@ -13,9 +13,9 @@ const EMPTY_FORM = { companyName: '', contactName: '', phone: '', altPhone: '', 
 const STATUS_STYLE: Record<string, string> = {
   new: 'bg-white/[0.07] text-[#dad3c8]',
   called: 'bg-[#60a5fa]/[0.14] text-[#93c5fd]',
-  interested: 'bg-[#f5a524]/[0.15] text-[#fbbf24]',
-  trial: 'bg-[#a78bfa]/[0.16] text-[#c4b5fd]',
-  joined: 'bg-[#7de8bd]/[0.14] text-[#6ee7b7]',
+  interested: 'bg-[#feb249]/[0.15] text-[#f6e879]',
+  trial: 'bg-[#86c6d1]/[0.16] text-[#a9d8e0]',
+  joined: 'bg-[#3fd0c9]/[0.14] text-[#5fdcd5]',
   not_interested: 'bg-[#f87171]/[0.12] text-[#fca5a5]',
 }
 
@@ -44,7 +44,7 @@ function PhoneButtons({ phone }: { phone: string }) {
   const wa = whatsappNumber(phone)
   return (
     <div className="flex items-center gap-2">
-      <a href={telHref(phone)} className="flex h-9 items-center gap-1.5 rounded-full bg-[#7de8bd]/[0.14] px-3.5 text-[12.5px] font-bold text-[#6ee7b7]">
+      <a href={telHref(phone)} className="flex h-9 items-center gap-1.5 rounded-full bg-[#3fd0c9]/[0.14] px-3.5 text-[12.5px] font-bold text-[#5fdcd5]">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5">
           <path d="M5 4h3.5l1.5 4.5-2 1.5a11 11 0 0 0 6 6l1.5-2L20 15.5V19a1.5 1.5 0 0 1-1.5 1.5A15.5 15.5 0 0 1 3.5 5.5 1.5 1.5 0 0 1 5 4z" />
         </svg>
@@ -116,7 +116,7 @@ function LeadCard({
               {formatTripDate(lead.followUpDate)}
             </span>
           )}
-          {company && <span className="text-[11.5px] font-bold text-[#6ee7b7]">Has a BusHub login ({company.status})</span>}
+          {company && <span className="text-[11.5px] font-bold text-[#5fdcd5]">Has a BusHub login ({company.status})</span>}
         </div>
         <span className={`inline-flex h-6 shrink-0 items-center rounded-full px-2.5 text-[11px] font-bold ${STATUS_STYLE[lead.status] || STATUS_STYLE.new}`}>
           {leadStatusLabel(lead.status)}
@@ -147,12 +147,12 @@ function LeadCard({
         <button
           type="button"
           onClick={() => setOpen((v) => !v)}
-          className="h-9 rounded-full border border-white/10 bg-white/[0.05] px-3.5 text-[12px] font-bold text-[#d99d78] transition hover:bg-white/[0.09]"
+          className="h-9 rounded-full border border-white/10 bg-white/[0.05] px-3.5 text-[12px] font-bold text-[#53d3d1] transition hover:bg-white/[0.09]"
         >
           {open ? 'Close' : `Notes${lead.notes.length ? ` (${lead.notes.length})` : ''}`}
         </button>
         {['interested', 'trial', 'joined'].includes(lead.status) && !company && (
-          <button type="button" onClick={() => onCreateLogin(lead)} className="h-9 rounded-full bg-[#f5a524] px-3.5 text-[12px] font-bold text-[#2b1a02]">
+          <button type="button" onClick={() => onCreateLogin(lead)} className="h-9 rounded-full bg-[#feb249] px-3.5 text-[12px] font-bold text-[#2b1a02]">
             Create their login
           </button>
         )}
@@ -318,7 +318,7 @@ export default function LeadsSection({
       <section className="glass flex flex-col">
         <button type="button" onClick={() => setAdding((v) => !v)} aria-expanded={adding} className="flex items-center justify-between gap-3 px-5 py-4 text-left">
           <span className="flex items-center gap-3">
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#f2661d] to-[#f5a524] text-[#1a0d03] shadow-[0_6px_18px_rgba(242,102,29,0.35)]">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#f2661d] to-[#feb249] text-[#1a0d03] shadow-[0_6px_18px_rgba(242,102,29,0.35)]">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" className="h-4 w-4">
                 <path d="M12 5v14M5 12h14" />
               </svg>

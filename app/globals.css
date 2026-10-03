@@ -3,19 +3,19 @@
 @tailwind utilities;
 
 :root {
-  --bg: #013328;
-  --surface: #0d3c32;
-  --surface-2: #0b3a30;
-  --surface-3: #0d3c32;
-  --line: #245549;
-  --line-soft: #1f4f43;
-  --field: #012a21;
-  --field-line: #2a5d50;
-  --gold: #f5a524;
+  --bg: #002447;
+  --surface: #08324d;
+  --surface-2: #06304a;
+  --surface-3: #08324d;
+  --line: #24506b;
+  --line-soft: #1f4a66;
+  --field: #001d3a;
+  --field-line: #2a5874;
+  --gold: #feb249;
   --orange: #f2661d;
   --teal: #2dd4bf;
-  --teal-deep: #013328;
-  --ink: #f3eee6;
+  --teal-deep: #002447;
+  --ink: #fbeceb;
   --muted: #b8b2a6;
   --muted-2: #959488;
 }
@@ -31,7 +31,8 @@ html {
 }
 
 body {
-  background: var(--bg);
+  background: linear-gradient(160deg, #002447 0%, #022c40 45%, #042a2b 80%, #013328 100%) fixed;
+  background-color: var(--bg);
   color: var(--ink);
   font-family: var(--font-body), 'Inter', system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -69,8 +70,8 @@ h1, h2, h3, .display {
    into the dark, with a hint of teal at the far end. */
 .nav-glow {
   background:
-    radial-gradient(140% 220% at 0% 50%, rgba(242, 102, 29, 0.72) 0%, rgba(245, 165, 36, 0.26) 34%, rgba(245, 165, 36, 0) 58%),
-    radial-gradient(90% 200% at 100% 50%, rgba(204, 139, 101, 0.24) 0%, rgba(204, 139, 101, 0) 60%),
+    radial-gradient(140% 220% at 0% 50%, rgba(242, 102, 29, 0.72) 0%, rgba(254, 178, 73, 0.26) 34%, rgba(254, 178, 73, 0) 58%),
+    radial-gradient(90% 200% at 100% 50%, rgba(83, 211, 209, 0.24) 0%, rgba(83, 211, 209, 0) 60%),
     linear-gradient(150deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.02) 60%),
     rgba(16, 12, 13, 0.9);
   border-color: rgba(255, 196, 140, 0.16);
@@ -131,7 +132,7 @@ h1, h2, h3, .display {
   height: 30px;
   flex-shrink: 0;
   border-radius: 999px;
-  background: linear-gradient(135deg, #f2661d, #f5a524);
+  background: linear-gradient(135deg, #f2661d, #feb249);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -163,7 +164,7 @@ h1, h2, h3, .display {
 .input-dark:focus {
   outline: none;
   border-color: var(--gold);
-  box-shadow: 0 0 0 3px rgba(245, 165, 36, 0.16);
+  box-shadow: 0 0 0 3px rgba(254, 178, 73, 0.16);
 }
 
 /* Search fields have their own clear button. */
@@ -183,7 +184,7 @@ select.input-dark {
 
 /* The field itself is see-through; the opened option list must not be. */
 select.input-dark option {
-  background: #0b3a30;
+  background: #06304a;
   color: var(--ink);
 }
 

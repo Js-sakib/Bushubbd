@@ -12,8 +12,8 @@ const PROMISES = [
     title: 'No account, ever',
     body:
       'You pick a seat, pay, and the ticket is yours. No sign-up form, no password to forget, no phone number verification before you can even see a fare.',
-    accent: 'text-[#d99d78]',
-    bg: 'bg-[#f5a524]/[0.14]',
+    accent: 'text-[#53d3d1]',
+    bg: 'bg-[#feb249]/[0.14]',
     icon: (
       <>
         <path d="M12 3 4 6v6c0 4.4 3.3 8.3 8 9 4.7-.7 8-4.6 8-9V6z" />
@@ -55,8 +55,8 @@ const PROMISES = [
     title: 'Ten minutes to pay, then the seat goes back',
     body:
       'Your seat is held while you finish payment. If you walk away, it returns to the map automatically instead of sitting dead for the rest of the day.',
-    accent: 'text-[#8b5cf6]',
-    bg: 'bg-[#8b5cf6]/[0.16]',
+    accent: 'text-[#5eb1bf]',
+    bg: 'bg-[#5eb1bf]/[0.16]',
     icon: (
       <>
         <circle cx="12" cy="12" r="9" />
@@ -76,7 +76,7 @@ export default function About() {
   return (
     <div className="px-5 pb-6 pt-5">
       <section className="flex flex-col gap-3">
-        <span className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#d99d78]">About us</span>
+        <span className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#53d3d1]">About us</span>
         <h1 className="text-[34px] font-bold leading-[1.1] sm:text-[42px]">
           Bus tickets,
           <br />
@@ -111,7 +111,7 @@ export default function About() {
         <div className="grid gap-2.5 sm:grid-cols-3">
           {STEPS.map((step) => (
             <div key={step.n} className="flex flex-col gap-2 glass-lite p-3.5">
-              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#f5a524]/[0.14] text-sm font-bold text-[#d99d78]">
+              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#feb249]/[0.14] text-sm font-bold text-[#53d3d1]">
                 {step.n}
               </span>
               <span className="text-sm font-bold">{step.title}</span>
@@ -138,7 +138,7 @@ export default function About() {
 
       <section className="mt-8 flex flex-col gap-3">
         <h2 className="text-[17px] font-bold">For bus operators</h2>
-        <div className="flex flex-col gap-3.5 rounded-[20px] border border-[#245b4b] bg-gradient-to-br from-[#013328]/90 to-[#0d3c32]/90 p-4">
+        <div className="flex flex-col gap-3.5 rounded-[20px] border border-[#24546e] bg-gradient-to-br from-[#002447]/90 to-[#08324d]/90 p-4">
           <p className="text-[13px] leading-relaxed text-[#c4beb2]">
             Listing a bus is free. You get your own dashboard to add trips, mark the seats you sell at your counter,
             and see exactly what BusHub owes you. We take a commission only on the tickets we actually sell for you —
@@ -162,7 +162,7 @@ export default function About() {
           <p className="text-[13px] leading-relaxed text-[#b8b2a6]">
             Question about a booking, a refund, or listing your buses? Write to us and we will come back to you.
           </p>
-          <a href="mailto:info@bushubbd.com" className="text-sm font-bold text-[#d99d78] hover:underline">
+          <a href="mailto:info@bushubbd.com" className="text-sm font-bold text-[#53d3d1] hover:underline">
             info@bushubbd.com
           </a>
           <span className="text-[11.5px] text-[#959488]">BusHub · Bangladesh</span>

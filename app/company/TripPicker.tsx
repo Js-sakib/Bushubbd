@@ -47,7 +47,7 @@ export default function TripPicker({
               type="button"
               onClick={() => onTrip(t._id)}
               className={`flex items-center gap-3 rounded-2xl border px-4 py-3 text-left transition ${
-                active ? 'border-[#cc8b65] bg-[#f5a524]/[0.08]' : 'border-white/[0.08] bg-black/20 hover:bg-white/[0.04]'
+                active ? 'border-[#cc8b65] bg-[#feb249]/[0.08]' : 'border-white/[0.08] bg-black/20 hover:bg-white/[0.04]'
               }`}
             >
               <div className="flex min-w-0 grow flex-col gap-0.5">
@@ -62,7 +62,7 @@ export default function TripPicker({
                 </span>
               </div>
               <span className="shrink-0 text-right text-[11.5px] leading-tight">
-                <b className="text-[14px] text-[#7de8bd]">{c.free}</b>
+                <b className="text-[14px] text-[#3fd0c9]">{c.free}</b>
                 <span className="text-[#aaa598]"> free</span>
                 <br />
                 <span className="text-[#aaa598]">of {t.totalSeats}</span>

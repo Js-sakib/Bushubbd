@@ -23,7 +23,7 @@ export default async function RoutesIndex() {
   return (
     <div className="px-5 pb-6 pt-5">
       <section className="flex flex-col gap-3">
-        <span className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#d99d78]">Bus routes</span>
+        <span className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#53d3d1]">Bus routes</span>
         <h1 className="text-[32px] font-bold leading-[1.1] sm:text-[42px]">Bus routes across Bangladesh</h1>
         <p className="text-[17px] font-semibold text-[#d6dcdd]">বাংলাদেশের বাস রুট · অনলাইনে টিকেট</p>
         <p className="max-w-lg text-sm leading-relaxed text-[#b8b2a6]">

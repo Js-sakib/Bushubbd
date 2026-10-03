@@ -128,7 +128,7 @@ function PayState({ trip, onPay, busy }: { trip: MoneyTrip; onPay: (t: MoneyTrip
   if (!trip.departed) return <span className="text-[12px] text-[#93c5fd]">Pay {taka(trip.pay.owed + trip.pay.invoiced)} after the bus leaves.</span>
   return (
     <div className="flex flex-col gap-2">
-      {trip.pay.paid > 0 && <span className="text-[12px] font-semibold text-[#7de8bd]">✓ Paid {taka(trip.pay.paid)}</span>}
+      {trip.pay.paid > 0 && <span className="text-[12px] font-semibold text-[#3fd0c9]">✓ Paid {taka(trip.pay.paid)}</span>}
       {trip.pay.invoiced > 0 && trip.pay.invoiceId && (
         <a href={`/invoice/${trip.pay.invoiceId}?as=admin`} className="glass-btn h-11 text-sm">
           Open invoice {trip.pay.invoiceNumber} · pay {taka(trip.pay.invoiced)}
@@ -140,7 +140,7 @@ function PayState({ trip, onPay, busy }: { trip: MoneyTrip; onPay: (t: MoneyTrip
         </button>
       )}
       {trip.pay.paid > 0 && trip.pay.invoiceId && trip.pay.owed === 0 && trip.pay.invoiced === 0 && (
-        <a href={`/invoice/${trip.pay.invoiceId}?as=admin`} className="text-[12px] font-semibold text-[#d99d78]">
+        <a href={`/invoice/${trip.pay.invoiceId}?as=admin`} className="text-[12px] font-semibold text-[#53d3d1]">
           See invoice {trip.pay.invoiceNumber} ›
         </a>
       )}
@@ -297,12 +297,12 @@ function TripsMoney() {
           </span>
         </div>
         <div className="flex flex-col gap-2 border-t border-white/[0.06] pt-3">
-          <Line label="Counter tickets" sub={`${total.counterSeats} seats`} value={taka(total.counter)} tone="text-[#c4b5fd]" />
-          <Line label="BusHub tickets" sub={`${total.onlineSeats} seats`} value={taka(total.online)} tone="text-[#d99d78]" />
-          <Line label="BusHub commission" value={taka(total.commission)} tone="text-[#7de8bd]" />
+          <Line label="Counter tickets" sub={`${total.counterSeats} seats`} value={taka(total.counter)} tone="text-[#a9d8e0]" />
+          <Line label="BusHub tickets" sub={`${total.onlineSeats} seats`} value={taka(total.online)} tone="text-[#53d3d1]" />
+          <Line label="BusHub commission" value={taka(total.commission)} tone="text-[#3fd0c9]" />
         </div>
         <div className="flex flex-col gap-2 border-t border-white/[0.06] pt-3">
-          <Line label="Already paid to companies" value={taka(total.paid)} tone="text-[#7de8bd]" />
+          <Line label="Already paid to companies" value={taka(total.paid)} tone="text-[#3fd0c9]" />
           <Line label="Pay later" sub="Trips still to leave" value={taka(total.later)} tone="text-[#93c5fd]" />
         </div>
         <div className="flex items-center justify-between gap-3 rounded-2xl bg-gradient-to-br from-[#c77a0e]/60 to-[#a25f06]/50 px-3.5 py-3">
@@ -312,13 +312,13 @@ function TripsMoney() {
       </div>
 
       <div className="card-2 overflow-hidden">
-        <div className="border-b border-[#1b4a3f] px-4 py-3">
+        <div className="border-b border-[#1b4560] px-4 py-3">
           <span className="label-xs">Trip by trip</span>
         </div>
         {shown.map((t) => {
           const due = t.pay.owed + t.pay.invoiced
           return (
-            <details key={t._id} className="group border-b border-[#1b4a3f] last:border-b-0">
+            <details key={t._id} className="group border-b border-[#1b4560] last:border-b-0">
               <summary className="flex cursor-pointer list-none items-start gap-3 px-4 py-3 marker:hidden">
                 <div className="flex min-w-0 grow flex-col gap-0.5">
                   <span className="truncate text-[13.5px] font-bold">{t.companyName}</span>
@@ -335,23 +335,23 @@ function TripsMoney() {
                 <div className="flex shrink-0 flex-col items-end gap-0.5">
                   {due > 0 ? (
                     <>
-                      <span className={`text-[14px] font-bold ${t.departed ? 'text-[#d99d78]' : 'text-[#93c5fd]'}`}>{taka(due)}</span>
+                      <span className={`text-[14px] font-bold ${t.departed ? 'text-[#53d3d1]' : 'text-[#93c5fd]'}`}>{taka(due)}</span>
                       <span className="text-[10.5px] text-[#aaa598]">{t.departed ? 'to pay' : 'pay later'}</span>
                     </>
                   ) : t.pay.paid > 0 ? (
-                    <span className="text-[12px] font-bold text-[#7de8bd]">Paid ✓</span>
+                    <span className="text-[12px] font-bold text-[#3fd0c9]">Paid ✓</span>
                   ) : (
                     <span className="text-[11px] text-[#959488]">Nothing to pay</span>
                   )}
-                  <span className="text-[10.5px] text-[#d99d78] group-open:hidden">Details ›</span>
-                  <span className="hidden text-[10.5px] text-[#d99d78] group-open:inline">Hide ‹</span>
+                  <span className="text-[10.5px] text-[#53d3d1] group-open:hidden">Details ›</span>
+                  <span className="hidden text-[10.5px] text-[#53d3d1] group-open:inline">Hide ‹</span>
                 </div>
               </summary>
               <div className="flex flex-col gap-3 bg-black/20 px-4 pb-4 pt-2 text-[12.5px]">
                 <div className="flex flex-col gap-1.5">
-                  <Line label={`Counter · ${t.counter.seats} seats`} value={taka(t.counter.total)} tone="text-[#c4b5fd]" />
-                  <Line label={`BusHub · ${t.online.tickets} tickets, ${t.online.seats} seats`} value={taka(t.online.total)} tone="text-[#d99d78]" />
-                  <Line label="BusHub commission" value={taka(t.online.commission)} tone="text-[#7de8bd]" />
+                  <Line label={`Counter · ${t.counter.seats} seats`} value={taka(t.counter.total)} tone="text-[#a9d8e0]" />
+                  <Line label={`BusHub · ${t.online.tickets} tickets, ${t.online.seats} seats`} value={taka(t.online.total)} tone="text-[#53d3d1]" />
+                  <Line label="BusHub commission" value={taka(t.online.commission)} tone="text-[#3fd0c9]" />
                   <Line label="Company gets from BusHub" value={taka(t.online.payout)} strong />
                   <Line label={`Not sold · ${Math.max(0, t.totalSeats - t.counter.seats - t.online.seats)} seats`} value="" />
                 </div>
@@ -383,7 +383,7 @@ export default function CostsSection() {
             key={id}
             type="button"
             onClick={() => setView(id)}
-            className={`h-9 rounded-full px-4 text-[12.5px] font-bold ${view === id ? 'bg-gradient-to-r from-[#f2661d] to-[#f5a524] text-[#1a0d03]' : 'text-[#b8b2a6]'}`}
+            className={`h-9 rounded-full px-4 text-[12.5px] font-bold ${view === id ? 'bg-gradient-to-r from-[#f2661d] to-[#feb249] text-[#1a0d03]' : 'text-[#b8b2a6]'}`}
           >
             {label}
           </button>

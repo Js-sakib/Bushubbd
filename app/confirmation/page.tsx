@@ -71,7 +71,7 @@ function ConfirmationContent() {
     // the glass background. (Put on the ticket itself, it would paint over the white card.)
     return toBlob(ticketRef.current, {
       pixelRatio: 2.5,
-      backgroundColor: '#013328',
+      backgroundColor: '#002447',
       cacheBust: true,
       imagePlaceholder: BLANK_PIXEL,
       filter: onScreenOnly,
@@ -217,7 +217,7 @@ function ConfirmationContent() {
       <div className="no-print mt-3 flex flex-wrap gap-2">
         <span
           className={`inline-flex h-[30px] items-center gap-1.5 rounded-full px-3 text-xs font-bold ${
-            paid ? 'bg-[#7de8bd]/[0.14] text-[#7de8bd]' : 'bg-[#f5a524]/[0.14] text-[#d99d78]'
+            paid ? 'bg-[#3fd0c9]/[0.14] text-[#3fd0c9]' : 'bg-[#feb249]/[0.14] text-[#53d3d1]'
           }`}
         >
           {paid ? 'Paid' : 'Payment pending'}
@@ -227,7 +227,7 @@ function ConfirmationContent() {
             Refunded
           </span>
         ) : remaining ? (
-          <span className="inline-flex h-[30px] items-center gap-1.5 rounded-full bg-[#f5a524]/[0.13] px-3 text-xs font-bold text-[#d99d78]">
+          <span className="inline-flex h-[30px] items-center gap-1.5 rounded-full bg-[#feb249]/[0.13] px-3 text-xs font-bold text-[#53d3d1]">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" className="h-3 w-3">
               <circle cx="12" cy="12" r="9" />
               <path d="M12 7.5V12l3 2" />
@@ -340,7 +340,7 @@ function ConfirmationContent() {
       </div>
 
       {returnBusId && (
-        <div className="no-print mt-5 flex flex-col gap-3 rounded-[20px] border border-[#245b4b] bg-gradient-to-br from-[#013328]/90 to-[#0d3c32]/90 p-4 sm:max-w-lg">
+        <div className="no-print mt-5 flex flex-col gap-3 rounded-[20px] border border-[#24546e] bg-gradient-to-br from-[#002447]/90 to-[#08324d]/90 p-4 sm:max-w-lg">
           <div className="flex items-center gap-3">
             <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[13px] bg-[#2dd4bf]/[0.16] text-[#2dd4bf]">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">

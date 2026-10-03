@@ -32,9 +32,9 @@ const StoryCard = forwardRef<HTMLDivElement, { booking: TicketBooking }>(functio
         height: 640,
         fontFamily: BANGLA_FONT,
         color: '#e3dcd2',
-        backgroundColor: '#013328',
+        backgroundColor: '#002447',
         backgroundImage:
-          'radial-gradient(circle at 12% 8%, rgba(242,102,29,0.55), transparent 42%), radial-gradient(circle at 95% 92%, rgba(204,139,101,0.45), transparent 45%), radial-gradient(circle at 80% 30%, rgba(245,165,36,0.12), transparent 40%)',
+          'radial-gradient(circle at 12% 8%, rgba(242,102,29,0.55), transparent 42%), radial-gradient(circle at 95% 92%, rgba(83,211,209,0.45), transparent 45%), radial-gradient(circle at 80% 30%, rgba(254,178,73,0.12), transparent 40%)',
       }}
       className="relative flex flex-col items-center overflow-hidden px-6 pb-7 pt-8"
     >
@@ -42,7 +42,7 @@ const StoryCard = forwardRef<HTMLDivElement, { booking: TicketBooking }>(functio
 
       <span
         className="mt-5 rounded-full px-3.5 py-1 text-[12.5px] font-bold"
-        style={{ backgroundColor: 'rgba(52,211,153,0.16)', color: '#6ee7b7', border: '1px solid rgba(52,211,153,0.35)' }}
+        style={{ backgroundColor: 'rgba(13,171,171,0.16)', color: '#5fdcd5', border: '1px solid rgba(13,171,171,0.35)' }}
       >
         ✓ টিকেট কনফার্মড
       </span>
@@ -53,9 +53,9 @@ const StoryCard = forwardRef<HTMLDivElement, { booking: TicketBooking }>(functio
         className="relative mt-6 w-full overflow-hidden rounded-[22px]"
         style={{ backgroundColor: '#ffffff', color: '#100c0d', transform: 'rotate(-3deg)', boxShadow: '0 24px 60px rgba(0,0,0,0.55)' }}
       >
-        <div className="flex items-center justify-between px-4 py-2.5" style={{ background: 'linear-gradient(135deg,#013328,#0b4d3c)' }}>
+        <div className="flex items-center justify-between px-4 py-2.5" style={{ background: 'linear-gradient(135deg,#002447,#042a2b)' }}>
           <span className="text-[14px] font-bold text-white">বাস টিকেট</span>
-          <span className="text-[9px] font-bold tracking-[0.2em]" style={{ color: '#c3d6c9' }}>BUSHUB</span>
+          <span className="text-[9px] font-bold tracking-[0.2em]" style={{ color: '#c9dde6' }}>BUSHUB</span>
         </div>
         <div className="px-4 pb-4 pt-3.5">
           <div className="flex items-end justify-between gap-2">
@@ -97,14 +97,14 @@ const StoryCard = forwardRef<HTMLDivElement, { booking: TicketBooking }>(functio
         <span className="text-[18px] font-bold leading-snug">
           ঘরে বসেই টিকেট কেটেছি
           <br />
-          <span style={{ color: '#f5a524' }}>লাইন নেই, সিরিয়াল নেই</span>
+          <span style={{ color: '#feb249' }}>লাইন নেই, সিরিয়াল নেই</span>
         </span>
         <span className="mt-2 text-[12.5px]" style={{ color: '#cfc8bc' }}>
           আপনিও কাটুন নিজের পছন্দের সিট
         </span>
         <span
           className="display mt-4 rounded-full px-6 py-2.5 text-[20px] font-bold"
-          style={{ background: 'linear-gradient(135deg,#f2661d,#f5a524)', color: '#1a0d03', boxShadow: '0 12px 30px rgba(242,102,29,0.45)' }}
+          style={{ background: 'linear-gradient(135deg,#f2661d,#feb249)', color: '#1a0d03', boxShadow: '0 12px 30px rgba(242,102,29,0.45)' }}
         >
           bushubbd.com
         </span>

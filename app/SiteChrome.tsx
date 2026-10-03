@@ -14,8 +14,8 @@ function Glows() {
   return (
     <div aria-hidden className="no-print pointer-events-none fixed inset-0 -z-10 overflow-hidden">
       <div className="absolute -left-40 -top-40 h-[460px] w-[460px] rounded-full bg-[#f2661d] opacity-[0.15] blur-[120px]" />
-      <div className="absolute -right-40 top-[35%] h-[400px] w-[400px] rounded-full bg-[#cc8b65] opacity-[0.14] blur-[120px]" />
-      <div className="absolute -bottom-32 left-[20%] h-[340px] w-[340px] rounded-full bg-[#e3dcd2] opacity-[0.06] blur-[120px]" />
+      <div className="absolute -right-40 top-[35%] h-[400px] w-[400px] rounded-full bg-[#53d3d1] opacity-[0.12] blur-[120px]" />
+      <div className="absolute -bottom-32 left-[20%] h-[340px] w-[340px] rounded-full bg-[#0dabab] opacity-[0.12] blur-[120px]" />
     </div>
   )
 }
@@ -48,7 +48,7 @@ export default function SiteChrome({ children }: { children: React.ReactNode }) 
           </a>
           <a
             href="/about"
-            className="rounded-full border border-white/10 bg-white/[0.05] px-3.5 py-1.5 text-[12px] font-semibold text-[#dad3c8] transition hover:border-[#cc8b65]/50 hover:text-[#d99d78]"
+            className="rounded-full border border-white/10 bg-white/[0.05] px-3.5 py-1.5 text-[12px] font-semibold text-[#dad3c8] transition hover:border-[#cc8b65]/50 hover:text-[#53d3d1]"
           >
             About us
           </a>
@@ -75,25 +75,25 @@ export default function SiteChrome({ children }: { children: React.ReactNode }) 
           </div>
 
           <div className="grid grid-cols-2 gap-x-6 gap-y-3 sm:grid-cols-3">
-            <a href="/routes" className="text-[13px] text-[#cfc8bc] hover:text-[#d99d78]">
+            <a href="/routes" className="text-[13px] text-[#cfc8bc] hover:text-[#53d3d1]">
               Bus routes
             </a>
-            <a href="/company/register" className="text-[13px] text-[#cfc8bc] hover:text-[#d99d78]">
+            <a href="/company/register" className="text-[13px] text-[#cfc8bc] hover:text-[#53d3d1]">
               For bus operators
             </a>
-            <a href="#refund" className="text-[13px] text-[#cfc8bc] hover:text-[#d99d78]">
+            <a href="#refund" className="text-[13px] text-[#cfc8bc] hover:text-[#53d3d1]">
               Refund policy
             </a>
-            <a href="/about#contact" className="text-[13px] text-[#cfc8bc] hover:text-[#d99d78]">
+            <a href="/about#contact" className="text-[13px] text-[#cfc8bc] hover:text-[#53d3d1]">
               Contact us
             </a>
-            <a href="#terms" className="text-[13px] text-[#cfc8bc] hover:text-[#d99d78]">
+            <a href="#terms" className="text-[13px] text-[#cfc8bc] hover:text-[#53d3d1]">
               Terms
             </a>
-            <a href="#privacy" className="text-[13px] text-[#cfc8bc] hover:text-[#d99d78]">
+            <a href="#privacy" className="text-[13px] text-[#cfc8bc] hover:text-[#53d3d1]">
               Privacy
             </a>
-            <a href="/about" className="text-[13px] text-[#cfc8bc] hover:text-[#d99d78]">
+            <a href="/about" className="text-[13px] text-[#cfc8bc] hover:text-[#53d3d1]">
               About BusHub
             </a>
           </div>

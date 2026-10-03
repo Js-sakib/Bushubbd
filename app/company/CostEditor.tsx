@@ -102,7 +102,7 @@ export default function CostEditor({
               onClick={() => setType(t)}
               aria-pressed={type === t}
               className={`flex flex-col items-center rounded-xl border px-1 py-2 text-[12px] font-bold transition ${
-                type === t ? 'border-[#cc8b65] bg-[#f5a524]/[0.12] text-[#d99d78]' : 'border-white/10 text-[#cfc8bc]'
+                type === t ? 'border-[#cc8b65] bg-[#feb249]/[0.12] text-[#53d3d1]' : 'border-white/10 text-[#cfc8bc]'
               }`}
             >
               {COST_LABELS[t].en}

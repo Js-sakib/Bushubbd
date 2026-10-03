@@ -92,7 +92,7 @@ function Watermark() {
           <div
             key={i}
             className="whitespace-nowrap text-[13px] font-extrabold tracking-[0.18em]"
-            style={{ color: '#013328', opacity: 0.035, paddingLeft: i % 2 ? 60 : 0 }}
+            style={{ color: '#002447', opacity: 0.035, paddingLeft: i % 2 ? 60 : 0 }}
           >
             {'BUSHUBBD.COM  ·  BUSHUB  ·  '.repeat(6)}
           </div>
@@ -138,23 +138,23 @@ const Ticket = forwardRef<HTMLDivElement, { booking: TicketBooking }>(function T
     <div
       ref={ref}
       // Inline background so it survives being cloned into an image.
-      style={{ backgroundColor: '#ffffff', color: INK, fontFamily: BANGLA_FONT }}
+      style={{ backgroundColor: '#fcfcfc', color: INK, fontFamily: BANGLA_FONT }}
       className="ticket-print relative overflow-hidden rounded-[24px] shadow-[0_26px_50px_rgba(0,0,0,0.5)]"
     >
       {/* Header */}
-      <div className="relative bg-gradient-to-br from-[#013328] to-[#0b4d3c] px-5 pb-4 pt-4" style={{ zIndex: 1 }}>
+      <div className="relative bg-gradient-to-br from-[#002447] to-[#042a2b] px-5 pb-4 pt-4" style={{ zIndex: 1 }}>
         <div className="flex items-center justify-between gap-3">
           <Logo tone="dark" className="h-6 w-auto" />
           <div className="flex flex-col items-end leading-none">
             <span className="text-[19px] font-bold text-white">বাস টিকেট</span>
-            <span className="mt-1 text-[9.5px] font-bold tracking-[0.2em] text-[#c3d6c9]">BUS TICKET</span>
+            <span className="mt-1 text-[9.5px] font-bold tracking-[0.2em] text-[#c9dde6]">BUS TICKET</span>
           </div>
         </div>
         <div className="mt-3.5 flex items-center gap-3 rounded-2xl px-3 py-2.5" style={{ backgroundColor: 'rgba(255,255,255,0.08)' }}>
           <OperatorLogo logoUrl={booking.logoUrl} name={booking.companyName} variant="light" className="h-9 w-9 rounded-[10px]" />
           <div className="flex min-w-0 grow flex-col">
             <span className="display text-[14px] font-bold leading-tight text-white">{booking.busName}</span>
-            <span className="truncate text-[11px] leading-tight text-[#c3d6c9]">{booking.companyName}</span>
+            <span className="truncate text-[11px] leading-tight text-[#c9dde6]">{booking.companyName}</span>
           </div>
           {busType && (
             <span className="shrink-0 rounded-full px-2.5 py-1 text-[11px] font-bold text-white" style={{ backgroundColor: 'rgba(255,255,255,0.15)' }}>
@@ -175,13 +175,13 @@ const Ticket = forwardRef<HTMLDivElement, { booking: TicketBooking }>(function T
             {dep !== null && (
               <span className="mt-0.5 flex flex-col leading-tight">
                 <span className="text-[10px] font-semibold" style={{ color: MUTED }}>ছাড়বে</span>
-                <span className="whitespace-nowrap text-[13px] font-bold" style={{ color: '#013328' }}>{bnClock(dep)}</span>
+                <span className="whitespace-nowrap text-[13px] font-bold" style={{ color: '#002447' }}>{bnClock(dep)}</span>
               </span>
             )}
           </div>
           <div className="flex w-[84px] flex-col items-center gap-1">
             <div className="flex w-full items-center gap-1">
-              <span className="h-[6px] w-[6px] shrink-0 rounded-full bg-[#013328]" />
+              <span className="h-[6px] w-[6px] shrink-0 rounded-full bg-[#002447]" />
               <span className="h-0.5 grow bg-[repeating-linear-gradient(90deg,#c5ccce_0_4px,transparent_4px_8px)]" />
               <svg viewBox="0 0 24 24" fill="none" stroke="#f2661d" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5 shrink-0">
                 <rect x="3" y="4" width="18" height="12.5" rx="3" />
@@ -210,8 +210,8 @@ const Ticket = forwardRef<HTMLDivElement, { booking: TicketBooking }>(function T
 
         {/* Where to board: typed once per trip by the admin and copied onto every ticket */}
         {booking.boardingPoint && (
-          <div className="relative mx-5 mb-3.5 flex items-start gap-3 rounded-2xl border px-3.5 py-3" style={{ zIndex: 1, borderColor: '#d5e4d9', backgroundColor: 'rgba(233,244,243,0.92)' }}>
-            <svg viewBox="0 0 24 24" fill="none" stroke="#013328" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="mt-0.5 h-5 w-5 shrink-0">
+          <div className="relative mx-5 mb-3.5 flex items-start gap-3 rounded-2xl border px-3.5 py-3" style={{ zIndex: 1, borderColor: '#d7e8ec', backgroundColor: 'rgba(233,244,243,0.92)' }}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="#002447" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="mt-0.5 h-5 w-5 shrink-0">
               <path d="M12 21s-6.5-5.6-6.5-11A6.5 6.5 0 0 1 18.5 10c0 5.4-6.5 11-6.5 11z" />
               <circle cx="12" cy="10" r="2.3" />
             </svg>
@@ -229,7 +229,7 @@ const Ticket = forwardRef<HTMLDivElement, { booking: TicketBooking }>(function T
                 target="_blank"
                 rel="noopener noreferrer"
                 className="no-print shrink-0 self-center rounded-full px-3 py-1.5 text-[11.5px] font-bold text-white"
-                style={{ backgroundColor: '#013328' }}
+                style={{ backgroundColor: '#002447' }}
               >
                 ম্যাপ ↗
               </a>
@@ -291,8 +291,8 @@ const Ticket = forwardRef<HTMLDivElement, { booking: TicketBooking }>(function T
 
         {/* Tear line */}
         <div className="relative mt-4 h-5" style={{ zIndex: 1 }}>
-          <span className="ticket-notch absolute -left-2.5 top-0 h-5 w-5 rounded-full bg-[#013328]" />
-          <span className="ticket-notch absolute -right-2.5 top-0 h-5 w-5 rounded-full bg-[#013328]" />
+          <span className="ticket-notch absolute -left-2.5 top-0 h-5 w-5 rounded-full bg-[#002447]" />
+          <span className="ticket-notch absolute -right-2.5 top-0 h-5 w-5 rounded-full bg-[#002447]" />
           <span className="absolute left-4 right-4 top-2.5 h-0.5 bg-[repeating-linear-gradient(90deg,#d6dcde_0_6px,transparent_6px_12px)]" />
         </div>
 

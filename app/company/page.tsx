@@ -11,8 +11,8 @@ import type { Me } from './types'
 
 const ROLES = { manager: 'Management', counter: 'Counter', scanner: 'Bus staff · scanner' } as const
 const ROLE_STYLE = {
-  manager: 'bg-[#f5a524]/[0.15] text-[#fbbf24]',
-  counter: 'bg-[#6d4aff]/[0.18] text-[#c4b5fd]',
+  manager: 'bg-[#feb249]/[0.15] text-[#f6e879]',
+  counter: 'bg-[#5eb1bf]/[0.18] text-[#a9d8e0]',
   scanner: 'bg-[#2dd4bf]/[0.15] text-[#5eead4]',
 } as const
 
@@ -46,7 +46,7 @@ export default function OperatorPanel() {
 
   return (
     <div className={`mx-auto pb-10 ${me.role === 'manager' ? 'max-w-6xl' : me.role === 'counter' ? 'max-w-5xl' : 'max-w-xl'}`}>
-      <div className="flex items-center gap-3 border-b border-[#1c4c41] pb-4">
+      <div className="flex items-center gap-3 border-b border-[#1c4762] pb-4">
         <LogoMark className="h-9 w-9 shrink-0" />
         <div className="flex min-w-0 grow flex-col gap-0.5">
           <h1 className="display truncate text-[19px] font-bold leading-tight">{me.companyName}</h1>

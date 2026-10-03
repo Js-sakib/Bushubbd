@@ -60,7 +60,7 @@ export default function CompanyLogin() {
               <button
                 type="button"
                 onClick={() => router.push(companyPath('/company/forgot'))}
-                className="text-[12px] font-semibold text-[#d99d78] hover:underline"
+                className="text-[12px] font-semibold text-[#53d3d1] hover:underline"
               >
                 Forgot password?
               </button>
@@ -74,7 +74,7 @@ export default function CompanyLogin() {
 
         <p className="text-center text-[12.5px] text-[#aaa598]">
           New operator?{' '}
-          <button type="button" onClick={() => router.push(companyPath('/company/register'))} className="font-semibold text-[#d99d78] hover:underline">
+          <button type="button" onClick={() => router.push(companyPath('/company/register'))} className="font-semibold text-[#53d3d1] hover:underline">
             Register here
           </button>
         </p>
