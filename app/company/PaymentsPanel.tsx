@@ -109,7 +109,7 @@ export default function PaymentsPanel({ data }: { data: PaymentsData | null }) {
             <div className="flex shrink-0 flex-col items-end gap-1.5">
               <span className="text-[14px] font-bold">{taka(i.totals.payout)}</span>
               {i.status === 'unpaid' && !i.approval ? (
-                <span className="rounded-full bg-gradient-to-r from-[#f2661d] to-[#feb249] px-3 py-1 text-[11.5px] font-bold text-[#1a0d03]">Review & approve</span>
+                <span className="rounded-full bg-[#53d3d1] px-3 py-1 text-[11.5px] font-bold text-[#002447]">Review & approve</span>
               ) : i.status === 'paid' ? (
                 <span className="rounded-full bg-[#60a5fa] px-3 py-1 text-[11.5px] font-bold text-[#ffffff]">Done ›</span>
               ) : (

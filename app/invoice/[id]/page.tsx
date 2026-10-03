@@ -384,7 +384,7 @@ function InvoiceView() {
   const back = viewer === 'admin' ? '/admin' : '/company'
 
   return (
-    <div className="mx-auto flex max-w-3xl flex-col gap-4">
+    <div className="panel-buttons mx-auto flex max-w-3xl flex-col gap-4">
       <div className="no-print flex items-center justify-between gap-3">
         <a href={back} className="text-[13px] font-semibold text-[#0b7f8c]">
           ‹ Back

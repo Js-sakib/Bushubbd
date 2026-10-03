@@ -416,3 +416,64 @@ input[type='date']::-webkit-calendar-picker-indicator {
 .light-panel .glass-btn.btn-orange:hover:not(:disabled) {
   box-shadow: 0 14px 30px rgba(242, 102, 29, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.35);
 }
+
+/* ---- Buttons on the admin and bus company pages: navy, aqua and light pink. ----
+   Main buttons navy with light pink text, money buttons aqua, plain buttons light pink,
+   the selected tab aqua. The passenger pages keep the orange buttons. */
+.panel-buttons .glass-btn {
+  background: #002447;
+  border-color: #002447;
+  color: #fbeceb;
+  box-shadow: 0 10px 24px rgba(0, 36, 71, 0.25);
+}
+.panel-buttons .glass-btn:hover:not(:disabled) {
+  background: #0a3563;
+  box-shadow: 0 14px 30px rgba(0, 36, 71, 0.32);
+}
+.panel-buttons .glass-btn.btn-orange {
+  background: #53d3d1;
+  border-color: #53d3d1;
+  color: #002447;
+  box-shadow: 0 10px 24px rgba(83, 211, 209, 0.4);
+}
+.panel-buttons .glass-btn.btn-orange:hover:not(:disabled) {
+  background: #45c4c2;
+  box-shadow: 0 14px 30px rgba(83, 211, 209, 0.5);
+}
+.panel-buttons .glass-btn-plain {
+  background: #fbeceb;
+  border-color: rgba(0, 36, 71, 0.15);
+  color: #002447;
+  box-shadow: none;
+}
+.panel-buttons .glass-btn-plain:hover:not(:disabled) {
+  background: #f6dedc;
+  box-shadow: none;
+}
+.panel-buttons .chip {
+  border-color: rgba(0, 36, 71, 0.14);
+  background: #fbeceb;
+  color: #002447;
+}
+.panel-buttons .chip-active {
+  border-color: #53d3d1;
+  background: #53d3d1;
+  color: #002447;
+}
+.panel-buttons .icon-btn {
+  border-color: rgba(0, 36, 71, 0.15);
+  background: #fbeceb;
+  color: #002447;
+}
+/* Small pill buttons and the dark selected-option pills. */
+.panel-buttons button[class^='bg-[#111111]/[0.05]'],
+.panel-buttons button[class*=' bg-[#111111]/[0.05]'],
+.panel-buttons a[class*='rounded-full'][class*=' bg-[#111111]/[0.05]'] {
+  border-color: rgba(0, 36, 71, 0.15) !important;
+  background-color: #fbeceb !important;
+  color: #002447 !important;
+}
+.panel-buttons button[class~='bg-[#111111]'] {
+  background-color: #002447 !important;
+  color: #fbeceb !important;
+}

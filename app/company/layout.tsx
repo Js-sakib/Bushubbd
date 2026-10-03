@@ -5,5 +5,5 @@ export const metadata: Metadata = { title: 'Operator panel', robots: { index: fa
 
 // The bus company pages use the light look (frosted white panels, navy text): see .light-panel.
 export default function PrivateLayout({ children }: { children: React.ReactNode }) {
-  return <div className="light-panel">{children}</div>
+  return <div className="light-panel panel-buttons">{children}</div>
 }

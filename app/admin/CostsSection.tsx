@@ -375,7 +375,7 @@ export default function CostsSection() {
             key={id}
             type="button"
             onClick={() => setView(id)}
-            className={`h-9 rounded-full px-4 text-[12.5px] font-bold ${view === id ? 'bg-gradient-to-r from-[#f2661d] to-[#feb249] text-[#1a0d03]' : 'text-[#3f3f3f]'}`}
+            className={`h-9 rounded-full px-4 text-[12.5px] font-bold ${view === id ? 'bg-[#53d3d1] text-[#002447]' : 'text-[#3f3f3f]'}`}
           >
             {label}
           </button>
