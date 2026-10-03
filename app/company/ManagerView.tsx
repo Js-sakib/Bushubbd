@@ -141,7 +141,7 @@ function TripCard({ trip, open, onToggle, onChanged }: { trip: CompanyTrip; open
  * The company manager's page: every trip of every bus with seats sold on BusHub and at each
  * counter, what BusHub owes, every scanner's scans, and the staff logins.
  */
-export default function ManagerView() {
+export default function ManagerView({ companyName }: { companyName: string }) {
   const [since, setSince] = useState('')
   const { data, reload } = useTrips(since)
   const [tab, setTab] = useState<(typeof TABS)[number][0]>('trips')
@@ -278,7 +278,7 @@ export default function ManagerView() {
         </div>
       )}
 
-      {tab === 'sales' && <MoneyView trips={trips} fleet={data.fleet} me={data.me} bookings={bookings} onChanged={reload} onFrom={setSince} />}
+      {tab === 'sales' && <MoneyView trips={trips} fleet={data.fleet} me={data.me} bookings={bookings} onChanged={reload} onFrom={setSince} companyName={companyName} />}
       {tab === 'payments' && <PaymentsPanel data={payments} />}
       {tab === 'scans' && <ScanHistory stats={stats} showScanner />}
       {tab === 'staff' && <StaffPanel />}

@@ -396,6 +396,21 @@ check('a counter login still gets only trips to come', counterOld.status === 200
 check('admin money reaches older trips when asked', hasTrip(await call(`/api/admin/trip-money?since=${dayShift(90)}`, { cookie: admin }), oldTrip) && !hasTrip(await call('/api/admin/trip-money', { cookie: admin }), oldTrip))
 check('a bad date is ignored', !hasTrip(await call('/api/company/trips?since=x', { cookie: green.cookie }), oldTrip))
 
+// ---- Admin bookings by date, with the customer's details ----
+const oldBooking = await db.collection('bookings').insertOne({
+  bookingCode: `BH-OLD-${run}`, busId: oldTrip, busName: fleetBus.name, companyName: green.name, from: 'Dhaka', to: 'Sylhet', date: dayShift(60), departureTime: '08:00',
+  seats: ['1A'], totalPrice: 900, commissionRate: 10, commissionAmount: 90, companyPayout: 810, passengerName: 'Old Buyer', passengerPhone: '01700000001',
+  passengerEmail: 'old@buyer.test', paymentStatus: 'paid', paymentMethod: 'bkash', status: 'confirmed', qrCode: 'x', source: 'web',
+  createdAt: new Date(Date.parse(`${dayShift(70)}T10:00:00+06:00`)).toISOString(), checkedIn: false,
+})
+const hasBooking = (res) => (res.data?.bookings || []).find((b) => b.bookingCode === `BH-OLD-${run}`)
+check('only the admin can list bookings with customer details', (await call(`/api/admin/bookings?from=${dayShift(61)}`, { cookie: green.cookie })).status === 401)
+const byTravel = hasBooking(await call(`/api/admin/bookings?from=${dayShift(61)}&to=${dayShift(59)}`, { cookie: admin }))
+check('bookings by travel date, older than the latest 200, with email and payment', byTravel?.passengerEmail === 'old@buyer.test' && byTravel.paymentMethod === 'bkash' && !('qrCode' in byTravel))
+check('bookings by the day bought', !hasBooking(await call(`/api/admin/bookings?from=${dayShift(61)}&to=${dayShift(59)}&by=booked`, { cookie: admin })) && Boolean(hasBooking(await call(`/api/admin/bookings?from=${dayShift(70)}&to=${dayShift(70)}&by=booked`, { cookie: admin }))))
+check('a bad booking date is refused', (await call('/api/admin/bookings?from=yesterday', { cookie: admin })).status === 400)
+await db.collection('bookings').deleteOne({ _id: oldBooking.insertedId })
+
 // ---- Trip costs: bus staff and the manager enter them; the money adds up ----
 const addCost = (cookie, tripId, type, amount, note = '') => call('/api/company/costs', { method: 'POST', cookie, body: { tripId, type, amount, note } })
 const fuel = await addCost(green.scan, ct, 'fuel', 3500, 'Meghna pump')

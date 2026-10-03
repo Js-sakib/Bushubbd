@@ -59,7 +59,7 @@ export default function OperatorPanel() {
           Logout
         </button>
       </div>
-      {me.role === 'manager' && <ManagerView />}
+      {me.role === 'manager' && <ManagerView companyName={me.companyName} />}
       {me.role === 'counter' && <CounterView />}
       {me.role === 'scanner' && <ScannerView />}
     </div>

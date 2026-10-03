@@ -7,7 +7,7 @@ import { taka } from '@/lib/tripMoney'
 import PayoutsPanel from './PayoutsPanel'
 import Plate from '../Plate'
 import SearchBox from '../SearchBox'
-import { downloadSheet, sumCell, type Sheet } from '@/lib/sheet'
+import { downloadSheet, sheetDate, type Column, type Sheet } from '@/lib/sheet'
 import { matches } from '@/lib/search'
 
 interface MoneyTrip {
@@ -30,16 +30,40 @@ interface MoneyTrip {
 }
 
 /** The trips shown, as an Excel sheet: tickets, commission and what BusHub owes per trip. */
-function moneySheet(trips: MoneyTrip[]): Sheet {
-  const sheet: Sheet = {
+function moneySheet(trips: MoneyTrip[], notes: string[]): Sheet {
+  const int = (header: string): Column => ({ header, kind: 'int', total: true })
+  const money = (header: string): Column => ({ header, kind: 'money', total: true })
+  return {
     name: 'Money by trip',
-    header: ['Company', 'Date', 'Time', 'From', 'To', 'Bus', 'Number plate', 'Seats', 'Counter seats', 'Counter money', 'BusHub seats', 'BusHub ticket money', 'BusHub commission', 'Company gets', 'Not paid yet', 'In unpaid invoice', 'Paid', 'Invoice', 'Status'],
+    title: 'BusHub money · trip by trip',
+    notes,
+    columns: [
+      { header: 'Date', kind: 'date' },
+      { header: 'Time' },
+      { header: 'Company' },
+      { header: 'From' },
+      { header: 'To' },
+      { header: 'Bus' },
+      { header: 'Number plate' },
+      int('Seats'),
+      int('Counter seats'),
+      money('Counter money'),
+      int('BusHub seats'),
+      money('BusHub ticket money'),
+      money('BusHub commission'),
+      money('Company gets'),
+      money('Not paid yet'),
+      money('In unpaid invoice'),
+      money('Paid'),
+      { header: 'Invoice' },
+      { header: 'Status' },
+    ],
     rows: [...trips]
       .sort((a, b) => a.date.localeCompare(b.date) || a.departureTime.localeCompare(b.departureTime))
       .map((t) => [
-        t.companyName,
         t.date,
         t.departureTime,
+        t.companyName,
         t.from,
         t.to,
         t.busName,
@@ -58,8 +82,6 @@ function moneySheet(trips: MoneyTrip[]): Sheet {
         t.departed ? 'Finished' : 'Upcoming',
       ]),
   }
-  sheet.total = sheet.header.map((_, c) => (c === 0 ? 'Total' : c >= 7 && c <= 16 ? sumCell(sheet, c) : ''))
-  return sheet
 }
 
 const PERIODS = [
@@ -226,7 +248,16 @@ function TripsMoney() {
         </label>
         <button
           type="button"
-          onClick={() => (shown.length ? downloadSheet(`BusHub money ${from || 'start'} to ${to || 'now'}`, [moneySheet(shown)]) : toast.error('No trips to put in the sheet'))}
+          onClick={() => {
+            if (!shown.length) return toast.error('No trips to put in the sheet')
+            const notes = [
+              `Date range: ${from ? sheetDate(from) : 'last 30 days'} to ${to ? sheetDate(to) : 'upcoming'}`,
+              companyId ? `Company: ${data.companies.find((c) => c._id === companyId)?.name}` : '',
+              bus ? `Bus: ${bus}` : '',
+              search.trim() ? `Search: ${search.trim()}` : '',
+            ].filter(Boolean)
+            downloadSheet(`BusHub money ${from || 'start'} to ${to || 'now'}`, [moneySheet(shown, notes)])
+          }}
           className="glass-btn glass-btn-plain col-span-2 h-12 self-end px-4 text-[12.5px] sm:col-span-1"
         >
           ⬇ Excel sheet

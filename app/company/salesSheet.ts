@@ -1,6 +1,6 @@
 import { formatTripDate } from '@/lib/dates'
 import { addMoney, COST_LABELS, type TripMoney } from '@/lib/tripMoney'
-import { sumCell, type Cell, type Sheet } from '@/lib/sheet'
+import { sheetDate, type Cell, type Column, type Sheet } from '@/lib/sheet'
 import { companyTripMoney, type CompanyTrip } from './types'
 
 export function dhakaDateTime(iso: string | null | undefined): string {
@@ -8,12 +8,6 @@ export function dhakaDateTime(iso: string | null | undefined): string {
   const d = new Date(iso)
   if (Number.isNaN(d.getTime())) return ''
   return new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Dhaka', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }).format(d)
-}
-
-/** Every column that holds money or a count gets a SUM in the bold last row. */
-function withTotal(sheet: Sheet, from: number): Sheet {
-  sheet.total = sheet.header.map((_, c) => (c === 0 ? 'Total' : c >= from && sheet.rows.some((r) => typeof r[c] === 'number') ? sumCell(sheet, c) : ''))
-  return sheet
 }
 
 export interface DayMoney {
@@ -29,144 +23,111 @@ export function moneyByDate(trips: CompanyTrip[]): DayMoney[] {
   return Array.from(days, ([date, list]) => ({ date, trips: list.length, m: addMoney(list) })).sort((a, b) => a.date.localeCompare(b.date))
 }
 
-const tripCells = (t: CompanyTrip): Cell[] => [t.date, t.departureTime, t.from, t.to, t.busName, t.plateNumber]
-const TRIP_HEADER = ['Date', 'Time', 'From', 'To', 'Bus', 'Number plate']
+/** "Date range: 01-Oct-2026 to 03-Oct-2026", from the dates in the list. */
+export function dateRangeNote(dates: string[]): string {
+  if (dates.length === 0) return 'Date range: none'
+  const sorted = [...dates].sort()
+  return `Date range: ${sheetDate(sorted[0])} to ${sheetDate(sorted[sorted.length - 1])}`
+}
+
+const int = (header: string): Column => ({ header, kind: 'int', total: true })
+const money = (header: string): Column => ({ header, kind: 'money', total: true })
+const TRIP_COLUMNS: Column[] = [{ header: 'Date', kind: 'date' }, { header: 'Day' }, { header: 'Time' }, { header: 'From' }, { header: 'To' }, { header: 'Bus' }, { header: 'Number plate' }]
+const tripCells = (t: CompanyTrip): Cell[] => [t.date, formatTripDate(t.date).split(' ')[0], t.departureTime, t.from, t.to, t.busName, t.plateNumber]
 
 /**
  * The manager's sales as a workbook: the money date by date, one row per trip, then every
  * counter seat, every BusHub ticket (code and seats, no passenger names) and every cost.
  */
-export function companySalesSheets(trips: CompanyTrip[]): Sheet[] {
+export function companySalesSheets(trips: CompanyTrip[], companyName: string, filters: string[] = []): Sheet[] {
   const sorted = [...trips].sort((a, b) => a.date.localeCompare(b.date) || a.departureTime.localeCompare(b.departureTime))
+  const notes = [`Company: ${companyName}`, dateRangeNote(sorted.map((t) => t.date)), ...filters]
 
-  const tripSheet = withTotal(
-    {
-      name: 'Trips',
-      header: [
-        ...TRIP_HEADER,
-        'Seats',
-        'Counter seats',
-        'Counter money',
-        'BusHub seats',
-        'BusHub ticket money',
-        'BusHub fee',
-        'You get from BusHub',
-        'Not sold',
-        'Fuel',
-        'Road',
-        'Toll',
-        'Other costs',
-        'Costs total',
-        'You receive',
-        'Left after costs',
-        'Status',
-      ],
-      rows: sorted.map((t) => {
-        const m = companyTripMoney(t)
-        return [
-          ...tripCells(t),
-          m.seats.total,
-          m.counter.seats,
-          m.counter.total,
-          m.seats.online,
-          m.online.total,
-          m.online.fee,
-          m.online.payout,
-          m.seats.notSold,
-          m.costs.fuel,
-          m.costs.road,
-          m.costs.toll,
-          m.costs.other,
-          m.costs.total,
-          m.companyGets,
-          m.left,
-          t.departed ? 'Finished' : 'Upcoming',
-        ]
-      }),
-    },
-    TRIP_HEADER.length
-  )
+  const daySheet: Sheet = {
+    name: 'Date by date',
+    title: 'BusHub sales · date by date',
+    notes,
+    columns: [
+      { header: 'Date', kind: 'date' },
+      { header: 'Day' },
+      int('Trips'),
+      int('Seats'),
+      int('Seats sold'),
+      int('Not sold'),
+      int('Counter seats'),
+      money('Counter money'),
+      int('BusHub seats'),
+      money('BusHub ticket money'),
+      money('BusHub fee'),
+      money('You get from BusHub'),
+      money('All ticket money'),
+      money('Fuel'),
+      money('Road'),
+      money('Toll'),
+      money('Other costs'),
+      money('Costs total'),
+      money('You receive'),
+      money('Left after costs'),
+    ],
+    rows: moneyByDate(sorted).map(({ date, trips: n, m }) => [
+      date,
+      formatTripDate(date).split(' ')[0],
+      n,
+      m.seats.total,
+      m.seats.online + m.seats.counter,
+      m.seats.notSold,
+      m.counter.seats,
+      m.counter.total,
+      m.seats.online,
+      m.online.total,
+      m.online.fee,
+      m.online.payout,
+      m.ticketMoney,
+      m.costs.fuel,
+      m.costs.road,
+      m.costs.toll,
+      m.costs.other,
+      m.costs.total,
+      m.companyGets,
+      m.left,
+    ]),
+  }
 
-  const counterSheet = withTotal(
-    {
-      name: 'Counter sales',
-      header: [...TRIP_HEADER, 'Seat', 'Sold by', 'Sold at', 'Price'],
-      rows: sorted.flatMap((t) => t.counterSeats.map((s) => [...tripCells(t), s.seat, s.soldBy, dhakaDateTime(s.soldAt), t.price])),
-    },
-    9
-  )
-
-  const onlineSheet = withTotal(
-    {
-      name: 'BusHub tickets',
-      header: [...TRIP_HEADER, 'Ticket code', 'Seats', 'Seat count', 'Passenger paid', 'BusHub fee', 'You get', 'Boarded', 'Booked at'],
-      rows: sorted.flatMap((t) =>
-        (t.onlineTickets || []).map((o) => [
-          ...tripCells(t),
-          o.code,
-          o.seats.join(', '),
-          o.seats.length,
-          o.total,
-          o.total - o.payout,
-          o.payout,
-          o.boarded ? 'Yes' : 'No',
-          dhakaDateTime(o.bookedAt),
-        ])
-      ),
-    },
-    8
-  )
-
-  const costSheet = withTotal(
-    {
-      name: 'Costs',
-      header: [...TRIP_HEADER, 'Cost', 'Amount', 'Note', 'Added by', 'Added at'],
-      rows: sorted.flatMap((t) =>
-        (t.costs || []).map((c) => [...tripCells(t), COST_LABELS[c.type]?.en || c.type, c.amount, c.note, c.addedBy, dhakaDateTime(c.createdAt)])
-      ),
-    },
-    7
-  )
-
-  const daySheet = withTotal(
-    {
-      name: 'Date by date',
-      header: [
-        'Date',
-        'Day',
-        'Trips',
-        'Seats',
-        'Seats sold',
-        'Not sold',
-        'Counter seats',
-        'Counter money',
-        'BusHub seats',
-        'BusHub ticket money',
-        'BusHub fee',
-        'You get from BusHub',
-        'All ticket money',
-        'Fuel',
-        'Road',
-        'Toll',
-        'Other costs',
-        'Costs total',
-        'You receive',
-        'Left after costs',
-      ],
-      rows: moneyByDate(sorted).map(({ date, trips: n, m }) => [
-        date,
-        formatTripDate(date).split(' ')[0],
-        n,
+  const tripSheet: Sheet = {
+    name: 'Trips',
+    title: 'BusHub sales · trip by trip',
+    notes,
+    columns: [
+      ...TRIP_COLUMNS,
+      int('Seats'),
+      int('Counter seats'),
+      money('Counter money'),
+      int('BusHub seats'),
+      money('BusHub ticket money'),
+      money('BusHub fee'),
+      money('You get from BusHub'),
+      int('Not sold'),
+      money('Fuel'),
+      money('Road'),
+      money('Toll'),
+      money('Other costs'),
+      money('Costs total'),
+      money('You receive'),
+      money('Left after costs'),
+      { header: 'Status' },
+    ],
+    rows: sorted.map((t) => {
+      const m = companyTripMoney(t)
+      return [
+        ...tripCells(t),
         m.seats.total,
-        m.seats.online + m.seats.counter,
-        m.seats.notSold,
         m.counter.seats,
         m.counter.total,
         m.seats.online,
         m.online.total,
         m.online.fee,
         m.online.payout,
-        m.ticketMoney,
+        m.seats.notSold,
         m.costs.fuel,
         m.costs.road,
         m.costs.toll,
@@ -174,10 +135,46 @@ export function companySalesSheets(trips: CompanyTrip[]): Sheet[] {
         m.costs.total,
         m.companyGets,
         m.left,
-      ]),
-    },
-    2
-  )
+        t.departed ? 'Finished' : 'Upcoming',
+      ]
+    }),
+  }
+
+  const counterSheet: Sheet = {
+    name: 'Counter sales',
+    title: 'Counter sales · every seat',
+    notes,
+    columns: [...TRIP_COLUMNS, { header: 'Seat' }, { header: 'Sold by' }, { header: 'Sold at', kind: 'datetime' }, money('Price')],
+    rows: sorted.flatMap((t) => t.counterSeats.map((s) => [...tripCells(t), s.seat, s.soldBy, s.soldAt, t.price])),
+  }
+
+  const onlineSheet: Sheet = {
+    name: 'BusHub tickets',
+    title: 'BusHub tickets · sold online',
+    notes,
+    columns: [
+      ...TRIP_COLUMNS,
+      { header: 'Ticket code' },
+      { header: 'Seats' },
+      int('Seat count'),
+      money('Passenger paid'),
+      money('BusHub fee'),
+      money('You get'),
+      { header: 'Boarded' },
+      { header: 'Booked at', kind: 'datetime' },
+    ],
+    rows: sorted.flatMap((t) =>
+      (t.onlineTickets || []).map((o) => [...tripCells(t), o.code, o.seats.join(', '), o.seats.length, o.total, o.total - o.payout, o.payout, o.boarded ? 'Yes' : 'No', o.bookedAt])
+    ),
+  }
+
+  const costSheet: Sheet = {
+    name: 'Costs',
+    title: 'Trip costs · fuel, road, toll, other',
+    notes,
+    columns: [...TRIP_COLUMNS, { header: 'Cost' }, money('Amount'), { header: 'Note', kind: 'wrap' }, { header: 'Added by' }, { header: 'Added at', kind: 'datetime' }],
+    rows: sorted.flatMap((t) => (t.costs || []).map((c) => [...tripCells(t), COST_LABELS[c.type]?.en || c.type, c.amount, c.note, c.addedBy, c.createdAt])),
+  }
 
   return [daySheet, tripSheet, counterSheet, onlineSheet, costSheet]
 }

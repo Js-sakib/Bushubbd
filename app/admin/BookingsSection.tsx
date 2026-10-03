@@ -1,9 +1,9 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import toast from 'react-hot-toast'
-import { downloadSheet, sumCell, type Sheet } from '@/lib/sheet'
-import { dhakaDateTime } from '../company/salesSheet'
+import { downloadSheet, sheetDate } from '@/lib/sheet'
+import { adminBookingSheets, isSale } from './bookingsSheet'
 import BookingList, { bookingStatus } from './BookingList'
 import { taka } from './charts'
 import type { Booking } from './types'
@@ -15,42 +15,6 @@ const FILTERS = [
   { key: 'pending', label: 'Pending' },
   { key: 'refunded', label: 'Refunded' },
 ] as const
-
-const STATUS_WORD = { boarded: 'Boarded', paid: 'Paid', pending: 'Pending', refunded: 'Refunded', expired: 'Expired' } as const
-const counts = (b: Booking) => bookingStatus(b) === 'paid' || bookingStatus(b) === 'boarded'
-
-/** The bookings shown, as an Excel sheet: one row per booking with its money. */
-function bookingsSheet(list: Booking[]): Sheet {
-  const sheet: Sheet = {
-    name: 'Bookings',
-    header: ['Booking code', 'Passenger', 'Phone', 'Company', 'Bus', 'Number plate', 'From', 'To', 'Travel date', 'Time', 'Seats', 'Seat count', 'Paid', 'BusHub commission', 'Company gets', 'Status', 'Booked on', 'Booked at'],
-    rows: list.map((b) => {
-      const sold = counts(b)
-      return [
-        b.bookingCode,
-        b.passengerName,
-        b.passengerPhone,
-        b.companyName,
-        b.busName,
-        b.plateNumber || '',
-        b.from,
-        b.to,
-        b.date,
-        b.departureTime,
-        b.seats.join(', '),
-        b.seats.length,
-        sold ? b.totalPrice : 0,
-        sold ? b.commissionAmount || 0 : 0,
-        sold ? b.companyPayout ?? b.totalPrice : 0,
-        STATUS_WORD[bookingStatus(b)],
-        b.source === 'whatsapp' ? 'WhatsApp' : 'Website',
-        dhakaDateTime(b.createdAt),
-      ]
-    }),
-  }
-  sheet.total = sheet.header.map((_, c) => (c === 0 ? 'Total' : c === 11 || (c >= 12 && c <= 14) ? sumCell(sheet, c) : ''))
-  return sheet
-}
 
 export default function BookingsSection({
   bookings,
@@ -71,22 +35,44 @@ export default function BookingsSection({
   const [filter, setFilter] = useState<(typeof FILTERS)[number]['key']>('all')
   const [from, setFrom] = useState('')
   const [to, setTo] = useState('')
+  const [by, setBy] = useState<'travel' | 'booked'>('travel')
+  /** With dates picked, every booking in them from the server (the plain list has only the latest 200). */
+  const [ranged, setRanged] = useState<Booking[] | null>(null)
+  const [busyDownload, setBusyDownload] = useState(false)
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const [deleting, setDeleting] = useState(false)
 
-  const visible = useMemo(() => {
-    const q = query.trim().toLowerCase()
-    return bookings.filter((b) => {
-      if (filter !== 'all' && bookingStatus(b) !== filter) return false
-      if ((from && b.date < from) || (to && b.date > to)) return false
-      if (!q) return true
-      return [b.passengerName, b.passengerPhone, b.bookingCode, b.from, b.to, b.busName, b.companyName]
-        .filter(Boolean)
-        .some((field) => field.toLowerCase().includes(q))
-    })
-  }, [bookings, filter, query, from, to])
+  const rangeUrl = `/api/admin/bookings?from=${from}&to=${to}&by=${by}`
+  const fetchRange = async (): Promise<Booking[] | null> => {
+    const res = await fetch(rangeUrl, { cache: 'no-store' }).catch(() => null)
+    const json = res?.ok ? await res.json().catch(() => null) : null
+    return json?.bookings ?? null
+  }
+  // Re-read when the dates change, and after a refund or delete (the bookings prop is reloaded then).
+  useEffect(() => {
+    if (!from && !to) return setRanged(null)
+    let live = true
+    fetchRange().then((list) => live && setRanged(list))
+    return () => {
+      live = false
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rangeUrl, bookings])
 
-  const sold = visible.filter(counts)
+  const shown = (list: Booking[]) => {
+    const q = query.trim().toLowerCase()
+    return list.filter((b) => {
+      if (filter !== 'all' && bookingStatus(b) !== filter) return false
+      if (!q) return true
+      return [b.passengerName, b.passengerPhone, b.passengerEmail, b.bookingCode, b.from, b.to, b.busName, b.companyName, b.plateNumber]
+        .filter(Boolean)
+        .some((field) => String(field).toLowerCase().includes(q))
+    })
+  }
+  const source = ranged ?? bookings
+  const visible = shown(source)
+
+  const sold = visible.filter(isSale)
   const ticked = visible.filter((b) => selected.has(b._id))
   const select = (ids: string[], on: boolean) =>
     setSelected((prev) => {
@@ -100,9 +86,20 @@ export default function BookingsSection({
     setSelected(new Set())
     setDeleting(false)
   }
-  const download = () => {
-    if (visible.length === 0) return toast.error('No bookings to put in the sheet')
-    downloadSheet(`BusHub bookings${from || to ? ` ${from || 'start'} to ${to || 'now'}` : ''}`, [bookingsSheet(visible)])
+  // The sheet always comes from the server, so it has every booking in the dates, not just the latest 200.
+  const download = async () => {
+    setBusyDownload(true)
+    const all = await fetchRange()
+    setBusyDownload(false)
+    if (!all) return toast.error('Could not load the bookings. Try again.')
+    const list = shown(all)
+    if (list.length === 0) return toast.error('No bookings to put in the sheet')
+    const notes = [
+      from || to ? `Date range (${by === 'booked' ? 'day bought' : 'travel date'}): ${from ? sheetDate(from) : 'start'} to ${to ? sheetDate(to) : 'today'}` : 'Date range: all bookings',
+      filter !== 'all' ? `Status: ${FILTERS.find((f) => f.key === filter)?.label}` : '',
+      query.trim() ? `Search: ${query.trim()}` : '',
+    ].filter(Boolean)
+    downloadSheet(`BusHub bookings ${from || 'start'} to ${to || 'now'}`, adminBookingSheets(list, notes))
   }
 
   return (
@@ -111,8 +108,8 @@ export default function BookingsSection({
         <div className="flex items-baseline justify-between gap-3">
           <h2 className="display text-[15.5px] font-bold">All bookings</h2>
           <span className="text-[11.5px] text-[#78868a]">
-            {visible.length} of {bookings.length}
-            {bookings.length >= 200 ? ' latest' : ''}
+            {visible.length} of {source.length}
+            {!ranged && bookings.length >= 200 ? ' latest' : ''}
           </span>
         </div>
         <div className="relative">
@@ -128,17 +125,37 @@ export default function BookingsSection({
             className="input-dark w-full !pl-10"
           />
         </div>
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-[1fr_1fr_auto]">
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-[auto_1fr_1fr_auto]">
+          <div className="col-span-2 flex flex-col gap-1 sm:col-span-1">
+            <span className="label-xs">Dates are</span>
+            <div className="flex h-12 gap-1 rounded-[14px] border border-white/10 bg-black/30 p-1">
+              {(['travel', 'booked'] as const).map((k) => (
+                <button
+                  key={k}
+                  type="button"
+                  onClick={() => setBy(k)}
+                  className={`grow rounded-[10px] px-3 text-[12px] font-bold ${by === k ? 'bg-[#f6f1ea] text-[#14191b]' : 'text-[#9ba7aa]'}`}
+                >
+                  {k === 'travel' ? 'Travel date' : 'Day bought'}
+                </button>
+              ))}
+            </div>
+          </div>
           <label className="flex min-w-0 flex-col gap-1">
-            <span className="label-xs">Travel from</span>
-            <input type="date" value={from} max={to || undefined} onChange={(e) => setFrom(e.target.value)} className="input-dark" aria-label="Travel from date" />
+            <span className="label-xs">From</span>
+            <input type="date" value={from} max={to || undefined} onChange={(e) => setFrom(e.target.value)} className="input-dark" aria-label="From date" />
           </label>
           <label className="flex min-w-0 flex-col gap-1">
-            <span className="label-xs">Travel to</span>
-            <input type="date" value={to} min={from || undefined} onChange={(e) => setTo(e.target.value)} className="input-dark" aria-label="Travel to date" />
+            <span className="label-xs">To</span>
+            <input type="date" value={to} min={from || undefined} onChange={(e) => setTo(e.target.value)} className="input-dark" aria-label="To date" />
           </label>
-          <button type="button" onClick={download} className="glass-btn glass-btn-plain col-span-2 h-12 self-end px-4 text-[12.5px] sm:col-span-1">
-            ⬇ Excel sheet
+          <button
+            type="button"
+            onClick={download}
+            disabled={busyDownload}
+            className="glass-btn glass-btn-plain col-span-2 h-12 self-end px-4 text-[12.5px] disabled:opacity-60 sm:col-span-1"
+          >
+            {busyDownload ? 'Making the sheet…' : '⬇ Excel sheet'}
           </button>
         </div>
         <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1">

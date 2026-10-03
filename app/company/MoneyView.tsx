@@ -87,6 +87,7 @@ export default function MoneyView({
   bookings,
   onChanged,
   onFrom,
+  companyName,
 }: {
   trips: CompanyTrip[]
   fleet: FleetOption[]
@@ -95,6 +96,7 @@ export default function MoneyView({
   onChanged: () => Promise<void>
   /** Asks for older trips when the From date is before what is loaded. */
   onFrom: (date: string) => void
+  companyName: string
 }) {
   const [busId, setBusId] = useState('')
   const [period, setPeriod] = useState<Period>('all')
@@ -126,7 +128,13 @@ export default function MoneyView({
     if (shown.length === 0) return toast.error('No trips to put in the sheet')
     const first = shown.reduce((d, t) => (t.date < d ? t.date : d), shown[0].date)
     const last = shown.reduce((d, t) => (t.date > d ? t.date : d), shown[0].date)
-    downloadSheet(`BusHub sales ${first} to ${last}`, companySalesSheets(shown))
+    const bus = fleet.find((f) => f._id === busId)
+    const filters = [
+      bus ? `Bus: ${busLabel(bus)}` : '',
+      period !== 'all' ? `Trips: ${PERIODS.find(([id]) => id === period)?.[1]}` : '',
+      search.trim() ? `Search: ${search.trim()}` : '',
+    ].filter(Boolean)
+    downloadSheet(`${companyName} sales ${first} to ${last}`, companySalesSheets(shown, companyName, filters))
   }
 
   return (
