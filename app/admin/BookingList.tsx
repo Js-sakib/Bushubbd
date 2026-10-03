@@ -81,17 +81,36 @@ function DeleteButton({ booking, onDelete }: { booking: Booking; onDelete?: (b: 
   )
 }
 
+function Tick({ checked, onChange, label }: { checked: boolean; onChange: (on: boolean) => void; label: string }) {
+  return (
+    <input
+      type="checkbox"
+      checked={checked}
+      onChange={(e) => onChange(e.target.checked)}
+      aria-label={label}
+      className="h-[18px] w-[18px] shrink-0 cursor-pointer accent-[#f5a524]"
+    />
+  )
+}
+
 export default function BookingList({
   bookings,
   onRefund,
   onDelete,
+  selected,
+  onSelect,
   empty = 'No bookings yet.',
 }: {
   bookings: Booking[]
   onRefund: (id: string) => void
   onDelete?: (b: Booking) => void
+  /** With these two, each booking gets a tick box, to delete several at once. */
+  selected?: Set<string>
+  onSelect?: (ids: string[], on: boolean) => void
   empty?: string
 }) {
+  const ticking = Boolean(selected && onSelect)
+  const allTicked = ticking && bookings.length > 0 && bookings.every((b) => selected!.has(b._id))
   if (bookings.length === 0) {
     return <p className="px-5 py-10 text-center text-sm text-[#8e9a9d]">{empty}</p>
   }
@@ -101,8 +120,12 @@ export default function BookingList({
       {/* Phone: one card per booking. */}
       <ul className="flex flex-col md:hidden">
         {bookings.map((b) => (
-          <li key={b._id} className="flex flex-col gap-2.5 border-t border-white/[0.06] px-4 py-3.5 first:border-t-0">
+          <li
+            key={b._id}
+            className={`flex flex-col gap-2.5 border-t border-white/[0.06] px-4 py-3.5 first:border-t-0 ${ticking && selected!.has(b._id) ? 'bg-[#f5a524]/[0.06]' : ''}`}
+          >
             <div className="flex items-center gap-3">
+              {ticking && <Tick checked={selected!.has(b._id)} onChange={(on) => onSelect!([b._id], on)} label={`Select booking ${b.bookingCode}`} />}
               <Avatar name={b.passengerName} />
               <div className="flex min-w-0 grow flex-col gap-0.5">
                 <span className="truncate text-[13.5px] font-semibold">{b.passengerName}</span>
@@ -136,6 +159,11 @@ export default function BookingList({
         <table className="w-full text-left">
           <thead>
             <tr className="text-[11px] font-bold uppercase tracking-[0.1em] text-[#6e7b7e]">
+              {ticking && (
+                <th className="w-10 py-3 pl-5">
+                  <Tick checked={allTicked} onChange={(on) => onSelect!(bookings.map((b) => b._id), on)} label="Select all shown bookings" />
+                </th>
+              )}
               <th className="px-5 py-3 font-bold">Passenger</th>
               <th className="px-3 py-3 font-bold">Route</th>
               <th className="px-3 py-3 font-bold">Travel</th>
@@ -148,7 +176,12 @@ export default function BookingList({
           </thead>
           <tbody>
             {bookings.map((b) => (
-              <tr key={b._id} className="border-t border-white/[0.06] transition hover:bg-white/[0.025]">
+              <tr key={b._id} className={`border-t border-white/[0.06] transition hover:bg-white/[0.025] ${ticking && selected!.has(b._id) ? 'bg-[#f5a524]/[0.06]' : ''}`}>
+                {ticking && (
+                  <td className="py-3 pl-5">
+                    <Tick checked={selected!.has(b._id)} onChange={(on) => onSelect!([b._id], on)} label={`Select booking ${b.bookingCode}`} />
+                  </td>
+                )}
                 <td className="px-5 py-3">
                   <div className="flex items-center gap-3">
                     <Avatar name={b.passengerName} />

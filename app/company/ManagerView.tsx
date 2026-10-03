@@ -142,7 +142,8 @@ function TripCard({ trip, open, onToggle, onChanged }: { trip: CompanyTrip; open
  * counter, what BusHub owes, every scanner's scans, and the staff logins.
  */
 export default function ManagerView() {
-  const { data, reload } = useTrips()
+  const [since, setSince] = useState('')
+  const { data, reload } = useTrips(since)
   const [tab, setTab] = useState<(typeof TABS)[number][0]>('trips')
   const [busId, setBusId] = useState('')
   const [search, setSearch] = useState('')
@@ -277,7 +278,7 @@ export default function ManagerView() {
         </div>
       )}
 
-      {tab === 'sales' && <MoneyView trips={trips} fleet={data.fleet} me={data.me} bookings={bookings} onChanged={reload} />}
+      {tab === 'sales' && <MoneyView trips={trips} fleet={data.fleet} me={data.me} bookings={bookings} onChanged={reload} onFrom={setSince} />}
       {tab === 'payments' && <PaymentsPanel data={payments} />}
       {tab === 'scans' && <ScanHistory stats={stats} showScanner />}
       {tab === 'staff' && <StaffPanel />}
