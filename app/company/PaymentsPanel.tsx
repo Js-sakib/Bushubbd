@@ -44,6 +44,7 @@ export default function PaymentsPanel({ data }: { data: PaymentsData | null }) {
         </a>
       )}
 
+      <div className="grid gap-3 lg:grid-cols-2 lg:items-start">
       <div className="card-2 flex flex-col gap-2.5 px-4 py-4">
         <span className="label-xs">BusHub owes you · after commission</span>
         <div className="flex items-start justify-between gap-3">
@@ -107,6 +108,7 @@ export default function PaymentsPanel({ data }: { data: PaymentsData | null }) {
           </a>
         ))}
         {data.invoices.length === 0 && <div className="px-4 py-8 text-center text-sm text-[#8e9a9d]">No invoices yet. BusHub makes one when it pays you.</div>}
+      </div>
       </div>
     </div>
   )

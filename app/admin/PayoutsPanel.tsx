@@ -54,7 +54,8 @@ export default function PayoutsPanel() {
   const companies = data.companies.filter((c) => c.owed.tickets > 0 || c.invoiced > 0 || c.later.tickets > 0 || c.refunds > 0)
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-3 lg:grid lg:grid-cols-2 lg:items-start">
+      <div className="flex flex-col gap-3">
       <div className="grid grid-cols-2 gap-2.5">
         <div className="flex flex-col gap-1 rounded-[18px] bg-gradient-to-br from-[#c77a0e] to-[#a25f06] p-3.5">
           <span className="text-[11px] font-bold text-[#fae3bc]">To pay now</span>
@@ -95,6 +96,8 @@ export default function PayoutsPanel() {
           </div>
         ))}
         {companies.length === 0 && <div className="px-4 py-8 text-center text-sm text-[#8e9a9d]">Nothing owed to any company.</div>}
+      </div>
+
       </div>
 
       <div className="card-2 overflow-hidden">

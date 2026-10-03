@@ -90,9 +90,9 @@ export default function StaffPanel() {
   }
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-4 lg:grid lg:grid-cols-2 lg:items-start">
       {shown && (
-        <div className="flex flex-col gap-3 rounded-2xl border border-[#34d399]/40 bg-[#34d399]/[0.08] p-4">
+        <div className="flex flex-col gap-3 rounded-2xl border border-[#34d399]/40 bg-[#34d399]/[0.08] p-4 lg:col-span-2">
           <span className="text-[13.5px] font-bold text-[#6ee7b7]">Login ready for {shown.name}</span>
           <div className="rounded-xl bg-black/30 p-3 font-mono text-[12.5px] leading-relaxed text-[#e7e2da]">
             Email: {shown.email}

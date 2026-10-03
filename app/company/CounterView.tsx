@@ -75,7 +75,7 @@ export default function CounterView() {
       )}
 
       {tab === 'sell' && (
-        <>
+        <div className="flex flex-col gap-4 lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,1.25fr)] lg:items-start">
           <TripPicker fleet={data.fleet} trips={trips} busId={busId} onBus={setBusId} tripId={tripId} onTrip={setTripId} />
           {trip && c && (
             <div className="glass-lite flex flex-col gap-4 p-4">
@@ -111,7 +111,13 @@ export default function CounterView() {
               )}
             </div>
           )}
-        </>
+          {!trip && (
+            <div className="glass-lite hidden flex-col items-center justify-center gap-1 p-10 text-center lg:flex">
+              <span className="display text-[16px] font-bold">Choose a trip</span>
+              <span className="text-[12.5px] text-[#9ba7aa]">Its seats show here. Tap a free seat as soon as you sell it.</span>
+            </div>
+          )}
+        </div>
       )}
     </div>
   )
