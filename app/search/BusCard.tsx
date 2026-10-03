@@ -53,20 +53,20 @@ export default function BusCard({
         <OperatorLogo logoUrl={bus.logoUrl} name={bus.companyName} className="h-[42px] w-[42px] rounded-[13px]" />
         <div className="flex grow flex-col gap-1">
           <span className="text-[15px] font-bold">{bus.busName}</span>
-          <span className="text-xs text-[#4f5d75]">
+          <span className="text-xs text-[#4a4a4a]">
             {bus.companyName} · {bus.busType} · {bus.totalSeats} seats
           </span>
         </div>
         <div className="flex flex-col items-end gap-0.5">
           <span className="display text-[19px] font-bold text-[#0b7f8c]">৳{bus.price}</span>
-          <span className="text-[11px] text-[#4f5d75]">per seat</span>
+          <span className="text-[11px] text-[#4a4a4a]">per seat</span>
         </div>
       </div>
 
       <div className="flex items-center gap-2.5">
         <div className="flex flex-col">
           <span className="text-[15px] font-bold">{bus.departureTime}</span>
-          <span className="text-[11px] text-[#4f5d75]">{bus.from}</span>
+          <span className="text-[11px] text-[#4a4a4a]">{bus.from}</span>
         </div>
         <div className="flex grow items-center gap-1.5">
           <span className="h-px grow bg-[#2c5a77]" />
@@ -78,25 +78,25 @@ export default function BusCard({
         </div>
         <div className="flex flex-col items-end">
           <span className="text-[15px] font-bold">{bus.arrivalTime || '—'}</span>
-          <span className="text-[11px] text-[#4f5d75]">{bus.to}</span>
+          <span className="text-[11px] text-[#4a4a4a]">{bus.to}</span>
         </div>
       </div>
 
       {bus.boardingPoint && (
-        <div className="flex items-center gap-1.5 text-[12px] text-[#2f3f5a]">
+        <div className="flex items-center gap-1.5 text-[12px] text-[#2b2b2b]">
           <svg viewBox="0 0 24 24" fill="none" stroke="#feb249" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5 shrink-0">
             <path d="M12 21s-6.5-5.6-6.5-11A6.5 6.5 0 0 1 18.5 10c0 5.4-6.5 11-6.5 11z" />
             <circle cx="12" cy="10" r="2.3" />
           </svg>
           <span className="truncate">
-            Boarding: <b className="font-semibold text-[#1b2b45]">{bus.boardingPoint}</b>
+            Boarding: <b className="font-semibold text-[#1b1b1b]">{bus.boardingPoint}</b>
           </span>
         </div>
       )}
 
       <div className="flex flex-wrap items-center gap-2">
         {soldOut ? (
-          <span className="inline-flex h-[26px] items-center rounded-full bg-[#0b2545]/[0.05] px-2.5 text-[11.5px] font-bold text-[#24344f]">
+          <span className="inline-flex h-[26px] items-center rounded-full bg-[#111111]/[0.05] px-2.5 text-[11.5px] font-bold text-[#222222]">
             Sold out
           </span>
         ) : (

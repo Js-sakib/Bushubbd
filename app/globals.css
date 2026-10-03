@@ -331,15 +331,17 @@ input[type='date']::-webkit-calendar-picker-indicator {
 
 /* ---- The bus company pages (management, counter, bus staff): light frosted glass, navy text. ---- */
 .light-panel {
-  --ink: #0b2545;
-  --muted: #44526b;
-  --muted-2: #5a677d;
-  --c-ink: #0b2545;
-  --c-muted: #4f5d75;
-  --c-faint: #617086;
+  /* Under the gradient: a colour from its middle, for phones that do not keep the gradient fixed. */
+  --bg: #8fa8e6;
+  --ink: #111111;
+  --muted: #3f3f3f;
+  --muted-2: #555555;
+  --c-ink: #111111;
+  --c-muted: #4a4a4a;
+  --c-faint: #5e5e5e;
   --c-range: #8a4b00;
-  --c-hover: rgba(11, 37, 69, 0.07);
-  --c-line: rgba(11, 37, 69, 0.12);
+  --c-hover: rgba(17, 17, 17, 0.07);
+  --c-line: rgba(17, 17, 17, 0.12);
   --c-field: rgba(255, 255, 255, 0.7);
   --c-pop: #ffffff;
   color: var(--ink);
@@ -350,20 +352,20 @@ input[type='date']::-webkit-calendar-picker-indicator {
 .light-panel .glass {
   background: linear-gradient(150deg, rgba(255, 255, 255, 0.86), rgba(255, 255, 255, 0.72) 60%);
   border: 1px solid rgba(255, 255, 255, 0.9);
-  box-shadow: 0 10px 30px rgba(11, 37, 69, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.95);
+  box-shadow: 0 10px 30px rgba(17, 17, 17, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(14px) saturate(140%);
   -webkit-backdrop-filter: blur(14px) saturate(140%);
 }
 .light-panel .input-dark {
-  border-color: rgba(11, 37, 69, 0.14);
+  border-color: rgba(17, 17, 17, 0.14);
   background-color: rgba(255, 255, 255, 0.82);
   color: var(--ink);
 }
 .light-panel .input-dark::placeholder {
-  color: #6b7a90;
+  color: #6b6b6b;
 }
 .light-panel select.input-dark {
-  background-image: linear-gradient(45deg, transparent 50%, #4f5d75 50%), linear-gradient(135deg, #4f5d75 50%, transparent 50%);
+  background-image: linear-gradient(45deg, transparent 50%, #4a4a4a 50%), linear-gradient(135deg, #4a4a4a 50%, transparent 50%);
 }
 .light-panel select.input-dark option {
   background: #ffffff;
@@ -373,12 +375,12 @@ input[type='date']::-webkit-calendar-picker-indicator {
   filter: none;
 }
 .light-panel .label-xs {
-  color: #4f5d75;
+  color: #4a4a4a;
 }
 .light-panel .chip {
-  border-color: rgba(11, 37, 69, 0.14);
+  border-color: rgba(17, 17, 17, 0.14);
   background: rgba(255, 255, 255, 0.7);
-  color: #24344f;
+  color: #222222;
 }
 .light-panel .chip-active {
   border-color: var(--orange);
@@ -393,11 +395,11 @@ input[type='date']::-webkit-calendar-picker-indicator {
 }
 .light-panel .glass-btn-plain {
   background: rgba(255, 255, 255, 0.7);
-  border-color: rgba(11, 37, 69, 0.14);
+  border-color: rgba(17, 17, 17, 0.14);
   box-shadow: none;
 }
 .light-panel .icon-btn {
-  border-color: rgba(11, 37, 69, 0.14);
+  border-color: rgba(17, 17, 17, 0.14);
   background: rgba(255, 255, 255, 0.7);
   color: var(--ink);
 }

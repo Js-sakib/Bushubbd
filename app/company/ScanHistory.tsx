@@ -61,19 +61,19 @@ export default function ScanHistory({ stats, showScanner = false }: { stats: Sca
                 <div key={`${row.name}-${i}`} className="flex items-center gap-3 border-b border-[#c9d6e4] px-4 py-3 last:border-b-0">
                   <div className="flex min-w-0 grow flex-col">
                     <span className="truncate text-[13.5px] font-semibold text-[#0f8f80]">{row.name}</span>
-                    <span className="text-[11.5px] text-[#5a677d]">
+                    <span className="text-[11.5px] text-[#555555]">
                       7 days: {row.week.passengers} passenger{row.week.passengers === 1 ? '' : 's'} · {row.week.tickets} ticket{row.week.tickets === 1 ? '' : 's'}
                       {row.week.rejected > 0 ? ` · ${row.week.rejected} rejected` : ''}
                     </span>
                   </div>
                   <div className="flex shrink-0 flex-col items-end">
                     <span className="display text-[20px] font-bold leading-none text-[#0a8a84]">{row.today.passengers}</span>
-                    <span className="text-[10.5px] text-[#4f5d75]">today</span>
+                    <span className="text-[10.5px] text-[#4a4a4a]">today</span>
                   </div>
                 </div>
               ))}
               {stats.byScanner.length === 0 && (
-                <div className="px-4 py-6 text-center text-sm text-[#4f5d75]">No scans in the last 7 days.</div>
+                <div className="px-4 py-6 text-center text-sm text-[#4a4a4a]">No scans in the last 7 days.</div>
               )}
             </div>
           )}
@@ -86,7 +86,7 @@ export default function ScanHistory({ stats, showScanner = false }: { stats: Sca
               <div key={day.date} className="flex items-center gap-3 border-b border-[#c9d6e4] px-4 py-3 last:border-b-0">
                 <div className="flex grow flex-col">
                   <span className="text-[13.5px] font-semibold">{index === 0 ? 'Today' : formatTripDate(day.date)}</span>
-                  <span className="text-[11.5px] text-[#5a677d]">
+                  <span className="text-[11.5px] text-[#555555]">
                     {day.tickets} ticket{day.tickets === 1 ? '' : 's'}
                     {day.rejected > 0 ? ` · ${day.rejected} rejected` : ''}
                   </span>
@@ -94,7 +94,7 @@ export default function ScanHistory({ stats, showScanner = false }: { stats: Sca
                 <span className="display text-[20px] font-bold text-[#0a8a84]">{day.passengers}</span>
               </div>
             ))}
-            {!stats && <div className="px-4 py-8 text-center text-sm text-[#4f5d75]">Loading...</div>}
+            {!stats && <div className="px-4 py-8 text-center text-sm text-[#4a4a4a]">Loading...</div>}
           </div>
 
       </div>
@@ -113,24 +113,24 @@ export default function ScanHistory({ stats, showScanner = false }: { stats: Sca
               const chip = RESULT_CHIPS[item.result] ?? RESULT_CHIPS.not_found
               return (
                 <div key={item.id} className="flex items-start gap-3 border-b border-[#c9d6e4] px-4 py-3 last:border-b-0">
-                  <span className="w-11 shrink-0 pt-0.5 text-[12px] font-semibold text-[#44526b]">{dhakaClock(item.scannedAt)}</span>
+                  <span className="w-11 shrink-0 pt-0.5 text-[12px] font-semibold text-[#3f3f3f]">{dhakaClock(item.scannedAt)}</span>
                   <div className="flex min-w-0 grow flex-col gap-0.5">
                     <span className="truncate text-[13px] font-semibold">
                       {item.busName ? `${item.busName} · ${item.from} → ${item.to}` : item.bookingCode || 'Unreadable code'}
                     </span>
                     {item.travelDate && (
-                      <span className="text-[11.5px] text-[#5a677d]">
+                      <span className="text-[11.5px] text-[#555555]">
                         {formatTripDate(item.travelDate)} · {item.departureTime} · {item.seatCount} seat{item.seatCount === 1 ? '' : 's'}
                       </span>
                     )}
-                    {showScanner && item.scannerName && <span className="text-[11px] text-[#617086]">Scanned by {item.scannerName}</span>}
+                    {showScanner && item.scannerName && <span className="text-[11px] text-[#5e5e5e]">Scanned by {item.scannerName}</span>}
                   </div>
                   <span className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] font-bold ${chip.className}`}>{chip.label}</span>
                 </div>
               )
             })}
             {stats && stats.recent.length === 0 && (
-              <div className="px-4 py-8 text-center text-sm text-[#4f5d75]">No tickets scanned in the last 7 days.</div>
+              <div className="px-4 py-8 text-center text-sm text-[#4a4a4a]">No tickets scanned in the last 7 days.</div>
             )}
           </div>
         </div>

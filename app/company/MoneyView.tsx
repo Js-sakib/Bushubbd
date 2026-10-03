@@ -41,16 +41,16 @@ function TripRow({ trip, me, onChanged }: { trip: CompanyTrip; me: { role: strin
             </span>
             <Plate plate={trip.plateNumber} />
           </span>
-          <span className="truncate text-[11.5px] text-[#44526b]">
+          <span className="truncate text-[11.5px] text-[#3f3f3f]">
             {formatTripDate(trip.date)} · {trip.busName}
           </span>
-          <span className="text-[11.5px] text-[#5a677d]">
+          <span className="text-[11.5px] text-[#555555]">
             {m.seats.online + m.seats.counter}/{m.seats.total} sold · tickets {taka(m.ticketMoney)} · costs {taka(m.costs.total)}
           </span>
         </div>
         <div className="flex shrink-0 flex-col items-end gap-0.5">
           <span className={`text-[14px] font-bold ${m.left < 0 ? 'text-[#d23c3c]' : 'text-[#0a8a84]'}`}>{taka(m.left)}</span>
-          <span className="text-[10.5px] text-[#4f5d75]">left</span>
+          <span className="text-[10.5px] text-[#4a4a4a]">left</span>
           <span className="text-[10.5px] text-[#0b7f8c] group-open:hidden">Details ›</span>
           <span className="hidden text-[10.5px] text-[#0b7f8c] group-open:inline">Hide ‹</span>
         </div>
@@ -141,13 +141,13 @@ export default function MoneyView({
   return (
     <div className="flex flex-col gap-3">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-        <div className="grid grid-cols-2 gap-1 rounded-[22px] border border-[#0b2545]/10 bg-white/60 p-1 sm:flex sm:rounded-full">
+        <div className="grid grid-cols-2 gap-1 rounded-[22px] border border-[#111111]/10 bg-white/60 p-1 sm:flex sm:rounded-full">
           {VIEWS.map(([id, label]) => (
             <button
               key={id}
               type="button"
               onClick={() => setView(id)}
-              className={`h-9 shrink-0 rounded-full px-3.5 text-[12.5px] font-bold ${view === id ? 'bg-[#feb249] text-[#1a0d03]' : 'text-[#44526b]'}`}
+              className={`h-9 shrink-0 rounded-full px-3.5 text-[12.5px] font-bold ${view === id ? 'bg-[#feb249] text-[#1a0d03]' : 'text-[#3f3f3f]'}`}
             >
               {label}
             </button>
@@ -178,13 +178,13 @@ export default function MoneyView({
             }}
           />
         </div>
-        <div className="flex gap-1 self-end justify-self-start rounded-full border border-[#0b2545]/10 bg-white/60 p-1">
+        <div className="flex gap-1 self-end justify-self-start rounded-full border border-[#111111]/10 bg-white/60 p-1">
           {PERIODS.map(([id, label]) => (
             <button
               key={id}
               type="button"
               onClick={() => setPeriod(id)}
-              className={`h-9 rounded-full px-3.5 text-[12.5px] font-bold ${period === id ? 'bg-[#0b2545] text-[#ffffff]' : 'text-[#44526b]'}`}
+              className={`h-9 rounded-full px-3.5 text-[12.5px] font-bold ${period === id ? 'bg-[#111111] text-[#ffffff]' : 'text-[#3f3f3f]'}`}
             >
               {label}
             </button>
@@ -192,23 +192,23 @@ export default function MoneyView({
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-2 rounded-2xl border border-[#0b2545]/10 bg-white/60 px-4 py-3">
+      <div className="grid grid-cols-3 gap-2 rounded-2xl border border-[#111111]/10 bg-white/60 px-4 py-3">
         <div className="flex min-w-0 flex-col">
-          <span className="text-[10.5px] text-[#4f5d75]">
+          <span className="text-[10.5px] text-[#4a4a4a]">
             {shown.length} trip{shown.length === 1 ? '' : 's'} · {total.seats.online + total.seats.counter} seats
           </span>
           <span className="truncate text-[15px] font-bold">{taka(total.ticketMoney)}</span>
-          <span className="text-[10.5px] text-[#617086]">ticket money</span>
+          <span className="text-[10.5px] text-[#5e5e5e]">ticket money</span>
         </div>
         <div className="flex min-w-0 flex-col">
-          <span className="text-[10.5px] text-[#4f5d75]">You receive</span>
+          <span className="text-[10.5px] text-[#4a4a4a]">You receive</span>
           <span className="truncate text-[15px] font-bold text-[#0b7f8c]">{taka(total.companyGets)}</span>
-          <span className="text-[10.5px] text-[#617086]">costs {taka(total.costs.total)}</span>
+          <span className="text-[10.5px] text-[#5e5e5e]">costs {taka(total.costs.total)}</span>
         </div>
         <div className="flex min-w-0 flex-col items-end text-right">
-          <span className="text-[10.5px] text-[#4f5d75]">Left</span>
+          <span className="text-[10.5px] text-[#4a4a4a]">Left</span>
           <span className={`truncate text-[15px] font-bold ${total.left < 0 ? 'text-[#d23c3c]' : 'text-[#0a8a84]'}`}>{taka(total.left)}</span>
-          <span className="truncate text-[10.5px] text-[#617086]">{dates || PERIODS.find(([id]) => id === period)?.[1]}</span>
+          <span className="truncate text-[10.5px] text-[#5e5e5e]">{dates || PERIODS.find(([id]) => id === period)?.[1]}</span>
         </div>
       </div>
 
@@ -219,12 +219,12 @@ export default function MoneyView({
         <div className="card-2 overflow-hidden">
           <div className="flex flex-col gap-0.5 border-b border-[#c9d6e4] px-4 py-3">
             <span className="label-xs">Trip by trip</span>
-            <span className="text-[11px] text-[#617086]">Open a trip to see its money and add or check costs</span>
+            <span className="text-[11px] text-[#5e5e5e]">Open a trip to see its money and add or check costs</span>
           </div>
           {shown.map((t) => (
             <TripRow key={t._id} trip={t} me={me} onChanged={onChanged} />
           ))}
-          {shown.length === 0 && <div className="px-4 py-8 text-center text-sm text-[#4f5d75]">No trips here.</div>}
+          {shown.length === 0 && <div className="px-4 py-8 text-center text-sm text-[#4a4a4a]">No trips here.</div>}
         </div>
       )}
 

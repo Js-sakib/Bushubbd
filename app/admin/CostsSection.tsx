@@ -30,7 +30,7 @@ interface MoneyTrip {
   pay: { owed: number; invoiced: number; paid: number; invoiceId: string | null; invoiceNumber: string | null }
 }
 
-/** The trips shown, as an Excel sheet: tickets, commission and what BusHub owes per trip. */
+/** The trips shown, as an Excel sheet: BusHub tickets, BusHub's commission and what BusHub owes per trip. */
 function moneySheet(trips: MoneyTrip[], notes: string[]): Sheet {
   const int = (header: string): Column => ({ header, kind: 'int', total: true })
   const money = (header: string): Column => ({ header, kind: 'money', total: true })
@@ -46,9 +46,7 @@ function moneySheet(trips: MoneyTrip[], notes: string[]): Sheet {
       { header: 'To' },
       { header: 'Bus' },
       { header: 'Number plate' },
-      int('Seats'),
-      int('Counter seats'),
-      money('Counter money'),
+      int('BusHub tickets'),
       int('BusHub seats'),
       money('BusHub ticket money'),
       money('BusHub commission'),
@@ -69,9 +67,7 @@ function moneySheet(trips: MoneyTrip[], notes: string[]): Sheet {
         t.to,
         t.busName,
         t.plateNumber,
-        t.totalSeats,
-        t.counter.seats,
-        t.counter.total,
+        t.online.tickets,
         t.online.seats,
         t.online.total,
         t.online.commission,
@@ -96,8 +92,8 @@ function Line({ label, sub, value, tone = '', strong = false }: { label: string;
   return (
     <div className="flex items-start justify-between gap-3">
       <div className="flex min-w-0 flex-col">
-        <span className={strong ? 'text-[13.5px] font-bold' : 'text-[13px] text-[#24344f]'}>{label}</span>
-        {sub && <span className="text-[11px] text-[#617086]">{sub}</span>}
+        <span className={strong ? 'text-[13.5px] font-bold' : 'text-[13px] text-[#222222]'}>{label}</span>
+        {sub && <span className="text-[11px] text-[#5e5e5e]">{sub}</span>}
       </div>
       <span className={`shrink-0 font-bold ${strong ? 'text-[16px]' : 'text-[13.5px]'} ${tone}`}>{value}</span>
     </div>
@@ -105,11 +101,9 @@ function Line({ label, sub, value, tone = '', strong = false }: { label: string;
 }
 
 function sum(trips: MoneyTrip[]) {
-  const t = { trips: trips.length, seats: 0, sold: 0, counterSeats: 0, counter: 0, onlineSeats: 0, online: 0, commission: 0, payout: 0, toPay: 0, paid: 0, later: 0 }
+  const t = { trips: trips.length, tickets: 0, onlineSeats: 0, online: 0, commission: 0, payout: 0, toPay: 0, paid: 0, later: 0 }
   for (const x of trips) {
-    t.seats += x.totalSeats || 0
-    t.counterSeats += x.counter.seats
-    t.counter += x.counter.total
+    t.tickets += x.online.tickets
     t.onlineSeats += x.online.seats
     t.online += x.online.total
     t.commission += x.online.commission
@@ -118,13 +112,12 @@ function sum(trips: MoneyTrip[]) {
     if (x.departed) t.toPay += x.pay.owed + x.pay.invoiced
     else t.later += x.pay.owed + x.pay.invoiced
   }
-  t.sold = t.counterSeats + t.onlineSeats
   return t
 }
 
 /** Where the trip's payment stands, and the button to pay it when it is due. */
 function PayState({ trip, onPay, busy }: { trip: MoneyTrip; onPay: (t: MoneyTrip) => void; busy: boolean }) {
-  if (trip.online.tickets === 0) return <span className="text-[12px] text-[#5a677d]">No BusHub tickets: nothing to pay.</span>
+  if (trip.online.tickets === 0) return <span className="text-[12px] text-[#555555]">No BusHub tickets: nothing to pay.</span>
   if (!trip.departed) return <span className="text-[12px] text-[#2563eb]">Pay {taka(trip.pay.owed + trip.pay.invoiced)} after the bus leaves.</span>
   return (
     <div className="flex flex-col gap-2">
@@ -149,7 +142,7 @@ function PayState({ trip, onPay, busy }: { trip: MoneyTrip; onPay: (t: MoneyTrip
 }
 
 /**
- * Every company's trips, bus by bus: seats sold, what the tickets brought in, BusHub's commission
+ * Every company's trips, bus by bus: the BusHub tickets sold, BusHub's commission
  * and what BusHub owes the company, with a button to pay each trip once the bus has left.
  */
 function TripsMoney() {
@@ -207,7 +200,7 @@ function TripsMoney() {
     window.location.href = `/invoice/${json.invoice._id}?as=admin`
   }
 
-  if (!data) return <div className="py-16 text-center text-sm text-[#4f5d75]">Loading...</div>
+  if (!data) return <div className="py-16 text-center text-sm text-[#4a4a4a]">Loading...</div>
 
   return (
     <div className="flex flex-col gap-3">
@@ -268,46 +261,47 @@ function TripsMoney() {
           ⬇ Excel sheet
         </button>
       </div>
-      <div className="flex gap-1 self-start rounded-full border border-[#0b2545]/10 bg-white/60 p-1">
+      <div className="flex gap-1 self-start rounded-full border border-[#111111]/10 bg-white/60 p-1">
         {PERIODS.map(([id, label]) => (
           <button
             key={id}
             type="button"
             onClick={() => setPeriod(id)}
-            className={`h-9 rounded-full px-3.5 text-[12.5px] font-bold ${period === id ? 'bg-[#0b2545] text-[#ffffff]' : 'text-[#44526b]'}`}
+            className={`h-9 rounded-full px-3.5 text-[12.5px] font-bold ${period === id ? 'bg-[#111111] text-[#ffffff]' : 'text-[#3f3f3f]'}`}
           >
             {label}
           </button>
         ))}
       </div>
-      <p className="px-1 text-[11.5px] text-[#617086]">Trips of the last 30 days and upcoming trips.</p>
+      <p className="px-1 text-[11.5px] text-[#5e5e5e]">Trips of the last 30 days and upcoming trips.</p>
 
       {/* On a computer: the totals stay on the left while the trips scroll on the right. */}
       <div className="flex flex-col gap-3 lg:grid lg:grid-cols-[minmax(0,380px)_minmax(0,1fr)] lg:items-start">
       <div className="card-2 flex flex-col gap-3 px-4 py-4 lg:sticky lg:top-28">
         <div className="flex items-end justify-between gap-3">
           <div className="flex flex-col">
-            <span className="label-xs">Total earnings</span>
-            <span className="display text-[28px] font-bold leading-tight">{taka(total.counter + total.online)}</span>
+            <span className="label-xs">BusHub earned</span>
+            <span className="display text-[28px] font-bold leading-tight">{taka(total.commission)}</span>
+            <span className="text-[11.5px] text-[#3f3f3f]">Commission on BusHub tickets</span>
           </div>
-          <span className="pb-1 text-right text-[11.5px] text-[#44526b]">
-            {total.sold} of {total.seats} seats sold
+          <span className="pb-1 text-right text-[11.5px] text-[#3f3f3f]">
+            <b className="display text-[22px] text-[#111111]">{total.tickets}</b> ticket{total.tickets === 1 ? '' : 's'}
             <br />
-            {total.trips} trip{total.trips === 1 ? '' : 's'}
+            {total.onlineSeats} seat{total.onlineSeats === 1 ? '' : 's'} · {total.trips} trip{total.trips === 1 ? '' : 's'}
           </span>
         </div>
-        <div className="flex flex-col gap-2 border-t border-[#0b2545]/10 pt-3">
-          <Line label="Counter tickets" sub={`${total.counterSeats} seats`} value={taka(total.counter)} tone="text-[#2d7886]" />
-          <Line label="BusHub tickets" sub={`${total.onlineSeats} seats`} value={taka(total.online)} tone="text-[#0b7f8c]" />
-          <Line label="BusHub commission" value={taka(total.commission)} tone="text-[#0a8a84]" />
+        <div className="flex flex-col gap-2 border-t border-[#111111]/10 pt-3">
+          <Line label="Passengers paid BusHub" sub={`${total.tickets} tickets · ${total.onlineSeats} seats`} value={taka(total.online)} tone="text-[#0b7f8c]" />
+          <Line label="BusHub commission" sub="What BusHub keeps" value={taka(total.commission)} tone="text-[#0a8a84]" />
+          <Line label="Companies' share" sub="What BusHub pays the companies" value={taka(total.payout)} />
         </div>
-        <div className="flex flex-col gap-2 border-t border-[#0b2545]/10 pt-3">
+        <div className="flex flex-col gap-2 border-t border-[#111111]/10 pt-3">
           <Line label="Already paid to companies" value={taka(total.paid)} tone="text-[#0a8a84]" />
           <Line label="Pay later" sub="Trips still to leave" value={taka(total.later)} tone="text-[#2563eb]" />
         </div>
         <div className="flex items-center justify-between gap-3 rounded-2xl bg-gradient-to-br from-[#c77a0e]/60 to-[#a25f06]/50 px-3.5 py-3">
           <span className="text-[13.5px] font-bold">To pay now</span>
-          <span className="display text-[20px] font-bold text-[#0b2545]">{taka(total.toPay)}</span>
+          <span className="display text-[20px] font-bold text-[#111111]">{taka(total.toPay)}</span>
         </div>
       </div>
 
@@ -322,26 +316,26 @@ function TripsMoney() {
               <summary className="flex cursor-pointer list-none items-start gap-3 px-4 py-3 marker:hidden">
                 <div className="flex min-w-0 grow flex-col gap-0.5">
                   <span className="truncate text-[13.5px] font-bold">{t.companyName}</span>
-                  <span className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-[12px] text-[#24344f]">
+                  <span className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-[12px] text-[#222222]">
                     <span className="truncate">
                       {t.from} → {t.to} · {t.departureTime} · {t.busName}
                     </span>
                     <Plate plate={t.plateNumber} />
                   </span>
-                  <span className="text-[11.5px] text-[#5a677d]">
-                    {formatTripDate(t.date)} · {t.counter.seats + t.online.seats}/{t.totalSeats} sold · earned {taka(t.counter.total + t.online.total)}
+                  <span className="text-[11.5px] text-[#555555]">
+                    {formatTripDate(t.date)} · {t.online.tickets} BusHub ticket{t.online.tickets === 1 ? '' : 's'} · BusHub earned {taka(t.online.commission)}
                   </span>
                 </div>
                 <div className="flex shrink-0 flex-col items-end gap-0.5">
                   {due > 0 ? (
                     <>
                       <span className={`text-[14px] font-bold ${t.departed ? 'text-[#0b7f8c]' : 'text-[#2563eb]'}`}>{taka(due)}</span>
-                      <span className="text-[10.5px] text-[#4f5d75]">{t.departed ? 'to pay' : 'pay later'}</span>
+                      <span className="text-[10.5px] text-[#4a4a4a]">{t.departed ? 'to pay' : 'pay later'}</span>
                     </>
                   ) : t.pay.paid > 0 ? (
                     <span className="text-[12px] font-bold text-[#0a8a84]">Paid ✓</span>
                   ) : (
-                    <span className="text-[11px] text-[#5a677d]">Nothing to pay</span>
+                    <span className="text-[11px] text-[#555555]">Nothing to pay</span>
                   )}
                   <span className="text-[10.5px] text-[#0b7f8c] group-open:hidden">Details ›</span>
                   <span className="hidden text-[10.5px] text-[#0b7f8c] group-open:inline">Hide ‹</span>
@@ -349,18 +343,16 @@ function TripsMoney() {
               </summary>
               <div className="flex flex-col gap-3 bg-white/60 px-4 pb-4 pt-2 text-[12.5px]">
                 <div className="flex flex-col gap-1.5">
-                  <Line label={`Counter · ${t.counter.seats} seats`} value={taka(t.counter.total)} tone="text-[#2d7886]" />
                   <Line label={`BusHub · ${t.online.tickets} tickets, ${t.online.seats} seats`} value={taka(t.online.total)} tone="text-[#0b7f8c]" />
                   <Line label="BusHub commission" value={taka(t.online.commission)} tone="text-[#0a8a84]" />
                   <Line label="Company gets from BusHub" value={taka(t.online.payout)} strong />
-                  <Line label={`Not sold · ${Math.max(0, t.totalSeats - t.counter.seats - t.online.seats)} seats`} value="" />
                 </div>
                 <PayState trip={t} onPay={pay} busy={busy === t._id} />
               </div>
             </details>
           )
         })}
-        {shown.length === 0 && <div className="px-4 py-8 text-center text-sm text-[#4f5d75]">No trips here.</div>}
+        {shown.length === 0 && <div className="px-4 py-8 text-center text-sm text-[#4a4a4a]">No trips here.</div>}
       </div>
       </div>
     </div>
@@ -372,7 +364,7 @@ export default function CostsSection() {
   const [view, setView] = useState<'trips' | 'pay'>('trips')
   return (
     <div className="mx-auto flex max-w-6xl flex-col gap-3">
-      <div className="flex gap-1 self-start rounded-full border border-[#0b2545]/10 bg-white/60 p-1">
+      <div className="flex gap-1 self-start rounded-full border border-[#111111]/10 bg-white/60 p-1">
         {(
           [
             ['trips', 'By trip'],
@@ -383,7 +375,7 @@ export default function CostsSection() {
             key={id}
             type="button"
             onClick={() => setView(id)}
-            className={`h-9 rounded-full px-4 text-[12.5px] font-bold ${view === id ? 'bg-gradient-to-r from-[#f2661d] to-[#feb249] text-[#1a0d03]' : 'text-[#44526b]'}`}
+            className={`h-9 rounded-full px-4 text-[12.5px] font-bold ${view === id ? 'bg-gradient-to-r from-[#f2661d] to-[#feb249] text-[#1a0d03]' : 'text-[#3f3f3f]'}`}
           >
             {label}
           </button>

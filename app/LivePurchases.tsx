@@ -124,7 +124,7 @@ export default function LivePurchases() {
         visible ? 'translate-y-0 opacity-100' : 'pointer-events-none translate-y-4 opacity-0 motion-reduce:translate-y-0'
       }`}
     >
-      <div className="flex items-center gap-3 rounded-2xl border border-[#0b2545]/10 bg-[#f3f6fa]/95 py-3 pl-3 pr-2 shadow-[0_18px_50px_rgba(0,0,0,0.6)] backdrop-blur-xl">
+      <div className="flex items-center gap-3 rounded-2xl border border-[#111111]/10 bg-[#f3f6fa]/95 py-3 pl-3 pr-2 shadow-[0_18px_50px_rgba(0,0,0,0.6)] backdrop-blur-xl">
         <a href={routePath(current.from, current.to)} className="flex min-w-0 grow items-center gap-3">
           <span className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#f2661d] to-[#feb249] text-[#1a0d03] shadow-[0_6px_18px_rgba(242,102,29,0.35)]">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
@@ -137,11 +137,11 @@ export default function LivePurchases() {
             </span>
           </span>
           <span className="flex min-w-0 flex-col">
-            <span className="text-[11.5px] font-semibold text-[#44526b]">Someone booked a ticket</span>
-            <span className="truncate text-[14.5px] font-bold text-[#0b2545]">
+            <span className="text-[11.5px] font-semibold text-[#3f3f3f]">Someone booked a ticket</span>
+            <span className="truncate text-[14.5px] font-bold text-[#111111]">
               {current.from} → {current.to}
             </span>
-            <span className="text-[11.5px] text-[#4f5d75]">
+            <span className="text-[11.5px] text-[#4a4a4a]">
               {current.seats} seat{current.seats === 1 ? '' : 's'} · {ago(current.at, Date.now())}
             </span>
           </span>
@@ -150,7 +150,7 @@ export default function LivePurchases() {
           type="button"
           onClick={close}
           aria-label="Hide these messages"
-          className="flex h-8 w-8 shrink-0 items-center justify-center self-start rounded-full text-[#5a677d] transition hover:bg-[#0b2545]/[0.05] hover:text-[#0b2545]"
+          className="flex h-8 w-8 shrink-0 items-center justify-center self-start rounded-full text-[#555555] transition hover:bg-[#111111]/[0.05] hover:text-[#111111]"
         >
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" className="h-4 w-4">
             <path d="M6 6l12 12M18 6 6 18" />

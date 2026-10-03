@@ -41,7 +41,7 @@ export default function ForgotPassword() {
           <LogoMark className="h-12 w-12" />
           <div>
             <h1 className="display text-xl font-bold">Forgot password</h1>
-            <p className="mt-1 text-[12.5px] leading-relaxed text-[#4f5d75]">
+            <p className="mt-1 text-[12.5px] leading-relaxed text-[#4a4a4a]">
               {sent ? 'Your request is with the BusHub team.' : 'We will send you a new password on WhatsApp.'}
             </p>
           </div>
@@ -55,12 +55,12 @@ export default function ForgotPassword() {
                   <path d="M5 12.5 10 17l9-10" />
                 </svg>
               </span>
-              <p className="text-[13px] leading-relaxed text-[#24344f]">
+              <p className="text-[13px] leading-relaxed text-[#222222]">
                 If <strong className="break-all text-white">{email.trim()}</strong> has an operator account, our team will
                 send a new password to the WhatsApp number on that account, usually within a few hours.
               </p>
             </div>
-            <p className="text-center text-[12px] leading-relaxed text-[#4f5d75]">
+            <p className="text-center text-[12px] leading-relaxed text-[#4a4a4a]">
               Urgent, or changed your number? Email{' '}
               <a href="mailto:info@bushubbd.com" className="font-semibold text-[#0f8f80]">
                 info@bushubbd.com
@@ -92,7 +92,7 @@ export default function ForgotPassword() {
             <button
               type="button"
               onClick={() => router.push(companyPath('/company/login'))}
-              className="text-center text-[12.5px] font-semibold text-[#4f5d75] hover:text-[#0b7f8c]"
+              className="text-center text-[12.5px] font-semibold text-[#4a4a4a] hover:text-[#0b7f8c]"
             >
               Back to sign in
             </button>

@@ -73,7 +73,7 @@ export default function SeatManager({
         <h3 className="display text-[15px] font-bold">
           {bus.busName} · {bus.from} → {bus.to} ({bus.date})
         </h3>
-        <p className="mt-1 text-[12.5px] text-[#44526b]">
+        <p className="mt-1 text-[12.5px] text-[#3f3f3f]">
           Tap a seat to mark it <strong className="text-[#0b7f8c]">sold at your counter</strong>, tap again to put it
           back on sale. Seats sold on BusHub are locked — refund the ticket to free one.
         </p>
@@ -109,7 +109,7 @@ export default function SeatManager({
         })}
       </div>
 
-      <div className="flex flex-wrap gap-4 text-[12.5px] text-[#24344f]">
+      <div className="flex flex-wrap gap-4 text-[12.5px] text-[#222222]">
         <span className="inline-flex items-center gap-2">
           <span className="h-3.5 w-3.5 rounded border border-[#0dabab] bg-[#dff6f5]" />
           Available now

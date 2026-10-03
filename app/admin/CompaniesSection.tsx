@@ -57,18 +57,18 @@ function NewLoginCard({ login, onClose }: { login: NewLogin; onClose: () => void
           <span className="display text-[16px] font-bold">
             {login.isNew ? `${login.name} is added` : `New password for ${login.name}`}
           </span>
-          <span className="text-[12px] leading-snug text-[#24344f]">Shown only once. Send it to them now; it cannot be seen again later.</span>
+          <span className="text-[12px] leading-snug text-[#222222]">Shown only once. Send it to them now; it cannot be seen again later.</span>
         </div>
         <CloseButton onClick={onClose} label="Close" />
       </div>
 
-      <div className="flex flex-col gap-2.5 rounded-2xl border border-[#0b2545]/10 bg-white/60 p-4">
+      <div className="flex flex-col gap-2.5 rounded-2xl border border-[#111111]/10 bg-white/60 p-4">
         <div className="flex items-center justify-between gap-3">
-          <span className="text-[12px] text-[#4f5d75]">Email</span>
+          <span className="text-[12px] text-[#4a4a4a]">Email</span>
           <span className="break-all text-right text-[13.5px] font-semibold">{login.email}</span>
         </div>
         <div className="flex items-center justify-between gap-3">
-          <span className="text-[12px] text-[#4f5d75]">Password</span>
+          <span className="text-[12px] text-[#4a4a4a]">Password</span>
           <span className="select-all font-mono text-[17px] font-bold tracking-wide text-[#0b7f8c]">{login.password}</span>
         </div>
       </div>
@@ -236,15 +236,15 @@ export default function CompaniesSection({
             </span>
             <span className="flex flex-col">
               <span className="display text-[15.5px] font-bold">Add a bus company</span>
-              <span className="text-[11.5px] text-[#5a677d]">Each company once. They get a login to scan tickets.</span>
+              <span className="text-[11.5px] text-[#555555]">Each company once. They get a login to scan tickets.</span>
             </span>
           </span>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className={`h-5 w-5 shrink-0 text-[#4f5d75] transition ${adding ? 'rotate-180' : ''}`}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className={`h-5 w-5 shrink-0 text-[#4a4a4a] transition ${adding ? 'rotate-180' : ''}`}>
             <path d="m6 9 6 6 6-6" />
           </svg>
         </button>
         {adding && (
-          <form onSubmit={addCompany} className="grid gap-3 border-t border-[#0b2545]/10 px-5 pb-5 pt-4 sm:grid-cols-2">
+          <form onSubmit={addCompany} className="grid gap-3 border-t border-[#111111]/10 px-5 pb-5 pt-4 sm:grid-cols-2">
             <input required placeholder="Company name, e.g. Green Line" value={companyForm.name} onChange={(e) => setCompanyForm({ ...companyForm, name: e.target.value })} className="input-dark" aria-label="Company name" />
             <input required placeholder="Contact person" value={companyForm.ownerName} onChange={(e) => setCompanyForm({ ...companyForm, ownerName: e.target.value })} className="input-dark" aria-label="Contact person" />
             <input required type="tel" placeholder="Phone (01…)" value={companyForm.phone} onChange={(e) => setCompanyForm({ ...companyForm, phone: e.target.value })} className="input-dark" aria-label="Phone" />
@@ -263,9 +263,9 @@ export default function CompaniesSection({
                 className="input-dark w-full pr-36"
                 aria-label="BusHub commission percent"
               />
-              <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[12px] font-semibold text-[#4f5d75]">% BusHub commission</span>
+              <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[12px] font-semibold text-[#4a4a4a]">% BusHub commission</span>
             </label>
-            <p className="-mt-1 text-[11.5px] text-[#5a677d] sm:col-span-2">Set once for this company; all its buses use it. You can change it later here if needed.</p>
+            <p className="-mt-1 text-[11.5px] text-[#555555] sm:col-span-2">Set once for this company; all its buses use it. You can change it later here if needed.</p>
             <button type="submit" disabled={saving} className="glass-btn h-12 sm:col-span-2">
               {saving ? 'Adding…' : 'Add company and create login'}
             </button>
@@ -285,7 +285,7 @@ export default function CompaniesSection({
           <div className="flex items-start justify-between gap-3">
             <div className="flex flex-col gap-1">
               <span className="display text-[16px] font-bold">New password for {resetTarget.name}</span>
-              <span className="text-[12px] leading-snug text-[#24344f]">Their old password stops working as soon as you save.</span>
+              <span className="text-[12px] leading-snug text-[#222222]">Their old password stops working as soon as you save.</span>
             </div>
             <CloseButton onClick={() => setResetTarget(null)} label="Cancel" />
           </div>
@@ -325,7 +325,7 @@ export default function CompaniesSection({
             <div key={c._id} className="flex items-center gap-3 rounded-2xl bg-white/60 px-3.5 py-3">
               <div className="flex min-w-0 grow flex-col">
                 <span className="truncate text-[13.5px] font-semibold">{c.name}</span>
-                <span className="truncate text-[11.5px] text-[#4f5d75]">
+                <span className="truncate text-[11.5px] text-[#4a4a4a]">
                   {c.phone} · {c.email}
                 </span>
               </div>
@@ -340,25 +340,25 @@ export default function CompaniesSection({
       <section className="glass flex flex-col overflow-hidden">
         <div className="flex items-baseline justify-between px-5 pb-2 pt-4">
           <h2 className="display text-[15.5px] font-bold">Bus companies</h2>
-          <span className="text-[11.5px] text-[#5a677d]">{companies.length} registered</span>
+          <span className="text-[11.5px] text-[#555555]">{companies.length} registered</span>
         </div>
         {companies.length > 3 && (
           <div className="px-5 pb-3">
             <SearchBox value={search} onChange={setSearch} placeholder="Search company, person, email, phone" />
           </div>
         )}
-        {companies.length === 0 && <p className="px-5 pb-8 pt-4 text-center text-sm text-[#4f5d75]">No companies registered yet.</p>}
+        {companies.length === 0 && <p className="px-5 pb-8 pt-4 text-center text-sm text-[#4a4a4a]">No companies registered yet.</p>}
         <ul className="flex flex-col">
           {rows.map((c) => (
-            <li key={c._id} className={`flex flex-col gap-3 border-t border-[#0b2545]/10 px-5 py-3.5 ${c.passwordResetRequestedAt ? 'bg-[#feb249]/[0.05]' : ''}`}>
+            <li key={c._id} className={`flex flex-col gap-3 border-t border-[#111111]/10 px-5 py-3.5 ${c.passwordResetRequestedAt ? 'bg-[#feb249]/[0.05]' : ''}`}>
               <div className="flex items-start gap-3">
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#0b2545]/10 bg-[#0b2545]/[0.05] text-[13px] font-bold text-[#0b7f8c]">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#111111]/10 bg-[#111111]/[0.05] text-[13px] font-bold text-[#0b7f8c]">
                   {(c.name || '?').slice(0, 2).toUpperCase()}
                 </span>
                 <div className="flex min-w-0 grow flex-col gap-0.5">
                   <span className="truncate text-[14px] font-semibold">{c.name}</span>
-                  <span className="truncate text-[12px] text-[#44526b]">{c.ownerName}</span>
-                  <span className="truncate text-[11.5px] text-[#617086]">
+                  <span className="truncate text-[12px] text-[#3f3f3f]">{c.ownerName}</span>
+                  <span className="truncate text-[11.5px] text-[#5e5e5e]">
                     {c.email} · {c.phone}
                   </span>
                   <span className="text-[11.5px] font-bold text-[#0b7f8c]">{c.commissionRate ?? 10}% BusHub commission</span>
@@ -385,7 +385,7 @@ export default function CompaniesSection({
                   className={
                     c.passwordResetRequestedAt
                       ? 'h-9 rounded-full bg-[#feb249] px-3.5 text-[12px] font-bold text-[#2b1a02]'
-                      : 'h-9 rounded-full border border-[#0b2545]/10 bg-[#0b2545]/[0.05] px-3.5 text-[12px] font-bold text-[#0b7f8c] transition hover:bg-[#0b2545]/[0.05]'
+                      : 'h-9 rounded-full border border-[#111111]/10 bg-[#111111]/[0.05] px-3.5 text-[12px] font-bold text-[#0b7f8c] transition hover:bg-[#111111]/[0.05]'
                   }
                 >
                   Reset password
@@ -393,7 +393,7 @@ export default function CompaniesSection({
                 <button
                   type="button"
                   onClick={() => editCommission(c)}
-                  className="h-9 rounded-full border border-[#0b2545]/10 bg-[#0b2545]/[0.05] px-3.5 text-[12px] font-bold text-[#24344f] transition hover:bg-[#0b2545]/[0.05]"
+                  className="h-9 rounded-full border border-[#111111]/10 bg-[#111111]/[0.05] px-3.5 text-[12px] font-bold text-[#222222] transition hover:bg-[#111111]/[0.05]"
                 >
                   Edit commission
                 </button>

@@ -82,7 +82,7 @@ export default function About() {
           <br />
           without the queue.
         </h1>
-        <p className="max-w-lg text-sm leading-relaxed text-[#44526b]">
+        <p className="max-w-lg text-sm leading-relaxed text-[#3f3f3f]">
           BusHub is a Bangladeshi ticketing platform. We put the country&apos;s bus operators and their real seat
           availability in one place, so booking a seat takes a minute on your phone instead of a trip to the counter
           or a phone call that nobody answers.
@@ -100,7 +100,7 @@ export default function About() {
             </span>
             <div className="flex flex-col gap-1">
               <span className="text-sm font-bold">{item.title}</span>
-              <span className="text-[12.5px] leading-relaxed text-[#44526b]">{item.body}</span>
+              <span className="text-[12.5px] leading-relaxed text-[#3f3f3f]">{item.body}</span>
             </div>
           </div>
         ))}
@@ -115,7 +115,7 @@ export default function About() {
                 {step.n}
               </span>
               <span className="text-sm font-bold">{step.title}</span>
-              <span className="text-[12.5px] leading-relaxed text-[#44526b]">{step.body}</span>
+              <span className="text-[12.5px] leading-relaxed text-[#3f3f3f]">{step.body}</span>
             </div>
           ))}
         </div>
@@ -124,12 +124,12 @@ export default function About() {
       <section className="mt-8 flex flex-col gap-3">
         <h2 className="text-[17px] font-bold">Why we built it</h2>
         <div className="glass-lite p-4">
-          <p className="text-[13px] leading-relaxed text-[#2f3f5a]">
+          <p className="text-[13px] leading-relaxed text-[#2b2b2b]">
             Buying a long-distance bus ticket in Bangladesh usually means going to a counter, calling a number that
             rings out, or trusting a seat map that was last accurate this morning. Passengers turn up to find their
             seat sold twice. Fake tickets get waved through because there is no way to check one at the door.
           </p>
-          <p className="mt-3 text-[13px] leading-relaxed text-[#2f3f5a]">
+          <p className="mt-3 text-[13px] leading-relaxed text-[#2b2b2b]">
             BusHub exists to fix exactly those three things: availability you can trust, a ticket that proves itself,
             and a booking you can finish from wherever you are standing.
           </p>
@@ -139,7 +139,7 @@ export default function About() {
       <section className="mt-8 flex flex-col gap-3">
         <h2 className="text-[17px] font-bold">For bus operators</h2>
         <div className="flex flex-col gap-3.5 rounded-[20px] border border-[#c3d1e0] bg-gradient-to-br from-[#002447]/90 to-[#08324d]/90 p-4">
-          <p className="text-[13px] leading-relaxed text-[#34445f]">
+          <p className="text-[13px] leading-relaxed text-[#303030]">
             Listing a bus is free. You get your own dashboard to add trips, mark the seats you sell at your counter,
             and see exactly what BusHub owes you. We take a commission only on the tickets we actually sell for you —
             nothing up front, no monthly fee.
@@ -159,13 +159,13 @@ export default function About() {
       <section className="mt-8 flex flex-col gap-3" id="contact">
         <h2 className="text-[17px] font-bold">Get in touch</h2>
         <div className="flex flex-col gap-3 glass-lite p-4">
-          <p className="text-[13px] leading-relaxed text-[#44526b]">
+          <p className="text-[13px] leading-relaxed text-[#3f3f3f]">
             Question about a booking, a refund, or listing your buses? Write to us and we will come back to you.
           </p>
           <a href="mailto:info@bushubbd.com" className="text-sm font-bold text-[#0b7f8c] hover:underline">
             info@bushubbd.com
           </a>
-          <span className="text-[11.5px] text-[#5a677d]">BusHub · Bangladesh</span>
+          <span className="text-[11.5px] text-[#555555]">BusHub · Bangladesh</span>
         </div>
       </section>
     </div>

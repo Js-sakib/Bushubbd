@@ -97,7 +97,7 @@ export default function ScannerView() {
       {tab === 'scan' && (
         <div className="mt-5 flex flex-col gap-4">
           {verifying && (
-            <div className="flex aspect-[4/3] w-full items-center justify-center glass-lite text-sm text-[#44526b]">
+            <div className="flex aspect-[4/3] w-full items-center justify-center glass-lite text-sm text-[#3f3f3f]">
               Checking ticket...
             </div>
           )}
@@ -138,7 +138,7 @@ export default function ScannerView() {
                 </svg>
               </span>
               <span className="display text-[20px] font-bold">Tap to scan a ticket</span>
-              <span className="text-[12.5px] text-[#44526b]">Point the camera at the passenger&apos;s QR code</span>
+              <span className="text-[12.5px] text-[#3f3f3f]">Point the camera at the passenger&apos;s QR code</span>
             </button>
           )}
 
@@ -171,7 +171,7 @@ export default function ScannerView() {
             </form>
           )}
 
-          <p className="rounded-2xl border border-[#c3d1e0] bg-white/70 px-4 py-3 text-[12px] leading-relaxed text-[#34445f]">
+          <p className="rounded-2xl border border-[#c3d1e0] bg-white/70 px-4 py-3 text-[12px] leading-relaxed text-[#303030]">
             Seats sold at the counter and new trips are handled by your company&apos;s counter and manager logins. For help,
             write to{' '}
             <a href="mailto:info@bushubbd.com" className="font-bold text-[#0f8f80]">

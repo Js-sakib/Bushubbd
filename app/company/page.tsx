@@ -42,7 +42,7 @@ export default function OperatorPanel() {
     router.push(companyPath('/company/login'))
   }
 
-  if (!me) return <div className="py-16 text-center text-sm text-[#4f5d75]">Checking access...</div>
+  if (!me) return <div className="py-16 text-center text-sm text-[#4a4a4a]">Checking access...</div>
 
   return (
     <div className={`mx-auto pb-10 ${me.role === 'manager' ? 'max-w-6xl' : me.role === 'counter' ? 'max-w-5xl' : 'max-w-xl'}`}>
@@ -52,7 +52,7 @@ export default function OperatorPanel() {
           <h1 className="display truncate text-[19px] font-bold leading-tight">{me.companyName}</h1>
           <span className="flex min-w-0 items-center gap-1.5">
             <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10.5px] font-bold ${ROLE_STYLE[me.role]}`}>{ROLES[me.role]}</span>
-            {me.role !== 'manager' && <span className="truncate text-[12.5px] font-semibold text-[#24344f]">{me.name}</span>}
+            {me.role !== 'manager' && <span className="truncate text-[12.5px] font-semibold text-[#222222]">{me.name}</span>}
           </span>
         </div>
         <button type="button" onClick={logout} className="chip">

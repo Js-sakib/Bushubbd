@@ -41,7 +41,7 @@ export default function AdminLogin() {
           <LogoMark className="h-12 w-12" />
           <div>
             <h1 className="display text-xl font-bold">Admin login</h1>
-            <p className="mt-1 text-[12.5px] text-[#4f5d75]">BusHub control panel</p>
+            <p className="mt-1 text-[12.5px] text-[#4a4a4a]">BusHub control panel</p>
           </div>
         </div>
 

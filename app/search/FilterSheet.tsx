@@ -46,7 +46,7 @@ function Sheet({
         role="dialog"
         aria-modal="true"
         aria-label={title}
-        className="relative flex max-h-[85vh] w-full flex-col rounded-t-[26px] border border-[#0b2545]/10 bg-[#f3f6fa]/90 backdrop-blur-xl sm:max-w-md sm:rounded-[26px]"
+        className="relative flex max-h-[85vh] w-full flex-col rounded-t-[26px] border border-[#111111]/10 bg-[#f3f6fa]/90 backdrop-blur-xl sm:max-w-md sm:rounded-[26px]"
       >
         <div className="flex items-center gap-3 border-b border-[#c9d6e4] px-5 py-4">
           <span className="display grow text-[16px] font-bold">{title}</span>
@@ -84,12 +84,12 @@ export function SortSheet({
               onClose()
             }}
             className={`flex items-center gap-3 rounded-2xl border px-4 py-3 text-left transition ${
-              value === option.key ? 'border-[#cc8b65] bg-[#feb249]/[0.09]' : 'border-[#0b2545]/10 bg-[#0b2545]/[0.05]'
+              value === option.key ? 'border-[#cc8b65] bg-[#feb249]/[0.09]' : 'border-[#111111]/10 bg-[#111111]/[0.05]'
             }`}
           >
             <span className="flex grow flex-col gap-0.5">
               <span className="text-sm font-bold">{option.label}</span>
-              <span className="text-[11.5px] text-[#4f5d75]">{option.hint}</span>
+              <span className="text-[11.5px] text-[#4a4a4a]">{option.hint}</span>
             </span>
             {value === option.key && (
               <svg viewBox="0 0 24 24" fill="none" stroke="#feb249" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4 shrink-0">
@@ -110,11 +110,11 @@ function Toggle({ active, label, hint, onClick }: { active: boolean; label: stri
       aria-pressed={active}
       onClick={onClick}
       className={`flex flex-col items-start gap-0.5 rounded-2xl border px-3.5 py-2.5 text-left transition ${
-        active ? 'border-[#cc8b65] bg-[#feb249]/[0.09] text-[#0b7f8c]' : 'border-[#0b2545]/10 bg-[#0b2545]/[0.05] text-[#24344f]'
+        active ? 'border-[#cc8b65] bg-[#feb249]/[0.09] text-[#0b7f8c]' : 'border-[#111111]/10 bg-[#111111]/[0.05] text-[#222222]'
       }`}
     >
       <span className="text-[13px] font-bold">{label}</span>
-      {hint && <span className="text-[11px] text-[#4f5d75]">{hint}</span>}
+      {hint && <span className="text-[11px] text-[#4a4a4a]">{hint}</span>}
     </button>
   )
 }
@@ -236,7 +236,7 @@ export function FiltersSheet({
               }}
               className="h-2 w-full cursor-pointer appearance-none rounded-full bg-[#e1e9f2] accent-[#f2661d]"
             />
-            <div className="flex justify-between text-[11px] text-[#5a677d]">
+            <div className="flex justify-between text-[11px] text-[#555555]">
               <span>৳{priceRange.min}</span>
               <span>৳{sliderMax}</span>
             </div>
