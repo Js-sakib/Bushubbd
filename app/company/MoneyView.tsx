@@ -7,7 +7,7 @@ import CostEditor from './CostEditor'
 import MoneyCard, { Line } from './MoneyCard'
 import SalesBreakdown, { type SaleBooking } from './SalesBreakdown'
 import StaffSales from './StaffSales'
-import { companyTripMoney, type CompanyTrip, type FleetOption } from './types'
+import { busLabel, companyTripMoney, type CompanyTrip, type FleetOption } from './types'
 
 const PERIODS = [
   ['all', 'All'],
@@ -93,7 +93,7 @@ export default function MoneyView({
           <option value="">All buses</option>
           {fleet.map((f) => (
             <option key={f._id} value={f._id}>
-              {f.name} · {f.busType}
+              {busLabel(f)}
             </option>
           ))}
         </select>

@@ -3,7 +3,7 @@ import { ObjectId } from 'mongodb'
 import { connectToDatabase, isDuplicateKeyError } from '@/lib/db'
 import { getAdminFromCookies } from '@/lib/auth'
 import { FleetBus } from '@/lib/models'
-import { BUS_TYPES, MAX_BUS_SEATS, cleanLogoUrl, cleanName, nameKey } from '@/lib/names'
+import { BUS_TYPES, MAX_BUS_SEATS, cleanLogoUrl, cleanName, cleanPlate, nameKey, plateKey } from '@/lib/names'
 import { DEFAULT_COMMISSION_RATE } from '@/lib/tickets'
 
 export const dynamic = 'force-dynamic'
@@ -37,7 +37,7 @@ export async function GET() {
   }
 }
 
-/** Lists a bus once: its name, the company that owns it, its type and seat count. */
+/** Lists a bus once: its name, number plate, the company that owns it, its type and seat count. */
 export async function POST(req: NextRequest) {
   try {
     if (!getAdminFromCookies()) {
@@ -48,6 +48,7 @@ export async function POST(req: NextRequest) {
     const totalSeats = Number(body.totalSeats)
     const busType = BUS_TYPES.includes(body.busType) ? body.busType : null
     const logoUrl = cleanLogoUrl(body.logoUrl)
+    const plateNumber = cleanPlate(body.plateNumber)
     const commissionRate =
       body.commissionRate === undefined || body.commissionRate === '' ? DEFAULT_COMMISSION_RATE : Number(body.commissionRate)
 
@@ -62,6 +63,9 @@ export async function POST(req: NextRequest) {
     }
     if (logoUrl === null) {
       return NextResponse.json({ error: 'The logo must be a web link starting with https://' }, { status: 400 })
+    }
+    if (plateNumber === null) {
+      return NextResponse.json({ error: 'Type the number plate, e.g. DHAKA METRO-BA 11-2345' }, { status: 400 })
     }
     if (!Number.isFinite(commissionRate) || commissionRate < 0 || commissionRate > 50) {
       return NextResponse.json({ error: 'Commission must be between 0 and 50%' }, { status: 400 })
@@ -84,6 +88,7 @@ export async function POST(req: NextRequest) {
       busType,
       totalSeats,
       logoUrl,
+      ...(plateNumber ? { plateNumber, plateKey: plateKey(plateNumber) } : {}),
       commissionRate,
       createdAt: new Date().toISOString(),
     }
@@ -92,6 +97,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ bus: { ...bus, _id: result.insertedId, tripCount: 0 } }, { status: 201 })
     } catch (err) {
       if (!isDuplicateKeyError(err)) throw err
+      const samePlate = bus.plateKey ? await db.collection('fleet').findOne({ plateKey: bus.plateKey }) : null
+      if (samePlate) {
+        return NextResponse.json({ error: `Plate ${bus.plateNumber} is already on the list (${samePlate.name})` }, { status: 409 })
+      }
       const existing = await db.collection('fleet').findOne({ nameKey: bus.nameKey })
       return NextResponse.json(
         { error: `"${existing?.name || name}" is already on the list${existing ? ` (${existing.companyName})` : ''}` },

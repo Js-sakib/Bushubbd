@@ -7,6 +7,7 @@ export interface FleetBus {
   busType: string
   totalSeats: number
   logoUrl?: string
+  plateNumber?: string
   commissionRate?: number
   tripCount: number
 }

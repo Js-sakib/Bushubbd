@@ -12,6 +12,10 @@ export interface FleetBus {
   busType: 'AC' | 'Non-AC' | 'Sleeper'
   totalSeats: number
   logoUrl?: string
+  /** The bus's number plate, e.g. DHAKA METRO-BA 11-2345: the one thing about a bus that never changes. */
+  plateNumber?: string
+  /** The plate without spaces or dashes; unique across the fleet. */
+  plateKey?: string
   /** BusHub's commission on this bus's tickets, in percent. Every new trip takes it from here. */
   commissionRate?: number
   createdAt: string

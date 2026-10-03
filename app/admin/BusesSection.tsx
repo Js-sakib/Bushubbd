@@ -12,7 +12,7 @@ import type { Booking, Bus, CompanyRow, FleetBus } from './types'
 import { dhakaDate } from '@/lib/scan'
 import { dhakaClock, tripDeparted } from '@/lib/trips'
 
-const EMPTY_FLEET_FORM = { name: '', companyId: '', busType: 'AC', totalSeats: '40', logoUrl: '', commissionRate: '10' }
+const EMPTY_FLEET_FORM = { name: '', plateNumber: '', companyId: '', busType: 'AC', totalSeats: '40', logoUrl: '', commissionRate: '10' }
 const EMPTY_TRIP_FORM = {
   fleetId: '', from: '', to: '', date: '', departureTime: '', arrivalTime: '', price: '', boardingPoint: '', boardingMapUrl: '',
 }
@@ -296,6 +296,18 @@ export default function BusesSection({
     onChanged()
   }
 
+  const handlePlate = async (bus: FleetBus) => {
+    const next = prompt(`Number plate of ${bus.name}, e.g. DHAKA METRO-BA 11-2345 (leave empty to remove)`, bus.plateNumber || '')
+    if (next === null) return
+    const { ok, error } = await send(`/api/fleet/${bus._id}`, 'PATCH', { plateNumber: next })
+    if (!ok) {
+      toast.error(error || 'Could not save the number plate')
+      return
+    }
+    toast.success(next.trim() ? 'Number plate saved' : 'Number plate removed')
+    onChanged()
+  }
+
   const handleLogo = async (bus: FleetBus) => {
     const next = prompt(`Logo link for ${bus.name} (leave empty to remove)`, bus.logoUrl || '')
     if (next === null) return
@@ -387,6 +399,7 @@ export default function BusesSection({
             ) : (
               <form onSubmit={handleAddFleetBus} className="grid gap-3 px-5 pb-4 pt-4 sm:grid-cols-2 lg:grid-cols-4">
                 <input required placeholder="Bus name, e.g. Green Line Scania 1" value={fleetForm.name} onChange={(e) => setFleetForm({ ...fleetForm, name: e.target.value })} className="input-dark sm:col-span-2" aria-label="Bus name" />
+                <input placeholder="Number plate, e.g. DHAKA METRO-BA 11-2345" value={fleetForm.plateNumber} onChange={(e) => setFleetForm({ ...fleetForm, plateNumber: e.target.value })} className="input-dark sm:col-span-2" aria-label="Number plate" autoCapitalize="characters" />
                 <select required value={fleetForm.companyId} onChange={(e) => setFleetForm({ ...fleetForm, companyId: e.target.value })} className="input-dark sm:col-span-2" aria-label="Bus company">
                   <option value="" disabled>
                     Choose bus company…
@@ -424,6 +437,11 @@ export default function BusesSection({
                     <li key={f._id} className="flex flex-col gap-2.5 border-t border-white/[0.06] px-5 py-3 sm:flex-row sm:items-center sm:gap-3">
                       <div className="flex min-w-0 grow flex-col gap-0.5">
                         <span className="truncate text-[14px] font-semibold">{f.name}</span>
+                        {f.plateNumber ? (
+                          <span className="self-start rounded-md border border-white/15 bg-white/[0.06] px-1.5 py-0.5 font-mono text-[11.5px] font-bold tracking-wide text-[#f6f4ef]">{f.plateNumber}</span>
+                        ) : (
+                          <span className="text-[11.5px] text-[#fbbf24]">No number plate yet</span>
+                        )}
                         <span className="truncate text-[11.5px] text-[#9ba7aa]">
                           {f.companyName} · {f.busType} · {f.totalSeats} seats
                         </span>
@@ -434,6 +452,9 @@ export default function BusesSection({
                       <div className="flex shrink-0 flex-wrap gap-2">
                         <button type="button" onClick={() => handleCommission(f)} className="h-8 rounded-full border border-white/10 bg-white/[0.05] px-3 text-[11.5px] font-bold text-[#f5a524]">
                           Edit %
+                        </button>
+                        <button type="button" onClick={() => handlePlate(f)} className="h-8 rounded-full border border-white/10 bg-white/[0.05] px-3 text-[11.5px] font-bold text-[#c4cdcf]">
+                          {f.plateNumber ? 'Plate ✓' : 'Add plate'}
                         </button>
                         <button type="button" onClick={() => handleLogo(f)} className="h-8 rounded-full border border-white/10 bg-white/[0.05] px-3 text-[11.5px] font-bold text-[#c4cdcf]">
                           {f.logoUrl ? 'Logo ✓' : 'Logo'}
@@ -470,6 +491,7 @@ export default function BusesSection({
                   </option>
                   {fleet.map((f) => (
                     <option key={f._id} value={f._id}>
+                      {f.plateNumber ? `${f.plateNumber} · ` : ''}
                       {f.name} · {f.companyName}
                     </option>
                   ))}
@@ -603,6 +625,7 @@ export default function BusesSection({
                       <option value="">Link to a bus from your list…</option>
                       {fleet.map((f) => (
                         <option key={f._id} value={f._id}>
+                          {f.plateNumber ? `${f.plateNumber} · ` : ''}
                           {f.name} · {f.companyName}
                         </option>
                       ))}

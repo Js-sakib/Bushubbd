@@ -1,7 +1,7 @@
 'use client'
 
 import { formatTripDate } from '@/lib/dates'
-import { tripCounts, type CompanyTrip, type FleetOption } from './types'
+import { busLabel, tripCounts, type CompanyTrip, type FleetOption } from './types'
 
 /** Bus drop-down, then the trips of that bus as cards to pick from. */
 export default function TripPicker({
@@ -26,7 +26,7 @@ export default function TripPicker({
         <option value="">All buses</option>
         {fleet.map((f) => (
           <option key={f._id} value={f._id}>
-            {f.name} · {f.busType}
+            {busLabel(f)}
           </option>
         ))}
       </select>

@@ -1,16 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { ObjectId } from 'mongodb'
-import { connectToDatabase } from '@/lib/db'
+import { connectToDatabase, isDuplicateKeyError } from '@/lib/db'
 import { getAdminFromCookies } from '@/lib/auth'
-import { cleanLogoUrl } from '@/lib/names'
+import { cleanLogoUrl, cleanPlate, plateKey } from '@/lib/names'
 import { dhakaDate } from '@/lib/scan'
 import { tripDeparted } from '@/lib/trips'
 
 export const dynamic = 'force-dynamic'
 
 /**
- * Only the logo and BusHub's commission can change once a bus is listed. Its name, owner and
- * seats are what tickets were sold under, so changing them would make old tickets disagree with the bus.
+ * Only the logo, the number plate and BusHub's commission can change once a bus is listed. Its
+ * name, owner and seats are what tickets were sold under, so changing them would make old tickets
+ * disagree with the bus.
  */
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
   try {
@@ -21,6 +22,28 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
       return NextResponse.json({ error: 'Invalid bus id' }, { status: 400 })
     }
     const body = await req.json().catch(() => ({}))
+
+    if (body.plateNumber !== undefined) {
+      const plateNumber = cleanPlate(body.plateNumber)
+      if (plateNumber === null) {
+        return NextResponse.json({ error: 'Type the number plate, e.g. DHAKA METRO-BA 11-2345' }, { status: 400 })
+      }
+      const { db } = await connectToDatabase()
+      try {
+        const result = await db
+          .collection('fleet')
+          .updateOne(
+            { _id: new ObjectId(params.id) },
+            plateNumber ? { $set: { plateNumber, plateKey: plateKey(plateNumber) } } : { $unset: { plateNumber: '', plateKey: '' } }
+          )
+        if (result.matchedCount === 0) return NextResponse.json({ error: 'Bus not found' }, { status: 404 })
+      } catch (err) {
+        if (!isDuplicateKeyError(err)) throw err
+        const other = await db.collection('fleet').findOne({ plateKey: plateKey(plateNumber || '') })
+        return NextResponse.json({ error: `Plate ${plateNumber} is already on ${other?.name || 'another bus'}` }, { status: 409 })
+      }
+      return NextResponse.json({ success: true, plateNumber: plateNumber || null })
+    }
 
     if (body.commissionRate !== undefined) {
       const commissionRate = Number(body.commissionRate)

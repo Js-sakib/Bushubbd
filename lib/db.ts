@@ -12,6 +12,8 @@ async function ensureIndexes(db: Db) {
   const indexes: [string, Record<string, 1>, { name: string } & Record<string, unknown>][] = [
     ['bookings', { bookingCode: 1 }, { unique: true, name: 'bookingCode_unique' }],
     ['fleet', { nameKey: 1 }, { unique: true, name: 'fleet_name_unique' }],
+    // A number plate belongs to one bus.
+    ['fleet', { plateKey: 1 }, { unique: true, name: 'fleet_plate_unique', partialFilterExpression: { plateKey: { $type: 'string' } } }],
     [
       'buses',
       { fleetId: 1, date: 1, departureTime: 1 },
