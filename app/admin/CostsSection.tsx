@@ -7,6 +7,7 @@ import { taka } from '@/lib/tripMoney'
 import PayoutsPanel from './PayoutsPanel'
 import Plate from '../Plate'
 import SearchBox from '../SearchBox'
+import DateRangePicker from '../DateRangePicker'
 import { downloadSheet, sheetDate, type Column, type Sheet } from '@/lib/sheet'
 import { matches } from '@/lib/search'
 
@@ -237,15 +238,19 @@ function TripsMoney() {
           ))}
         </select>
       </div>
-      <div className="grid grid-cols-2 gap-2 sm:grid-cols-[1fr_1fr_auto]">
-        <label className="flex min-w-0 flex-col gap-1">
-          <span className="label-xs">From date</span>
-          <input type="date" value={from} max={to || undefined} onChange={(e) => setFrom(e.target.value)} className="input-dark" aria-label="From date" />
-        </label>
-        <label className="flex min-w-0 flex-col gap-1">
-          <span className="label-xs">To date</span>
-          <input type="date" value={to} min={from || undefined} onChange={(e) => setTo(e.target.value)} className="input-dark" aria-label="To date" />
-        </label>
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-[minmax(0,1fr)_auto]">
+        <div className="col-span-2 min-w-0 sm:col-span-1">
+          <DateRangePicker
+            label="Travel dates"
+            allText="Last 30 days + upcoming"
+            from={from}
+            to={to}
+            onChange={(f, t) => {
+              setFrom(f)
+              setTo(t)
+            }}
+          />
+        </div>
         <button
           type="button"
           onClick={() => {

@@ -15,6 +15,7 @@ import Plate from '../Plate'
 import { downloadSheet } from '@/lib/sheet'
 import { companySalesSheets } from './salesSheet'
 import DateTable from './DateTable'
+import DateRangePicker, { rangeLabel } from '../DateRangePicker'
 
 const PERIODS = [
   ['all', 'All'],
@@ -118,7 +119,7 @@ export default function MoneyView({
     return period === 'upcoming' ? list : [...list].reverse()
   }, [trips, busId, period, from, to, search])
   const total = useMemo(() => addMoney(shown.map(companyTripMoney)), [shown])
-  const dates = from || to ? `${from ? formatTripDate(from) : 'Start'} – ${to ? formatTripDate(to) : 'now'}` : ''
+  const dates = from || to ? rangeLabel(from, to) : ''
 
   const pickFrom = (date: string) => {
     setFrom(date)
@@ -167,15 +168,15 @@ export default function MoneyView({
             </option>
           ))}
         </select>
-        <div className="grid grid-cols-2 gap-2">
-          <label className="flex min-w-0 flex-col gap-1">
-            <span className="label-xs">From date</span>
-            <input type="date" value={from} max={to || undefined} onChange={(e) => pickFrom(e.target.value)} className="input-dark" aria-label="From date" />
-          </label>
-          <label className="flex min-w-0 flex-col gap-1">
-            <span className="label-xs">To date</span>
-            <input type="date" value={to} min={from || undefined} onChange={(e) => setTo(e.target.value)} className="input-dark" aria-label="To date" />
-          </label>
+        <div className="min-w-0 lg:w-[300px]">
+          <DateRangePicker
+            from={from}
+            to={to}
+            onChange={(f, t) => {
+              pickFrom(f)
+              setTo(t)
+            }}
+          />
         </div>
         <div className="flex gap-1 self-end justify-self-start rounded-full border border-white/10 bg-black/30 p-1">
           {PERIODS.map(([id, label]) => (

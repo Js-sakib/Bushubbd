@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import toast from 'react-hot-toast'
 import { downloadSheet, sheetDate } from '@/lib/sheet'
 import { adminBookingSheets, isSale } from './bookingsSheet'
+import DateRangePicker from '../DateRangePicker'
 import BookingList, { bookingStatus } from './BookingList'
 import { taka } from './charts'
 import type { Booking } from './types'
@@ -125,7 +126,7 @@ export default function BookingsSection({
             className="input-dark w-full !pl-10"
           />
         </div>
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-[auto_1fr_1fr_auto]">
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-[auto_minmax(0,1fr)_auto]">
           <div className="col-span-2 flex flex-col gap-1 sm:col-span-1">
             <span className="label-xs">Dates are</span>
             <div className="flex h-12 gap-1 rounded-[14px] border border-white/10 bg-black/30 p-1">
@@ -141,14 +142,17 @@ export default function BookingsSection({
               ))}
             </div>
           </div>
-          <label className="flex min-w-0 flex-col gap-1">
-            <span className="label-xs">From</span>
-            <input type="date" value={from} max={to || undefined} onChange={(e) => setFrom(e.target.value)} className="input-dark" aria-label="From date" />
-          </label>
-          <label className="flex min-w-0 flex-col gap-1">
-            <span className="label-xs">To</span>
-            <input type="date" value={to} min={from || undefined} onChange={(e) => setTo(e.target.value)} className="input-dark" aria-label="To date" />
-          </label>
+          <div className="col-span-2 min-w-0 sm:col-span-1">
+            <DateRangePicker
+              label={by === 'travel' ? 'Travel dates' : 'Days bought'}
+              from={from}
+              to={to}
+              onChange={(f, t) => {
+                setFrom(f)
+                setTo(t)
+              }}
+            />
+          </div>
           <button
             type="button"
             onClick={download}
