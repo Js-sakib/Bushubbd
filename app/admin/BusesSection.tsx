@@ -80,14 +80,14 @@ function PickField({
 }) {
   return (
     <label className="flex flex-col gap-1.5">
-      <span className="flex items-baseline gap-1.5 px-1 text-[12px] font-bold text-[#e7e2da]">
+      <span className="flex items-baseline gap-1.5 px-1 text-[12px] font-bold text-[#e3dcd2]">
         {label}
-        {note && <span className="text-[11px] font-semibold text-[#8e9a9d]">{note}</span>}
+        {note && <span className="text-[11px] font-semibold text-[#aaa598]">{note}</span>}
       </span>
       <span className={`relative block rounded-[13px] ${empty ? 'pick-empty' : ''} ${invalid ? 'ring-1 ring-[#f87171]' : ''}`}>
         {children}
         {empty && (
-          <span className="pointer-events-none absolute inset-y-0 left-[14px] hidden items-center text-[14px] font-medium text-[#6e7b7e] [@media(pointer:coarse)]:flex">
+          <span className="pointer-events-none absolute inset-y-0 left-[14px] hidden items-center text-[14px] font-medium text-[#88908a] [@media(pointer:coarse)]:flex">
             Tap to choose
           </span>
         )}
@@ -128,10 +128,10 @@ function PanelHeader({ open, onToggle, title, hint, icon }: { open: boolean; onT
         </span>
         <span className="flex flex-col">
           <span className="display text-[15.5px] font-bold">{title}</span>
-          <span className="text-[11.5px] text-[#78868a]">{hint}</span>
+          <span className="text-[11.5px] text-[#959488]">{hint}</span>
         </span>
       </span>
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className={`h-5 w-5 shrink-0 text-[#8e9a9d] transition ${open ? 'rotate-180' : ''}`}>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className={`h-5 w-5 shrink-0 text-[#aaa598] transition ${open ? 'rotate-180' : ''}`}>
         <path d="m6 9 6 6 6-6" />
       </svg>
     </button>
@@ -384,7 +384,7 @@ export default function BusesSection({
         {fleetOpen && (
           <div className="flex flex-col border-t border-white/[0.06]">
             {approved.length === 0 ? (
-              <p className="px-5 py-4 text-[13px] text-[#c4cdcf]">First add the bus company under Companies. Then list its buses here.</p>
+              <p className="px-5 py-4 text-[13px] text-[#dad3c8]">First add the bus company under Companies. Then list its buses here.</p>
             ) : (
               <form onSubmit={handleAddFleetBus} className="grid gap-3 px-5 pb-4 pt-4 sm:grid-cols-2 lg:grid-cols-4">
                 <input required placeholder="Bus name, e.g. Green Line Scania 1" value={fleetForm.name} onChange={(e) => setFleetForm({ ...fleetForm, name: e.target.value })} className="input-dark sm:col-span-2" aria-label="Bus name" />
@@ -420,22 +420,22 @@ export default function BusesSection({
                       <div className="flex min-w-0 grow flex-col gap-0.5">
                         <span className="truncate text-[14px] font-semibold">{f.name}</span>
                         {f.plateNumber ? (
-                          <span className="self-start rounded-md border border-white/15 bg-white/[0.06] px-1.5 py-0.5 font-mono text-[11.5px] font-bold tracking-wide text-[#f6f4ef]">{f.plateNumber}</span>
+                          <span className="self-start rounded-md border border-white/15 bg-white/[0.06] px-1.5 py-0.5 font-mono text-[11.5px] font-bold tracking-wide text-[#f3eee6]">{f.plateNumber}</span>
                         ) : (
                           <span className="text-[11.5px] text-[#fbbf24]">No number plate yet</span>
                         )}
-                        <span className="truncate text-[11.5px] text-[#9ba7aa]">
+                        <span className="truncate text-[11.5px] text-[#b8b2a6]">
                           {f.companyName} · {f.busType} · {f.totalSeats} seats
                         </span>
-                        <span className="text-[11.5px] text-[#78868a]">
+                        <span className="text-[11.5px] text-[#959488]">
                           {next} upcoming trip{next === 1 ? '' : 's'}
                         </span>
                       </div>
                       <div className="flex shrink-0 flex-wrap gap-2">
-                        <button type="button" onClick={() => handlePlate(f)} className="h-8 rounded-full border border-white/10 bg-white/[0.05] px-3 text-[11.5px] font-bold text-[#c4cdcf]">
+                        <button type="button" onClick={() => handlePlate(f)} className="h-8 rounded-full border border-white/10 bg-white/[0.05] px-3 text-[11.5px] font-bold text-[#dad3c8]">
                           {f.plateNumber ? 'Plate ✓' : 'Add plate'}
                         </button>
-                        <button type="button" onClick={() => handleLogo(f)} className="h-8 rounded-full border border-white/10 bg-white/[0.05] px-3 text-[11.5px] font-bold text-[#c4cdcf]">
+                        <button type="button" onClick={() => handleLogo(f)} className="h-8 rounded-full border border-white/10 bg-white/[0.05] px-3 text-[11.5px] font-bold text-[#dad3c8]">
                           {f.logoUrl ? 'Logo ✓' : 'Logo'}
                         </button>
                         <button type="button" onClick={() => handleRemoveFleetBus(f)} className="h-8 rounded-full bg-[#f87171]/[0.1] px-3 text-[11.5px] font-bold text-[#fca5a5]">
@@ -457,7 +457,7 @@ export default function BusesSection({
           <div className="border-t border-white/[0.06] px-5 pb-5 pt-4">
             {fleet.length === 0 ? (
               <div className="flex flex-col items-start gap-3">
-                <p className="text-[13px] text-[#c4cdcf]">Your bus list is empty. Add the bus there first, then pick it here.</p>
+                <p className="text-[13px] text-[#dad3c8]">Your bus list is empty. Add the bus there first, then pick it here.</p>
                 <button type="button" onClick={() => setFleetOpen(true)} className="glass-btn glass-btn-plain h-10 px-4 text-[13px]">
                   Open bus list
                 </button>
@@ -476,15 +476,15 @@ export default function BusesSection({
                   ))}
                 </select>
                 {chosen && (
-                  <div className="flex flex-wrap gap-x-4 gap-y-1 rounded-2xl border border-white/[0.08] bg-black/20 px-4 py-2.5 text-[12px] text-[#c4cdcf] sm:col-span-2 lg:col-span-3">
+                  <div className="flex flex-wrap gap-x-4 gap-y-1 rounded-2xl border border-white/[0.08] bg-black/20 px-4 py-2.5 text-[12px] text-[#dad3c8] sm:col-span-2 lg:col-span-3">
                     <span>
-                      Company: <b className="text-[#f6f4ef]">{chosen.companyName}</b>
+                      Company: <b className="text-[#f3eee6]">{chosen.companyName}</b>
                     </span>
                     <span>
-                      Type: <b className="text-[#f6f4ef]">{chosen.busType}</b>
+                      Type: <b className="text-[#f3eee6]">{chosen.busType}</b>
                     </span>
                     <span>
-                      Seats: <b className="text-[#f6f4ef]">{chosen.totalSeats}</b>
+                      Seats: <b className="text-[#f3eee6]">{chosen.totalSeats}</b>
                     </span>
                   </div>
                 )}
@@ -551,10 +551,10 @@ export default function BusesSection({
       <section className="glass flex flex-col overflow-hidden">
         <div className="flex items-baseline justify-between px-5 pb-2 pt-4">
           <h2 className="display text-[15.5px] font-bold">Upcoming trips</h2>
-          <span className="text-[11.5px] text-[#78868a]">{upcoming.length} on sale</span>
+          <span className="text-[11.5px] text-[#959488]">{upcoming.length} on sale</span>
         </div>
         {upcoming.length === 0 && (
-          <p className="px-5 pb-8 pt-4 text-center text-sm text-[#8e9a9d]">{search ? 'No upcoming trips match your search.' : 'No upcoming trips. Add one above.'}</p>
+          <p className="px-5 pb-8 pt-4 text-center text-sm text-[#aaa598]">{search ? 'No upcoming trips match your search.' : 'No upcoming trips. Add one above.'}</p>
         )}
         <ul className="flex flex-col">
           {upcoming.map((b) => {
@@ -566,32 +566,32 @@ export default function BusesSection({
                 <div className="flex items-start gap-3">
                   <div className="flex min-w-0 grow flex-col gap-0.5">
                     <span className="truncate text-[14px] font-semibold">{b.busName}</span>
-                    <span className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-[12px] text-[#9ba7aa]">
+                    <span className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-[12px] text-[#b8b2a6]">
                       <span className="truncate">
                         {b.from} → {b.to} · {formatTripDate(b.date)}
                       </span>
                       <Plate plate={b.plateNumber} />
                     </span>
-                    <span className="truncate text-[12px] font-semibold text-[#e7e2da]">{tripTimes(b)}</span>
+                    <span className="truncate text-[12px] font-semibold text-[#e3dcd2]">{tripTimes(b)}</span>
                     {b.boardingPoint ? (
-                      <span className="truncate text-[11.5px] text-[#9ba7aa]">📍 {b.boardingPoint}{b.boardingMapUrl ? ' · map ✓' : ''}</span>
+                      <span className="truncate text-[11.5px] text-[#b8b2a6]">📍 {b.boardingPoint}{b.boardingMapUrl ? ' · map ✓' : ''}</span>
                     ) : (
-                      <span className="text-[11.5px] font-bold text-[#f5a524]">📍 No boarding point yet</span>
+                      <span className="text-[11.5px] font-bold text-[#d99d78]">📍 No boarding point yet</span>
                     )}
                     {linked ? (
-                      <span className="truncate text-[11.5px] text-[#6e7b7e]">
+                      <span className="truncate text-[11.5px] text-[#88908a]">
                         {b.companyName}
                       </span>
                     ) : (
-                      <span className="text-[11.5px] font-bold text-[#f5a524]">{b.companyName} · old trip, link it to a bus below</span>
+                      <span className="text-[11.5px] font-bold text-[#d99d78]">{b.companyName} · old trip, link it to a bus below</span>
                     )}
                   </div>
                   <div className="flex shrink-0 flex-col items-end gap-0.5">
                     <span className="text-[14px] font-bold tabular-nums">{taka(b.price)}</span>
-                    <span className={`text-[11.5px] tabular-nums ${free === 0 ? 'font-bold text-[#fca5a5]' : 'text-[#9ba7aa]'}`}>
+                    <span className={`text-[11.5px] tabular-nums ${free === 0 ? 'font-bold text-[#fca5a5]' : 'text-[#b8b2a6]'}`}>
                       {free === 0 ? 'Sold out' : `${free}/${b.totalSeats} free`}
                     </span>
-                    {sold && <span className="text-[11px] tabular-nums text-[#34d399]">{sold.seats} sold · {taka(sold.sales)}</span>}
+                    {sold && <span className="text-[11px] tabular-nums text-[#7de8bd]">{sold.seats} sold · {taka(sold.sales)}</span>}
                   </div>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
@@ -614,14 +614,14 @@ export default function BusesSection({
                   <button
                     type="button"
                     onClick={() => setManageSeatsBusId(manageSeatsBusId === b._id ? null : b._id)}
-                    className="h-9 rounded-full border border-white/10 bg-white/[0.05] px-3.5 text-[12px] font-bold text-[#f5a524] transition hover:bg-white/[0.09]"
+                    className="h-9 rounded-full border border-white/10 bg-white/[0.05] px-3.5 text-[12px] font-bold text-[#d99d78] transition hover:bg-white/[0.09]"
                   >
                     {manageSeatsBusId === b._id ? 'Close seats' : 'Manage seats'}
                   </button>
                   <button
                     type="button"
                     onClick={() => handleBoarding(b)}
-                    className="h-9 rounded-full border border-white/10 bg-white/[0.05] px-3.5 text-[12px] font-bold text-[#c4cdcf] transition hover:bg-white/[0.09]"
+                    className="h-9 rounded-full border border-white/10 bg-white/[0.05] px-3.5 text-[12px] font-bold text-[#dad3c8] transition hover:bg-white/[0.09]"
                   >
                     Boarding point
                   </button>
@@ -660,21 +660,21 @@ export default function BusesSection({
         {historyOpen && (
           <div className="flex flex-col border-t border-white/[0.06]">
             {finished.length === 0 ? (
-              <p className="px-5 py-6 text-center text-sm text-[#8e9a9d]">No finished trips yet. A trip closes by itself at its departure time.</p>
+              <p className="px-5 py-6 text-center text-sm text-[#aaa598]">No finished trips yet. A trip closes by itself at its departure time.</p>
             ) : (
               <>
                 <div className="grid grid-cols-3 gap-2 px-5 py-3.5 text-center">
                   <div className="flex flex-col rounded-2xl bg-black/20 px-2 py-2.5">
-                    <span className="text-[10.5px] font-semibold text-[#8e9a9d]">Total sales</span>
+                    <span className="text-[10.5px] font-semibold text-[#aaa598]">Total sales</span>
                     <span className="text-[14px] font-bold tabular-nums">{taka(historyTotals.sales)}</span>
                   </div>
                   <div className="flex flex-col rounded-2xl bg-black/20 px-2 py-2.5">
-                    <span className="text-[10.5px] font-semibold text-[#8e9a9d]">BusHub earned</span>
-                    <span className="text-[14px] font-bold tabular-nums text-[#f5a524]">{taka(historyTotals.commission)}</span>
+                    <span className="text-[10.5px] font-semibold text-[#aaa598]">BusHub earned</span>
+                    <span className="text-[14px] font-bold tabular-nums text-[#d99d78]">{taka(historyTotals.commission)}</span>
                   </div>
                   <div className="flex flex-col rounded-2xl bg-black/20 px-2 py-2.5">
-                    <span className="text-[10.5px] font-semibold text-[#8e9a9d]">Companies&apos; share</span>
-                    <span className="text-[14px] font-bold tabular-nums text-[#34d399]">{taka(historyTotals.payout)}</span>
+                    <span className="text-[10.5px] font-semibold text-[#aaa598]">Companies&apos; share</span>
+                    <span className="text-[14px] font-bold tabular-nums text-[#7de8bd]">{taka(historyTotals.payout)}</span>
                   </div>
                 </div>
                 <ul className="flex flex-col">
@@ -687,42 +687,42 @@ export default function BusesSection({
                           <div className="flex min-w-0 grow flex-col gap-0.5">
                             <span className="flex items-center gap-2">
                               <span className="truncate text-[14px] font-semibold">{b.busName}</span>
-                              <span className="shrink-0 rounded-full bg-white/[0.07] px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[#9ba7aa]">Closed</span>
+                              <span className="shrink-0 rounded-full bg-white/[0.07] px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[#b8b2a6]">Closed</span>
                             </span>
-                            <span className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-[12px] text-[#9ba7aa]">
+                            <span className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-[12px] text-[#b8b2a6]">
                               <span className="truncate">
                                 {b.from} → {b.to} · {formatTripDate(b.date)}
                               </span>
                               <Plate plate={b.plateNumber} />
                             </span>
-                            <span className="truncate text-[12px] font-semibold text-[#e7e2da]">{tripTimes(b)}</span>
-                            <span className="truncate text-[11.5px] text-[#6e7b7e]">{b.companyName}</span>
+                            <span className="truncate text-[12px] font-semibold text-[#e3dcd2]">{tripTimes(b)}</span>
+                            <span className="truncate text-[11.5px] text-[#88908a]">{b.companyName}</span>
                           </div>
                           <div className="flex shrink-0 flex-col items-end gap-0.5">
                             <span className="text-[14px] font-bold tabular-nums">{taka(s.sales)}</span>
-                            <span className="text-[11.5px] tabular-nums text-[#9ba7aa]">
+                            <span className="text-[11.5px] tabular-nums text-[#b8b2a6]">
                               {s.seats}/{b.totalSeats} sold
                             </span>
                           </div>
                         </div>
                         <div className="grid grid-cols-2 gap-x-4 gap-y-1 rounded-2xl bg-black/20 px-3.5 py-2.5 text-[12px] sm:grid-cols-4">
-                          <span className="flex justify-between gap-2 text-[#9ba7aa]">
-                            Seats sold <b className="tabular-nums text-[#f6f4ef]">{s.seats}</b>
+                          <span className="flex justify-between gap-2 text-[#b8b2a6]">
+                            Seats sold <b className="tabular-nums text-[#f3eee6]">{s.seats}</b>
                           </span>
-                          <span className="flex justify-between gap-2 text-[#9ba7aa]">
-                            Seats unsold <b className="tabular-nums text-[#f6f4ef]">{unsold}</b>
+                          <span className="flex justify-between gap-2 text-[#b8b2a6]">
+                            Seats unsold <b className="tabular-nums text-[#f3eee6]">{unsold}</b>
                           </span>
-                          <span className="flex justify-between gap-2 text-[#9ba7aa]">
-                            Tickets <b className="tabular-nums text-[#f6f4ef]">{s.tickets}</b>
+                          <span className="flex justify-between gap-2 text-[#b8b2a6]">
+                            Tickets <b className="tabular-nums text-[#f3eee6]">{s.tickets}</b>
                           </span>
-                          <span className="flex justify-between gap-2 text-[#9ba7aa]">
-                            Boarded <b className="tabular-nums text-[#f6f4ef]">{s.boarded}</b>
+                          <span className="flex justify-between gap-2 text-[#b8b2a6]">
+                            Boarded <b className="tabular-nums text-[#f3eee6]">{s.boarded}</b>
                           </span>
-                          <span className="flex justify-between gap-2 text-[#9ba7aa]">
-                            BusHub <b className="tabular-nums text-[#f5a524]">{taka(s.commission)}</b>
+                          <span className="flex justify-between gap-2 text-[#b8b2a6]">
+                            BusHub <b className="tabular-nums text-[#d99d78]">{taka(s.commission)}</b>
                           </span>
-                          <span className="flex justify-between gap-2 text-[#9ba7aa]">
-                            Company balance <b className="tabular-nums text-[#34d399]">{taka(s.payout)}</b>
+                          <span className="flex justify-between gap-2 text-[#b8b2a6]">
+                            Company balance <b className="tabular-nums text-[#7de8bd]">{taka(s.payout)}</b>
                           </span>
                         </div>
                         <div className="flex justify-end">
@@ -742,7 +742,7 @@ export default function BusesSection({
                   <button
                     type="button"
                     onClick={() => setHistoryShown((n) => n + HISTORY_PAGE)}
-                    className="border-t border-white/[0.06] py-3 text-[12.5px] font-bold text-[#f5a524]"
+                    className="border-t border-white/[0.06] py-3 text-[12.5px] font-bold text-[#d99d78]"
                   >
                     Show {Math.min(HISTORY_PAGE, finished.length - historyShown)} more
                   </button>

@@ -49,12 +49,12 @@ export default function PlacesPanel({ places, onChanged }: { places: Places; onC
           </span>
           <span className="flex flex-col">
             <span className="display text-[15.5px] font-bold">Cities &amp; routes</span>
-            <span className="text-[11.5px] text-[#78868a]">
+            <span className="text-[11.5px] text-[#959488]">
               {places.cities.length} cities · {places.popularRoutes.length} popular routes on the home page
             </span>
           </span>
         </span>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className={`h-5 w-5 shrink-0 text-[#8e9a9d] transition ${open ? 'rotate-180' : ''}`}>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className={`h-5 w-5 shrink-0 text-[#aaa598] transition ${open ? 'rotate-180' : ''}`}>
           <path d="m6 9 6 6 6-6" />
         </svg>
       </button>
@@ -84,7 +84,7 @@ export default function PlacesPanel({ places, onChanged }: { places: Places; onC
                     disabled={busy}
                     onClick={() => confirm(`Remove ${c}? Customers won't be able to pick it.`) && run({ action: 'removeCity', city: c }, `${c} removed`)}
                     aria-label={`Remove ${c}`}
-                    className="flex h-6 w-6 items-center justify-center rounded-full text-[#8e9a9d] hover:bg-white/10 hover:text-[#fca5a5]"
+                    className="flex h-6 w-6 items-center justify-center rounded-full text-[#aaa598] hover:bg-white/10 hover:text-[#fca5a5]"
                   >
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" className="h-3 w-3">
                       <path d="M6 6l12 12M18 6 6 18" />
@@ -118,11 +118,11 @@ export default function PlacesPanel({ places, onChanged }: { places: Places; onC
                 Add route
               </button>
             </form>
-            {places.popularRoutes.length === 0 && <p className="text-[12.5px] text-[#8e9a9d]">No popular routes. The home page hides the section.</p>}
+            {places.popularRoutes.length === 0 && <p className="text-[12.5px] text-[#aaa598]">No popular routes. The home page hides the section.</p>}
             <ol className="flex flex-col gap-2">
               {places.popularRoutes.map((r, i) => (
                 <li key={`${r.from}-${r.to}`} className="flex items-center gap-2 rounded-2xl border border-white/[0.08] bg-black/20 py-2 pl-4 pr-2">
-                  <span className="w-5 text-[12px] font-bold tabular-nums text-[#78868a]">{i + 1}</span>
+                  <span className="w-5 text-[12px] font-bold tabular-nums text-[#959488]">{i + 1}</span>
                   <span className="grow text-[13.5px] font-semibold">
                     {r.from} → {r.to}
                   </span>

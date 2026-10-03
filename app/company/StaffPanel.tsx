@@ -95,14 +95,14 @@ export default function StaffPanel() {
   return (
     <div className="flex flex-col gap-4 lg:grid lg:grid-cols-2 lg:items-start">
       {shown && (
-        <div className="flex flex-col gap-3 rounded-2xl border border-[#34d399]/40 bg-[#34d399]/[0.08] p-4 lg:col-span-2">
+        <div className="flex flex-col gap-3 rounded-2xl border border-[#7de8bd]/40 bg-[#7de8bd]/[0.08] p-4 lg:col-span-2">
           <span className="text-[13.5px] font-bold text-[#6ee7b7]">Login ready for {shown.name}</span>
-          <div className="rounded-xl bg-black/30 p-3 font-mono text-[12.5px] leading-relaxed text-[#e7e2da]">
+          <div className="rounded-xl bg-black/30 p-3 font-mono text-[12.5px] leading-relaxed text-[#e3dcd2]">
             Email: {shown.email}
             <br />
             Password: {shown.password}
           </div>
-          <p className="text-[11.5px] text-[#9ba7aa]">Pass these on now. The password is not shown again (you can make a new one any time).</p>
+          <p className="text-[11.5px] text-[#b8b2a6]">Pass these on now. The password is not shown again (you can make a new one any time).</p>
           <div className="flex flex-wrap gap-2">
             <a
               href={`https://wa.me/?text=${encodeURIComponent(loginMessage(shown.name, shown.email, shown.password, shown.role))}`}
@@ -138,11 +138,11 @@ export default function StaffPanel() {
               type="button"
               onClick={() => setForm({ ...form, role })}
               className={`flex flex-col items-start gap-0.5 rounded-2xl border px-3.5 py-2.5 text-left ${
-                form.role === role ? 'border-[#f5a524] bg-[#f5a524]/[0.08]' : 'border-white/[0.08] bg-black/20'
+                form.role === role ? 'border-[#cc8b65] bg-[#f5a524]/[0.08]' : 'border-white/[0.08] bg-black/20'
               }`}
             >
               <span className="text-[13.5px] font-bold">{ROLE_INFO[role].label}</span>
-              <span className="text-[11px] leading-snug text-[#8e9a9d]">{ROLE_INFO[role].hint}</span>
+              <span className="text-[11px] leading-snug text-[#aaa598]">{ROLE_INFO[role].hint}</span>
             </button>
           ))}
         </div>
@@ -155,27 +155,27 @@ export default function StaffPanel() {
       </form>
 
       <div className="card-2 overflow-hidden">
-        <div className="border-b border-[#1a2123] px-4 py-3">
+        <div className="border-b border-[#1b4a3f] px-4 py-3">
           <span className="label-xs">Staff logins</span>
         </div>
         {(staff?.length || 0) > 4 && (
-          <div className="border-b border-[#1a2123] px-3 py-2.5">
+          <div className="border-b border-[#1b4a3f] px-3 py-2.5">
             <SearchBox value={search} onChange={setSearch} placeholder="Search name, email, counter or scanner" />
           </div>
         )}
-        {staff === null && <div className="px-4 py-8 text-center text-sm text-[#8e9a9d]">Loading...</div>}
+        {staff === null && <div className="px-4 py-8 text-center text-sm text-[#aaa598]">Loading...</div>}
         {staff?.length === 0 && (
-          <div className="px-4 py-8 text-center text-sm text-[#8e9a9d]">No staff logins yet. Add one for each counter and each scanner phone.</div>
+          <div className="px-4 py-8 text-center text-sm text-[#aaa598]">No staff logins yet. Add one for each counter and each scanner phone.</div>
         )}
         {staff?.filter((row) => matches(search, row.name, row.email, ROLE_INFO[row.role].label, row.status === 'disabled' ? 'off' : 'active')).map((row) => (
-          <div key={row._id} className="flex flex-col gap-2.5 border-b border-[#1a2123] px-4 py-3 last:border-b-0">
+          <div key={row._id} className="flex flex-col gap-2.5 border-b border-[#1b4a3f] px-4 py-3 last:border-b-0">
             <div className="flex items-center gap-2.5">
               <div className="flex min-w-0 grow flex-col">
-                <span className={`truncate text-[14px] font-semibold ${row.status === 'disabled' ? 'text-[#6e7b7e] line-through' : ''}`}>{row.name}</span>
-                <span className="truncate text-[11.5px] text-[#8e9a9d]">{row.email}</span>
+                <span className={`truncate text-[14px] font-semibold ${row.status === 'disabled' ? 'text-[#88908a] line-through' : ''}`}>{row.name}</span>
+                <span className="truncate text-[11.5px] text-[#aaa598]">{row.email}</span>
               </div>
               <span className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] font-bold ${ROLE_INFO[row.role].badge}`}>{ROLE_INFO[row.role].label}</span>
-              {row.status === 'disabled' && <span className="shrink-0 rounded-full bg-white/[0.07] px-2.5 py-1 text-[11px] font-bold text-[#9ba7aa]">Off</span>}
+              {row.status === 'disabled' && <span className="shrink-0 rounded-full bg-white/[0.07] px-2.5 py-1 text-[11px] font-bold text-[#b8b2a6]">Off</span>}
             </div>
             <div className="flex flex-wrap gap-2">
               <button
@@ -184,14 +184,14 @@ export default function StaffPanel() {
                   const json = await patch(row, { resetPassword: true })
                   if (json?.password) setShown({ name: row.name, email: row.email, password: json.password, role: ROLE_INFO[row.role].label })
                 }}
-                className="h-8 rounded-full border border-white/10 bg-white/[0.05] px-3 text-[11.5px] font-bold text-[#f5a524]"
+                className="h-8 rounded-full border border-white/10 bg-white/[0.05] px-3 text-[11.5px] font-bold text-[#d99d78]"
               >
                 New password
               </button>
               <button
                 type="button"
                 onClick={() => patch(row, { status: row.status === 'active' ? 'disabled' : 'active' })}
-                className="h-8 rounded-full border border-white/10 bg-white/[0.05] px-3 text-[11.5px] font-bold text-[#c4cdcf]"
+                className="h-8 rounded-full border border-white/10 bg-white/[0.05] px-3 text-[11.5px] font-bold text-[#dad3c8]"
               >
                 {row.status === 'active' ? 'Switch off' : 'Switch on'}
               </button>

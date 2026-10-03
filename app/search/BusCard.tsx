@@ -43,7 +43,7 @@ export default function BusCard({
     <div
       className={`flex flex-col gap-3.5 glass-lite p-4 transition ${
         selected
-          ? '!border-[#f5a524] !shadow-[0_0_0_1px_rgba(245,165,36,0.35),0_14px_40px_rgba(0,0,0,0.32)]'
+          ? '!border-[#cc8b65] !shadow-[0_0_0_1px_rgba(245,165,36,0.35),0_14px_40px_rgba(0,0,0,0.32)]'
           : soldOut
             ? 'opacity-60'
             : ''
@@ -53,56 +53,56 @@ export default function BusCard({
         <OperatorLogo logoUrl={bus.logoUrl} name={bus.companyName} className="h-[42px] w-[42px] rounded-[13px]" />
         <div className="flex grow flex-col gap-1">
           <span className="text-[15px] font-bold">{bus.busName}</span>
-          <span className="text-xs text-[#8e9a9d]">
+          <span className="text-xs text-[#aaa598]">
             {bus.companyName} · {bus.busType} · {bus.totalSeats} seats
           </span>
         </div>
         <div className="flex flex-col items-end gap-0.5">
-          <span className="display text-[19px] font-bold text-[#f5a524]">৳{bus.price}</span>
-          <span className="text-[11px] text-[#8e9a9d]">per seat</span>
+          <span className="display text-[19px] font-bold text-[#d99d78]">৳{bus.price}</span>
+          <span className="text-[11px] text-[#aaa598]">per seat</span>
         </div>
       </div>
 
       <div className="flex items-center gap-2.5">
         <div className="flex flex-col">
           <span className="text-[15px] font-bold">{bus.departureTime}</span>
-          <span className="text-[11px] text-[#8e9a9d]">{bus.from}</span>
+          <span className="text-[11px] text-[#aaa598]">{bus.from}</span>
         </div>
         <div className="flex grow items-center gap-1.5">
-          <span className="h-px grow bg-[#2c3639]" />
+          <span className="h-px grow bg-[#2c6052]" />
           <svg viewBox="0 0 24 24" fill="none" stroke="#f2661d" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5">
             <rect x="3" y="4" width="18" height="12.5" rx="3" />
             <path d="M3 11h18" />
           </svg>
-          <span className="h-px grow bg-[#2c3639]" />
+          <span className="h-px grow bg-[#2c6052]" />
         </div>
         <div className="flex flex-col items-end">
           <span className="text-[15px] font-bold">{bus.arrivalTime || '—'}</span>
-          <span className="text-[11px] text-[#8e9a9d]">{bus.to}</span>
+          <span className="text-[11px] text-[#aaa598]">{bus.to}</span>
         </div>
       </div>
 
       {bus.boardingPoint && (
-        <div className="flex items-center gap-1.5 text-[12px] text-[#b7c1c3]">
+        <div className="flex items-center gap-1.5 text-[12px] text-[#cfc8bc]">
           <svg viewBox="0 0 24 24" fill="none" stroke="#f5a524" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5 shrink-0">
             <path d="M12 21s-6.5-5.6-6.5-11A6.5 6.5 0 0 1 18.5 10c0 5.4-6.5 11-6.5 11z" />
             <circle cx="12" cy="10" r="2.3" />
           </svg>
           <span className="truncate">
-            Boarding: <b className="font-semibold text-[#e7e2da]">{bus.boardingPoint}</b>
+            Boarding: <b className="font-semibold text-[#e3dcd2]">{bus.boardingPoint}</b>
           </span>
         </div>
       )}
 
       <div className="flex flex-wrap items-center gap-2">
         {soldOut ? (
-          <span className="inline-flex h-[26px] items-center rounded-full bg-white/[0.07] px-2.5 text-[11.5px] font-bold text-[#c4cdcf]">
+          <span className="inline-flex h-[26px] items-center rounded-full bg-white/[0.07] px-2.5 text-[11.5px] font-bold text-[#dad3c8]">
             Sold out
           </span>
         ) : (
           <span
             className={`inline-flex h-[26px] items-center rounded-full px-2.5 text-[11.5px] font-bold ${
-              scarce ? 'bg-[#f5a524]/[0.13] text-[#f5a524]' : 'bg-[#34d399]/[0.13] text-[#34d399]'
+              scarce ? 'bg-[#f5a524]/[0.13] text-[#d99d78]' : 'bg-[#7de8bd]/[0.13] text-[#7de8bd]'
             }`}
           >
             {seatsLeft} seats left

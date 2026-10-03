@@ -11,9 +11,9 @@ const EMPTY = { fleetId: '', from: '', to: '', date: '', departureTime: '', arri
 function Field({ label, note, children }: { label: string; note?: string; children: React.ReactNode }) {
   return (
     <label className="flex flex-col gap-1.5">
-      <span className="flex items-baseline gap-1.5 px-1 text-[12px] font-bold text-[#e7e2da]">
+      <span className="flex items-baseline gap-1.5 px-1 text-[12px] font-bold text-[#e3dcd2]">
         {label}
-        {note && <span className="text-[11px] font-semibold text-[#8e9a9d]">{note}</span>}
+        {note && <span className="text-[11px] font-semibold text-[#aaa598]">{note}</span>}
       </span>
       {children}
     </label>
@@ -80,7 +80,7 @@ export default function TripForm({
 
   if (fleet.length === 0) {
     return (
-      <p className="glass-lite p-4 text-[13px] text-[#c4cdcf]">
+      <p className="glass-lite p-4 text-[13px] text-[#dad3c8]">
         Your company has no buses on BusHub yet. Ask the BusHub team to add your buses first.
       </p>
     )

@@ -17,10 +17,10 @@ export function bookingStatus(b: Booking): StatusKey {
 // A status always shows its word next to the colour, never the colour alone.
 const STATUS: Record<StatusKey, { label: string; className: string; dot: string }> = {
   boarded: { label: 'Boarded', className: 'bg-[#12a594]/[0.16] text-[#5eead4]', dot: 'bg-[#2dd4bf]' },
-  paid: { label: 'Paid', className: 'bg-[#34d399]/[0.13] text-[#6ee7b7]', dot: 'bg-[#34d399]' },
+  paid: { label: 'Paid', className: 'bg-[#7de8bd]/[0.13] text-[#6ee7b7]', dot: 'bg-[#7de8bd]' },
   pending: { label: 'Pending', className: 'bg-[#f5a524]/[0.14] text-[#fbbf24]', dot: 'bg-[#f5a524]' },
   refunded: { label: 'Refunded', className: 'bg-[#f87171]/[0.13] text-[#fca5a5]', dot: 'bg-[#f87171]' },
-  expired: { label: 'Expired', className: 'bg-white/[0.06] text-[#9ba7aa]', dot: 'bg-[#6e7b7e]' },
+  expired: { label: 'Expired', className: 'bg-white/[0.06] text-[#b8b2a6]', dot: 'bg-[#88908a]' },
 }
 
 export function StatusChip({ status }: { status: StatusKey }) {
@@ -81,7 +81,7 @@ function DeleteButton({ booking, onDelete }: { booking: Booking; onDelete?: (b: 
       type="button"
       onClick={() => onDelete(booking)}
       aria-label={`Delete booking of ${booking.passengerName}`}
-      className="h-8 shrink-0 rounded-full border border-white/10 px-3 text-[11.5px] font-bold text-[#9ba7aa] transition hover:border-[#f87171]/40 hover:text-[#fca5a5]"
+      className="h-8 shrink-0 rounded-full border border-white/10 px-3 text-[11.5px] font-bold text-[#b8b2a6] transition hover:border-[#f87171]/40 hover:text-[#fca5a5]"
     >
       Delete
     </button>
@@ -95,7 +95,7 @@ function Tick({ checked, onChange, label }: { checked: boolean; onChange: (on: b
       checked={checked}
       onChange={(e) => onChange(e.target.checked)}
       aria-label={label}
-      className="h-[18px] w-[18px] shrink-0 cursor-pointer accent-[#f5a524]"
+      className="h-[18px] w-[18px] shrink-0 cursor-pointer accent-[#cc8b65]"
     />
   )
 }
@@ -119,7 +119,7 @@ export default function BookingList({
   const ticking = Boolean(selected && onSelect)
   const allTicked = ticking && bookings.length > 0 && bookings.every((b) => selected!.has(b._id))
   if (bookings.length === 0) {
-    return <p className="px-5 py-10 text-center text-sm text-[#8e9a9d]">{empty}</p>
+    return <p className="px-5 py-10 text-center text-sm text-[#aaa598]">{empty}</p>
   }
 
   return (
@@ -136,16 +136,16 @@ export default function BookingList({
               <Avatar name={b.passengerName} />
               <div className="flex min-w-0 grow flex-col gap-0.5">
                 <span className="truncate text-[13.5px] font-semibold">{b.passengerName}</span>
-                <span className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-[11.5px] text-[#8e9a9d]">
+                <span className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-[11.5px] text-[#aaa598]">
                   <span className="truncate">
                     {b.from} → {b.to} · {formatTripDate(b.date)}
                   </span>
                   <Plate plate={b.plateNumber} />
                 </span>
-                <span className="truncate text-[11px] text-[#6e7b7e]">
+                <span className="truncate text-[11px] text-[#88908a]">
                   {b.busName} · seats {b.seats.join(', ')}
                 </span>
-                <span className="truncate text-[11px] text-[#6e7b7e]">
+                <span className="truncate text-[11px] text-[#88908a]">
                   {b.passengerPhone} · bought {boughtAt(b.createdAt)}
                 </span>
               </div>
@@ -168,7 +168,7 @@ export default function BookingList({
       <div className="hidden overflow-x-auto md:block">
         <table className="w-full text-left">
           <thead>
-            <tr className="text-[11px] font-bold uppercase tracking-[0.1em] text-[#6e7b7e]">
+            <tr className="text-[11px] font-bold uppercase tracking-[0.1em] text-[#88908a]">
               {ticking && (
                 <th className="w-10 py-3 pl-5">
                   <Tick checked={allTicked} onChange={(on) => onSelect!(bookings.map((b) => b._id), on)} label="Select all shown bookings" />
@@ -197,7 +197,7 @@ export default function BookingList({
                     <Avatar name={b.passengerName} />
                     <div className="flex min-w-0 flex-col">
                       <span className="truncate text-[13.5px] font-semibold">{b.passengerName}</span>
-                      <span className="text-[11.5px] text-[#6e7b7e]">{b.passengerPhone}</span>
+                      <span className="text-[11.5px] text-[#88908a]">{b.passengerPhone}</span>
                     </div>
                   </div>
                 </td>
@@ -208,17 +208,17 @@ export default function BookingList({
                     </span>
                     <Plate plate={b.plateNumber} />
                   </span>
-                  <span className="text-[11.5px] text-[#6e7b7e]">{b.busName}</span>
+                  <span className="text-[11.5px] text-[#88908a]">{b.busName}</span>
                 </td>
-                <td className="whitespace-nowrap px-3 py-3 text-[12.5px] text-[#b7c1c3]">
+                <td className="whitespace-nowrap px-3 py-3 text-[12.5px] text-[#cfc8bc]">
                   {formatTripDate(b.date)}
-                  <span className="block text-[11.5px] text-[#6e7b7e]">{b.departureTime}</span>
+                  <span className="block text-[11.5px] text-[#88908a]">{b.departureTime}</span>
                 </td>
-                <td className="px-3 py-3 text-[12.5px] tabular-nums text-[#b7c1c3]">{b.seats.join(', ')}</td>
+                <td className="px-3 py-3 text-[12.5px] tabular-nums text-[#cfc8bc]">{b.seats.join(', ')}</td>
                 <td className="px-3 py-3 text-right text-[13px] font-bold tabular-nums">{taka(b.totalPrice)}</td>
                 <td className="px-3 py-3">
                   <Channel source={b.source} />
-                  <span className="block whitespace-nowrap text-[11px] text-[#6e7b7e]">{boughtAt(b.createdAt)}</span>
+                  <span className="block whitespace-nowrap text-[11px] text-[#88908a]">{boughtAt(b.createdAt)}</span>
                 </td>
                 <td className="px-3 py-3">
                   <StatusChip status={bookingStatus(b)} />

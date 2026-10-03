@@ -131,7 +131,7 @@ function SearchResults() {
           <span className="display text-[17px] font-bold">
             {legHeader.from} → {legHeader.to}
           </span>
-          <span className="text-xs text-[#8e9a9d]">
+          <span className="text-xs text-[#aaa598]">
             {formatTripDate(legHeader.date)}
             {isRoundTrip ? ' · Round trip' : ''}
             {passengers > 1 ? ` · ${passengers} seats` : ''}
@@ -156,16 +156,16 @@ function SearchResults() {
               }`}
             >
               <span className="flex w-full items-center gap-1.5">
-                <span className={`text-[12px] font-bold ${leg === tab.key ? 'text-[#f5a524]' : 'text-[#9ba7aa]'}`}>
+                <span className={`text-[12px] font-bold ${leg === tab.key ? 'text-[#d99d78]' : 'text-[#b8b2a6]'}`}>
                   {tab.label}
                 </span>
                 {tab.pick && (
-                  <svg viewBox="0 0 24 24" fill="none" stroke="#34d399" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="ml-auto h-3.5 w-3.5">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="#7de8bd" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="ml-auto h-3.5 w-3.5">
                     <path d="m5 12.5 4.5 4.5L19 7" />
                   </svg>
                 )}
               </span>
-              <span className="text-[11px] text-[#78868a]">{tab.pick ? `${tab.pick.departureTime} · ৳${tab.pick.price}` : tab.city}</span>
+              <span className="text-[11px] text-[#959488]">{tab.pick ? `${tab.pick.departureTime} · ৳${tab.pick.price}` : tab.city}</span>
             </button>
           ))}
         </div>
@@ -196,7 +196,7 @@ function SearchResults() {
         </button>
       </div>
 
-      {current.loading && <div className="py-16 text-center text-sm text-[#8e9a9d]">Searching buses...</div>}
+      {current.loading && <div className="py-16 text-center text-sm text-[#aaa598]">Searching buses...</div>}
 
       {!current.loading && current.error && (
         <div className="py-16 text-center text-sm text-[#f87171]">{current.error}</div>
@@ -204,7 +204,7 @@ function SearchResults() {
 
       {!current.loading && !current.error && visible.length === 0 && (
         <div className="card mt-5 flex flex-col items-center gap-3 px-6 py-14 text-center">
-          <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white/[0.06] text-[#8e9a9d]">
+          <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white/[0.06] text-[#aaa598]">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-7 w-7">
               <rect x="3" y="4" width="18" height="12.5" rx="3" />
               <path d="M3 11h18" />
@@ -219,7 +219,7 @@ function SearchResults() {
                 ? `No bus has ${passengers} seats free`
                 : 'Nothing matches those filters'}
           </h2>
-          <p className="text-[13px] text-[#9ba7aa]">
+          <p className="text-[13px] text-[#b8b2a6]">
             {current.buses.length === 0
               ? 'Try a different date or route.'
               : roomy.length === 0
@@ -235,7 +235,7 @@ function SearchResults() {
       )}
 
       {!current.loading && visible.length > 0 && (
-        <p className="mt-4 text-[12px] text-[#78868a]">
+        <p className="mt-4 text-[12px] text-[#959488]">
           {visible.length} bus{visible.length === 1 ? '' : 'es'}
           {activeFilters > 0 ? ` of ${roomy.length}` : ''} · {sortLabel.toLowerCase()}
           {tooSmall > 0 ? ` · ${tooSmall} hidden without ${passengers} seats together` : ''}
@@ -256,15 +256,15 @@ function SearchResults() {
       </div>
 
       {!current.loading && visible.length > 0 && !isRoundTrip && (
-        <p className="mt-6 text-center text-[11.5px] text-[#78868a]">Prices shown are per seat, all taxes included.</p>
+        <p className="mt-6 text-center text-[11.5px] text-[#959488]">Prices shown are per seat, all taxes included.</p>
       )}
 
       {isRoundTrip && outboundPick && returnPick && (
-        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-[#0b0e0f]/80 px-5 py-3.5 backdrop-blur-xl">
+        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-[#013328]/80 px-5 py-3.5 backdrop-blur-xl">
           <div className="mx-auto flex max-w-5xl items-center gap-3">
             <div className="flex grow flex-col gap-0.5">
-              <span className="text-[11.5px] text-[#8e9a9d]">Both legs chosen · per seat</span>
-              <span className="display text-[19px] font-bold text-[#f5a524]">
+              <span className="text-[11.5px] text-[#aaa598]">Both legs chosen · per seat</span>
+              <span className="display text-[19px] font-bold text-[#d99d78]">
                 ৳{outboundPick.price + returnPick.price}
               </span>
             </div>
@@ -298,7 +298,7 @@ function SearchResults() {
 
 export default function Search() {
   return (
-    <Suspense fallback={<div className="py-16 text-center text-sm text-[#8e9a9d]">Loading...</div>}>
+    <Suspense fallback={<div className="py-16 text-center text-sm text-[#aaa598]">Loading...</div>}>
       <SearchResults />
     </Suspense>
   )

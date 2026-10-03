@@ -50,9 +50,9 @@ export default function StaffCosts() {
     load()
   }, [load])
 
-  if (!data) return <div className="py-16 text-center text-sm text-[#8e9a9d]">Loading...</div>
+  if (!data) return <div className="py-16 text-center text-sm text-[#aaa598]">Loading...</div>
   if (data.trips.length === 0) {
-    return <p className="glass-lite mt-5 p-5 text-center text-[13px] text-[#8e9a9d]">No trips yesterday, today or tomorrow.</p>
+    return <p className="glass-lite mt-5 p-5 text-center text-[13px] text-[#aaa598]">No trips yesterday, today or tomorrow.</p>
   }
 
   const today = dhakaDate()
@@ -83,11 +83,11 @@ export default function StaffCosts() {
                 </span>
                 <Plate plate={trip.plateNumber} />
               </span>
-              <span className="truncate text-[11.5px] text-[#9ba7aa]">
+              <span className="truncate text-[11.5px] text-[#b8b2a6]">
                 {formatTripDate(trip.date)} · {trip.busName}
               </span>
             </div>
-            <span className="shrink-0 text-right text-[11px] text-[#9ba7aa]">
+            <span className="shrink-0 text-right text-[11px] text-[#b8b2a6]">
               {costs.length} cost{costs.length === 1 ? '' : 's'}
               <br />
               <span className="text-[14px] font-bold text-[#fca5a5]">{taka(costs.reduce((n, c) => n + c.amount, 0))}</span>
@@ -97,7 +97,7 @@ export default function StaffCosts() {
         </div>
       )}
 
-      <p className="rounded-2xl border border-[#1e4b4f] bg-[#0e3f43]/40 px-4 py-3 text-[12px] leading-relaxed text-[#a9bbbc]">
+      <p className="rounded-2xl border border-[#245b4b] bg-[#013328]/40 px-4 py-3 text-[12px] leading-relaxed text-[#c4beb2]">
         Your manager sees every cost you add. Made a mistake? You can remove your own cost within an hour; after that, ask your
         manager.
       </p>

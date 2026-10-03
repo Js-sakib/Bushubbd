@@ -64,15 +64,15 @@ export default function VerifyTicket() {
   }, [code])
 
   if (loading) {
-    return <div className="py-16 text-center text-sm text-[#8e9a9d]">Checking ticket...</div>
+    return <div className="py-16 text-center text-sm text-[#aaa598]">Checking ticket...</div>
   }
 
   if (tooMany) {
     return (
       <div className="mx-auto mt-6 max-w-md px-1">
-        <div className="flex flex-col items-center gap-3 rounded-[22px] border-2 border-[#f5a524] bg-[#f5a524]/[0.08] p-8 text-center">
-          <h1 className="text-2xl font-bold text-[#f5a524]">Too many checks</h1>
-          <p className="text-[13px] leading-relaxed text-[#9ba7aa]">
+        <div className="flex flex-col items-center gap-3 rounded-[22px] border-2 border-[#cc8b65] bg-[#f5a524]/[0.08] p-8 text-center">
+          <h1 className="text-2xl font-bold text-[#d99d78]">Too many checks</h1>
+          <p className="text-[13px] leading-relaxed text-[#b8b2a6]">
             Too many wrong ticket codes were checked from this connection. Please wait 10 minutes and scan the QR again.
           </p>
         </div>
@@ -91,7 +91,7 @@ export default function VerifyTicket() {
             </svg>
           </span>
           <h1 className="text-2xl font-bold text-[#f87171]">Ticket not found</h1>
-          <p className="text-[13px] leading-relaxed text-[#9ba7aa]">
+          <p className="text-[13px] leading-relaxed text-[#b8b2a6]">
             This QR code does not match any real BusHub ticket. It may be fake or edited.
           </p>
         </div>
@@ -103,12 +103,12 @@ export default function VerifyTicket() {
     <div className="mx-auto mt-6 max-w-md px-1">
       <div
         className={`flex flex-col items-center gap-3 rounded-[22px] border-2 p-7 text-center ${
-          result.valid ? 'border-[#34d399] bg-[#34d399]/[0.08]' : 'border-[#f87171] bg-[#f87171]/[0.08]'
+          result.valid ? 'border-[#7de8bd] bg-[#7de8bd]/[0.08]' : 'border-[#f87171] bg-[#f87171]/[0.08]'
         }`}
       >
         <span
           className={`flex h-16 w-16 items-center justify-center rounded-full ${
-            result.valid ? 'bg-[#34d399]/[0.15] text-[#34d399]' : 'bg-[#f87171]/[0.15] text-[#f87171]'
+            result.valid ? 'bg-[#7de8bd]/[0.15] text-[#7de8bd]' : 'bg-[#f87171]/[0.15] text-[#f87171]'
           }`}
         >
           {result.valid ? (
@@ -123,56 +123,56 @@ export default function VerifyTicket() {
           )}
         </span>
 
-        <h1 className={`text-2xl font-bold ${result.valid ? 'text-[#34d399]' : 'text-[#f87171]'}`}>
+        <h1 className={`text-2xl font-bold ${result.valid ? 'text-[#7de8bd]' : 'text-[#f87171]'}`}>
           {result.valid ? 'Valid ticket' : 'Not valid'}
         </h1>
 
         {!result.valid && (
-          <p className="text-[13px] text-[#9ba7aa]">
+          <p className="text-[13px] text-[#b8b2a6]">
             {REASON_LABELS[result.reason || ''] || 'This ticket cannot be used.'}
           </p>
         )}
 
         {result.checkedIn && (
-          <p className="text-[13px] font-semibold text-[#f5a524]">
+          <p className="text-[13px] font-semibold text-[#d99d78]">
             Already boarded {result.checkedInAt ? `at ${new Date(result.checkedInAt).toLocaleString()}` : ''}
           </p>
         )}
 
         <div className="mt-2 flex w-full flex-col gap-2.5 rounded-2xl border border-white/[0.08] bg-black/25 p-4 text-left">
           <div className="flex items-center justify-between gap-3">
-            <span className="text-xs text-[#8e9a9d]">Booking</span>
+            <span className="text-xs text-[#aaa598]">Booking</span>
             <span className="display text-sm font-bold">{result.bookingCode}</span>
           </div>
           <div className="flex items-center justify-between gap-3">
-            <span className="text-xs text-[#8e9a9d]">Passenger</span>
+            <span className="text-xs text-[#aaa598]">Passenger</span>
             <span className="text-sm font-semibold">{result.passengerName}</span>
           </div>
           <div className="flex items-center justify-between gap-3">
-            <span className="text-xs text-[#8e9a9d]">Bus</span>
+            <span className="text-xs text-[#aaa598]">Bus</span>
             <span className="text-right text-sm font-semibold">
               {result.busName}
-              <span className="block text-[11px] font-normal text-[#78868a]">{result.companyName}</span>
+              <span className="block text-[11px] font-normal text-[#959488]">{result.companyName}</span>
             </span>
           </div>
           <div className="flex items-center justify-between gap-3">
-            <span className="text-xs text-[#8e9a9d]">Route</span>
+            <span className="text-xs text-[#aaa598]">Route</span>
             <span className="text-sm font-semibold">
               {result.from} → {result.to}
             </span>
           </div>
           <div className="flex items-center justify-between gap-3">
-            <span className="text-xs text-[#8e9a9d]">Date</span>
+            <span className="text-xs text-[#aaa598]">Date</span>
             <span className="text-sm font-semibold">
               {formatTripDate(result.date)} · {result.departureTime}
             </span>
           </div>
           <div className="flex items-center justify-between gap-3">
-            <span className="text-xs text-[#8e9a9d]">Seats</span>
-            <span className="text-sm font-bold text-[#f5a524]">{result.seats.join(', ')}</span>
+            <span className="text-xs text-[#aaa598]">Seats</span>
+            <span className="text-sm font-bold text-[#d99d78]">{result.seats.join(', ')}</span>
           </div>
-          <div className="flex items-center justify-between gap-3 border-t border-[#1f2729] pt-2.5">
-            <span className="text-xs text-[#8e9a9d]">Valid until</span>
+          <div className="flex items-center justify-between gap-3 border-t border-[#1f4f43] pt-2.5">
+            <span className="text-xs text-[#aaa598]">Valid until</span>
             <span className="text-[13px] font-semibold">
               {/* Always Dhaka time: a phone set to another zone must not show a different cutoff. */}
               {new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Dhaka', hour: 'numeric', minute: '2-digit', hour12: true }).format(new Date(result.validUntil))}
@@ -182,13 +182,13 @@ export default function VerifyTicket() {
         </div>
 
         {result.valid && !result.checkedIn && (
-          <p className="mt-1 text-[12px] leading-relaxed text-[#8e9a9d]">
+          <p className="mt-1 text-[12px] leading-relaxed text-[#aaa598]">
             Bus staff: board this passenger by scanning from the operator panel.
           </p>
         )}
       </div>
 
-      <p className="mt-4 text-center text-[11.5px] leading-relaxed text-[#78868a]">
+      <p className="mt-4 text-center text-[11.5px] leading-relaxed text-[#959488]">
         This status is checked live against BusHub&apos;s database — it cannot be faked by editing an image.
       </p>
     </div>

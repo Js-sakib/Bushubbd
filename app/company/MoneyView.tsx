@@ -32,7 +32,7 @@ const PERIOD_TEXT: Record<Period, string> = {
 function TripRow({ trip, me, onChanged }: { trip: CompanyTrip; me: { role: string; staffId: string | null }; onChanged: () => Promise<void> }) {
   const m = companyTripMoney(trip)
   return (
-    <details className="group border-b border-[#1a2123] last:border-b-0">
+    <details className="group border-b border-[#1b4a3f] last:border-b-0">
       <summary className="flex cursor-pointer list-none items-start gap-3 px-4 py-3 marker:hidden">
         <div className="flex min-w-0 grow flex-col gap-0.5">
           <span className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-[13.5px] font-bold">
@@ -41,25 +41,25 @@ function TripRow({ trip, me, onChanged }: { trip: CompanyTrip; me: { role: strin
             </span>
             <Plate plate={trip.plateNumber} />
           </span>
-          <span className="truncate text-[11.5px] text-[#9ba7aa]">
+          <span className="truncate text-[11.5px] text-[#b8b2a6]">
             {formatTripDate(trip.date)} · {trip.busName}
           </span>
-          <span className="text-[11.5px] text-[#78868a]">
+          <span className="text-[11.5px] text-[#959488]">
             {m.seats.online + m.seats.counter}/{m.seats.total} sold · tickets {taka(m.ticketMoney)} · costs {taka(m.costs.total)}
           </span>
         </div>
         <div className="flex shrink-0 flex-col items-end gap-0.5">
-          <span className={`text-[14px] font-bold ${m.left < 0 ? 'text-[#f87171]' : 'text-[#34d399]'}`}>{taka(m.left)}</span>
-          <span className="text-[10.5px] text-[#8e9a9d]">left</span>
-          <span className="text-[10.5px] text-[#f5a524] group-open:hidden">Details ›</span>
-          <span className="hidden text-[10.5px] text-[#f5a524] group-open:inline">Hide ‹</span>
+          <span className={`text-[14px] font-bold ${m.left < 0 ? 'text-[#f87171]' : 'text-[#7de8bd]'}`}>{taka(m.left)}</span>
+          <span className="text-[10.5px] text-[#aaa598]">left</span>
+          <span className="text-[10.5px] text-[#d99d78] group-open:hidden">Details ›</span>
+          <span className="hidden text-[10.5px] text-[#d99d78] group-open:inline">Hide ‹</span>
         </div>
       </summary>
       <div className="flex flex-col gap-4 bg-black/20 px-4 pb-4 pt-2">
         <div className="flex flex-col gap-1.5 text-[12.5px]">
           <Line label={`Counter · ${m.counter.seats} seats`} value={taka(m.counter.total)} tone="text-[#c4b5fd]" />
-          <Line label={`BusHub · ${m.seats.online} seats paid by passengers`} value={taka(m.online.total)} tone="text-[#f5a524]" />
-          <Line label="You get from BusHub" value={taka(m.online.payout)} tone="text-[#f5a524]" />
+          <Line label={`BusHub · ${m.seats.online} seats paid by passengers`} value={taka(m.online.total)} tone="text-[#d99d78]" />
+          <Line label="You get from BusHub" value={taka(m.online.payout)} tone="text-[#d99d78]" />
           <Line label={`Not sold · ${m.seats.notSold} seats`} value="" />
         </div>
         <CostEditor tripId={trip._id} costs={trip.costs || []} me={me} onChanged={onChanged} />
@@ -147,7 +147,7 @@ export default function MoneyView({
               key={id}
               type="button"
               onClick={() => setView(id)}
-              className={`h-9 shrink-0 rounded-full px-3.5 text-[12.5px] font-bold ${view === id ? 'bg-[#f5a524] text-[#1a0d03]' : 'text-[#9ba7aa]'}`}
+              className={`h-9 shrink-0 rounded-full px-3.5 text-[12.5px] font-bold ${view === id ? 'bg-[#f5a524] text-[#1a0d03]' : 'text-[#b8b2a6]'}`}
             >
               {label}
             </button>
@@ -184,7 +184,7 @@ export default function MoneyView({
               key={id}
               type="button"
               onClick={() => setPeriod(id)}
-              className={`h-9 rounded-full px-3.5 text-[12.5px] font-bold ${period === id ? 'bg-[#f6f1ea] text-[#14191b]' : 'text-[#9ba7aa]'}`}
+              className={`h-9 rounded-full px-3.5 text-[12.5px] font-bold ${period === id ? 'bg-[#e3dcd2] text-[#100c0d]' : 'text-[#b8b2a6]'}`}
             >
               {label}
             </button>
@@ -194,21 +194,21 @@ export default function MoneyView({
 
       <div className="grid grid-cols-3 gap-2 rounded-2xl border border-white/[0.08] bg-black/20 px-4 py-3">
         <div className="flex min-w-0 flex-col">
-          <span className="text-[10.5px] text-[#8e9a9d]">
+          <span className="text-[10.5px] text-[#aaa598]">
             {shown.length} trip{shown.length === 1 ? '' : 's'} · {total.seats.online + total.seats.counter} seats
           </span>
           <span className="truncate text-[15px] font-bold">{taka(total.ticketMoney)}</span>
-          <span className="text-[10.5px] text-[#6e7b7e]">ticket money</span>
+          <span className="text-[10.5px] text-[#88908a]">ticket money</span>
         </div>
         <div className="flex min-w-0 flex-col">
-          <span className="text-[10.5px] text-[#8e9a9d]">You receive</span>
-          <span className="truncate text-[15px] font-bold text-[#f5a524]">{taka(total.companyGets)}</span>
-          <span className="text-[10.5px] text-[#6e7b7e]">costs {taka(total.costs.total)}</span>
+          <span className="text-[10.5px] text-[#aaa598]">You receive</span>
+          <span className="truncate text-[15px] font-bold text-[#d99d78]">{taka(total.companyGets)}</span>
+          <span className="text-[10.5px] text-[#88908a]">costs {taka(total.costs.total)}</span>
         </div>
         <div className="flex min-w-0 flex-col items-end text-right">
-          <span className="text-[10.5px] text-[#8e9a9d]">Left</span>
-          <span className={`truncate text-[15px] font-bold ${total.left < 0 ? 'text-[#f87171]' : 'text-[#34d399]'}`}>{taka(total.left)}</span>
-          <span className="truncate text-[10.5px] text-[#6e7b7e]">{dates || PERIODS.find(([id]) => id === period)?.[1]}</span>
+          <span className="text-[10.5px] text-[#aaa598]">Left</span>
+          <span className={`truncate text-[15px] font-bold ${total.left < 0 ? 'text-[#f87171]' : 'text-[#7de8bd]'}`}>{taka(total.left)}</span>
+          <span className="truncate text-[10.5px] text-[#88908a]">{dates || PERIODS.find(([id]) => id === period)?.[1]}</span>
         </div>
       </div>
 
@@ -217,14 +217,14 @@ export default function MoneyView({
       {view === 'sellers' && <StaffSales trips={shown} period={dates || PERIOD_TEXT[period]} />}
       {view === 'trips' && (
         <div className="card-2 overflow-hidden">
-          <div className="flex flex-col gap-0.5 border-b border-[#1a2123] px-4 py-3">
+          <div className="flex flex-col gap-0.5 border-b border-[#1b4a3f] px-4 py-3">
             <span className="label-xs">Trip by trip</span>
-            <span className="text-[11px] text-[#6e7b7e]">Open a trip to see its money and add or check costs</span>
+            <span className="text-[11px] text-[#88908a]">Open a trip to see its money and add or check costs</span>
           </div>
           {shown.map((t) => (
             <TripRow key={t._id} trip={t} me={me} onChanged={onChanged} />
           ))}
-          {shown.length === 0 && <div className="px-4 py-8 text-center text-sm text-[#8e9a9d]">No trips here.</div>}
+          {shown.length === 0 && <div className="px-4 py-8 text-center text-sm text-[#aaa598]">No trips here.</div>}
         </div>
       )}
 

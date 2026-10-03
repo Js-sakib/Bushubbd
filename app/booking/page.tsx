@@ -140,13 +140,13 @@ function BookingContent() {
   }
 
   if (loading) {
-    return <div className="py-16 text-center text-sm text-[#8e9a9d]">Loading bus details...</div>
+    return <div className="py-16 text-center text-sm text-[#aaa598]">Loading bus details...</div>
   }
 
   if (!bus) {
     return (
       <div className="flex flex-col items-center gap-4 py-16 text-center">
-        <p className="text-sm text-[#9ba7aa]">Bus not found.</p>
+        <p className="text-sm text-[#b8b2a6]">Bus not found.</p>
         <button type="button" onClick={() => router.push('/')} className="glass-btn glass-btn-plain h-11 text-sm">
           Back to search
         </button>
@@ -177,19 +177,19 @@ function BookingContent() {
         </button>
         <div className="flex grow flex-col gap-0.5">
           <span className="display text-[17px] font-bold">{bus.busName}</span>
-          <span className="text-xs text-[#8e9a9d]">
+          <span className="text-xs text-[#aaa598]">
             {bus.from} → {bus.to} · {bus.departureTime} · {bus.date}
           </span>
-          {bus.boardingPoint && <span className="text-xs text-[#b7c1c3]">📍 Boarding: {bus.boardingPoint}</span>}
+          {bus.boardingPoint && <span className="text-xs text-[#cfc8bc]">📍 Boarding: {bus.boardingPoint}</span>}
         </div>
       </div>
 
       {returnBusId && (
-        <div className="mt-4 flex items-center gap-2.5 rounded-[14px] border border-[#1e4b4f] bg-[#0e3f43]/50 px-3.5 py-2.5">
+        <div className="mt-4 flex items-center gap-2.5 rounded-[14px] border border-[#245b4b] bg-[#013328]/50 px-3.5 py-2.5">
           <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#2dd4bf]/[0.18] text-[11px] font-bold text-[#2dd4bf]">
             1
           </span>
-          <span className="text-[12px] leading-snug text-[#a9bbbc]">
+          <span className="text-[12px] leading-snug text-[#c4beb2]">
             Going leg of your round trip. We&apos;ll book your return straight after this.
           </span>
         </div>
@@ -199,7 +199,7 @@ function BookingContent() {
         {(['seats', 'details', 'payment'] as const).map((s) => (
           <span
             key={s}
-            className={`h-1.5 grow rounded-full ${step === s ? 'bg-[#f2661d]' : 'bg-[#242d30]'}`}
+            className={`h-1.5 grow rounded-full ${step === s ? 'bg-[#f2661d]' : 'bg-[#245549]'}`}
           />
         ))}
       </div>
@@ -207,24 +207,24 @@ function BookingContent() {
       {step === 'seats' && (
         <div className="mt-5 flex flex-col gap-4">
           <div className="flex items-center gap-4 rounded-[14px] border border-white/[0.08] bg-white/[0.04] px-3.5 py-2.5">
-            <span className="inline-flex items-center gap-2 text-[11.5px] font-semibold text-[#c4cdcf]">
-              <span className="h-3.5 w-3.5 rounded border border-[#2a6b52] bg-[#12372c]" />
+            <span className="inline-flex items-center gap-2 text-[11.5px] font-semibold text-[#dad3c8]">
+              <span className="h-3.5 w-3.5 rounded border border-[#5aa287] bg-[#1d5a49]" />
               Available
             </span>
-            <span className="inline-flex items-center gap-2 text-[11.5px] font-semibold text-[#c4cdcf]">
+            <span className="inline-flex items-center gap-2 text-[11.5px] font-semibold text-[#dad3c8]">
               <span className="h-3.5 w-3.5 rounded bg-gradient-to-br from-[#f2661d] to-[#f5a524]" />
               Yours
             </span>
-            <span className="inline-flex items-center gap-2 text-[11.5px] font-semibold text-[#c4cdcf]">
+            <span className="inline-flex items-center gap-2 text-[11.5px] font-semibold text-[#dad3c8]">
               <span className="h-3.5 w-3.5 rounded border border-dashed border-[#7a3230] bg-[#3a1a1a]" />
               Booked
             </span>
           </div>
 
           <div className="glass-lite p-4">
-            <div className="flex items-center justify-between border-b border-dashed border-[#263033] pb-3">
+            <div className="flex items-center justify-between border-b border-dashed border-[#275a4d] pb-3">
               <span className="label-xs">Deck</span>
-              <span className="inline-flex items-center gap-1.5 text-[11.5px] font-semibold text-[#8e9a9d]">
+              <span className="inline-flex items-center gap-1.5 text-[11.5px] font-semibold text-[#aaa598]">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-[15px] w-[15px]">
                   <circle cx="12" cy="12" r="7.5" />
                   <path d="M12 4.5v3M12 16.5v3M4.5 12h3M16.5 12h3" />
@@ -236,7 +236,7 @@ function BookingContent() {
             <div className="mt-4 flex flex-col gap-2.5">
               {rows.map((row, rowIndex) => (
                 <div key={rowIndex} className="flex items-center gap-2.5">
-                  <span className="w-4 shrink-0 text-[11px] font-bold text-[#6e7b7e]">{rowIndex + 1}</span>
+                  <span className="w-4 shrink-0 text-[11px] font-bold text-[#88908a]">{rowIndex + 1}</span>
                   {row.slice(0, 2).map((seat) => {
                     const isBooked = unavailable.includes(seat)
                     const isSelected = selectedSeats.includes(seat)
@@ -250,8 +250,8 @@ function BookingContent() {
                           isBooked
                             ? 'cursor-not-allowed border border-dashed border-[#7a3230] bg-[#3a1a1a] text-[#d98a86]'
                             : isSelected
-                            ? 'border border-[#f5a524] bg-gradient-to-br from-[#f2661d] to-[#f5a524] text-[#170b02]'
-                            : 'border border-[#2a6b52] bg-[#12372c] text-[#7de3b8] hover:border-[#34d399] hover:bg-[#16452f]'
+                            ? 'border border-[#cc8b65] bg-gradient-to-br from-[#f2661d] to-[#f5a524] text-[#170b02]'
+                            : 'border border-[#5aa287] bg-[#1d5a49] text-[#7de3b8] hover:border-[#7de8bd] hover:bg-[#16452f]'
                         }`}
                       >
                         {seat}
@@ -272,8 +272,8 @@ function BookingContent() {
                           isBooked
                             ? 'cursor-not-allowed border border-dashed border-[#7a3230] bg-[#3a1a1a] text-[#d98a86]'
                             : isSelected
-                            ? 'border border-[#f5a524] bg-gradient-to-br from-[#f2661d] to-[#f5a524] text-[#170b02]'
-                            : 'border border-[#2a6b52] bg-[#12372c] text-[#7de3b8] hover:border-[#34d399] hover:bg-[#16452f]'
+                            ? 'border border-[#cc8b65] bg-gradient-to-br from-[#f2661d] to-[#f5a524] text-[#170b02]'
+                            : 'border border-[#5aa287] bg-[#1d5a49] text-[#7de3b8] hover:border-[#7de8bd] hover:bg-[#16452f]'
                         }`}
                       >
                         {seat}
@@ -287,14 +287,14 @@ function BookingContent() {
 
           <div className="flex flex-col gap-3 glass-lite p-4">
             <div className="flex items-center justify-between gap-3">
-              <span className="text-[12.5px] leading-snug text-[#8e9a9d]">
+              <span className="text-[12.5px] leading-snug text-[#aaa598]">
                 {selectedSeats.length === 0
                   ? `Choose ${passengers} seat${passengers === 1 ? '' : 's'}`
                   : selectedSeats.length < passengers
                     ? `${selectedSeats.join(', ')} · ${passengers - selectedSeats.length} more to pick`
                     : `${selectedSeats.length} seat${selectedSeats.length === 1 ? '' : 's'} · ${selectedSeats.join(', ')}`}
               </span>
-              <span className="display shrink-0 text-[22px] font-bold text-[#f5a524]">৳{totalPrice}</span>
+              <span className="display shrink-0 text-[22px] font-bold text-[#d99d78]">৳{totalPrice}</span>
             </div>
             <button type="button" onClick={handleConfirmSeats} className="glass-btn w-full">
               <span className="icon-disc">
@@ -305,7 +305,7 @@ function BookingContent() {
               </span>
               Continue
             </button>
-            <span className="text-center text-[11.5px] text-[#78868a]">
+            <span className="text-center text-[11.5px] text-[#959488]">
               Seats are held for 10 minutes while you pay.
             </span>
           </div>
@@ -316,7 +316,7 @@ function BookingContent() {
         <div className="mt-5 flex flex-col gap-4">
           <div>
             <h2 className="text-xl font-bold">Passenger details</h2>
-            <p className="mt-1 text-[12.5px] text-[#9ba7aa]">No account needed — just your contact details.</p>
+            <p className="mt-1 text-[12.5px] text-[#b8b2a6]">No account needed — just your contact details.</p>
           </div>
 
           <div className="flex flex-col gap-3.5 glass-lite p-4">
@@ -362,7 +362,7 @@ function BookingContent() {
             <div className="flex items-center justify-between gap-3 rounded-2xl border border-white/[0.08] bg-black/25 p-3.5">
               <div className="flex flex-col gap-0.5">
                 <span className="label-xs">Bags (optional)</span>
-                <span className="text-[12px] leading-snug text-[#8e9a9d]">How many bags you are bringing. Shown on your ticket.</span>
+                <span className="text-[12px] leading-snug text-[#aaa598]">How many bags you are bringing. Shown on your ticket.</span>
               </div>
               <div className="flex shrink-0 items-center gap-2">
                 <button
@@ -382,7 +382,7 @@ function BookingContent() {
                   aria-label="One bag more"
                   onClick={() => setBags((n) => Math.min(MAX_BAGS, n + 1))}
                   disabled={bags === MAX_BAGS}
-                  className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/[0.06] text-lg font-bold text-[#f5a524] disabled:opacity-40"
+                  className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/[0.06] text-lg font-bold text-[#d99d78] disabled:opacity-40"
                 >
                   +
                 </button>
@@ -407,9 +407,9 @@ function BookingContent() {
 
           <div className="flex flex-col gap-4 glass-lite p-4">
             <div className="rounded-2xl border border-white/[0.08] bg-black/25 p-4">
-              <p className="text-[12.5px] text-[#8e9a9d]">Total amount</p>
-              <p className="display mt-1 text-[32px] font-bold leading-none text-[#f5a524]">৳{totalPrice}</p>
-              <p className="mt-2 text-xs text-[#8e9a9d]">
+              <p className="text-[12.5px] text-[#aaa598]">Total amount</p>
+              <p className="display mt-1 text-[32px] font-bold leading-none text-[#d99d78]">৳{totalPrice}</p>
+              <p className="mt-2 text-xs text-[#aaa598]">
                 Seats: {selectedSeats.join(', ')}
                 {bags > 0 && ` · ${bags} bag${bags === 1 ? '' : 's'}`}
               </p>
@@ -430,7 +430,7 @@ function BookingContent() {
                 />
                 <span className="flex flex-col">
                   <span className="text-sm font-bold">bKash</span>
-                  <span className="text-xs text-[#8e9a9d]">Instant payment</span>
+                  <span className="text-xs text-[#aaa598]">Instant payment</span>
                 </span>
               </label>
 
@@ -448,7 +448,7 @@ function BookingContent() {
                 />
                 <span className="flex flex-col">
                   <span className="text-sm font-bold">Nagad</span>
-                  <span className="text-xs text-[#8e9a9d]">Instant payment</span>
+                  <span className="text-xs text-[#aaa598]">Instant payment</span>
                 </span>
               </label>
             </div>
@@ -471,7 +471,7 @@ function BookingContent() {
 
 export default function BookingPage() {
   return (
-    <Suspense fallback={<div className="py-16 text-center text-sm text-[#8e9a9d]">Loading...</div>}>
+    <Suspense fallback={<div className="py-16 text-center text-sm text-[#aaa598]">Loading...</div>}>
       <BookingContent />
     </Suspense>
   )

@@ -68,21 +68,21 @@ export default function CostEditor({
           <span className="label-xs">Trip costs</span>
           <span className="text-[13px] font-bold text-[#f87171]">{taka(total)}</span>
         </div>
-        {costs.length === 0 && <span className="text-[12px] text-[#78868a]">No costs entered yet.</span>}
+        {costs.length === 0 && <span className="text-[12px] text-[#959488]">No costs entered yet.</span>}
         {costs.map((c) => (
           <div key={c._id} className="flex items-start gap-3 text-[12.5px]">
             <div className="flex min-w-0 grow flex-col">
               <span className="font-semibold">
-                {COST_LABELS[c.type].en} <span className="text-[#78868a]">{COST_LABELS[c.type].bn}</span>
-                {c.note && <span className="font-normal text-[#c4cdcf]"> · {c.note}</span>}
+                {COST_LABELS[c.type].en} <span className="text-[#959488]">{COST_LABELS[c.type].bn}</span>
+                {c.note && <span className="font-normal text-[#dad3c8]"> · {c.note}</span>}
               </span>
-              <span className="text-[11px] text-[#6e7b7e]">
+              <span className="text-[11px] text-[#88908a]">
                 {c.addedBy} · {dhakaTime(c.createdAt)}
               </span>
             </div>
             <span className="shrink-0 font-bold text-[#fca5a5]">{taka(c.amount)}</span>
             {canRemove(c) && (
-              <button type="button" onClick={() => remove(c)} aria-label="Remove this cost" className="-my-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[#78868a] hover:bg-white/[0.06] hover:text-white">
+              <button type="button" onClick={() => remove(c)} aria-label="Remove this cost" className="-my-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[#959488] hover:bg-white/[0.06] hover:text-white">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" className="h-3.5 w-3.5">
                   <path d="M6 6l12 12M18 6 6 18" />
                 </svg>
@@ -102,7 +102,7 @@ export default function CostEditor({
               onClick={() => setType(t)}
               aria-pressed={type === t}
               className={`flex flex-col items-center rounded-xl border px-1 py-2 text-[12px] font-bold transition ${
-                type === t ? 'border-[#f5a524] bg-[#f5a524]/[0.12] text-[#f5a524]' : 'border-white/10 text-[#b7c1c3]'
+                type === t ? 'border-[#cc8b65] bg-[#f5a524]/[0.12] text-[#d99d78]' : 'border-white/10 text-[#cfc8bc]'
               }`}
             >
               {COST_LABELS[t].en}

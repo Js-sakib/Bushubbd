@@ -36,7 +36,7 @@ export default function TripPicker({
           </option>
         ))}
       </select>
-      {shown.length === 0 && <p className="glass-lite p-4 text-center text-[13px] text-[#8e9a9d]">{search ? 'No trips match your search.' : 'No upcoming trips for this bus.'}</p>}
+      {shown.length === 0 && <p className="glass-lite p-4 text-center text-[13px] text-[#aaa598]">{search ? 'No trips match your search.' : 'No upcoming trips for this bus.'}</p>}
       <div className="flex flex-col gap-2">
         {shown.map((t) => {
           const c = tripCounts(t)
@@ -47,7 +47,7 @@ export default function TripPicker({
               type="button"
               onClick={() => onTrip(t._id)}
               className={`flex items-center gap-3 rounded-2xl border px-4 py-3 text-left transition ${
-                active ? 'border-[#f5a524] bg-[#f5a524]/[0.08]' : 'border-white/[0.08] bg-black/20 hover:bg-white/[0.04]'
+                active ? 'border-[#cc8b65] bg-[#f5a524]/[0.08]' : 'border-white/[0.08] bg-black/20 hover:bg-white/[0.04]'
               }`}
             >
               <div className="flex min-w-0 grow flex-col gap-0.5">
@@ -57,15 +57,15 @@ export default function TripPicker({
                   </span>
                   <Plate plate={t.plateNumber} />
                 </span>
-                <span className="truncate text-[11.5px] text-[#9ba7aa]">
+                <span className="truncate text-[11.5px] text-[#b8b2a6]">
                   {formatTripDate(t.date)} · {t.busName}
                 </span>
               </div>
               <span className="shrink-0 text-right text-[11.5px] leading-tight">
-                <b className="text-[14px] text-[#34d399]">{c.free}</b>
-                <span className="text-[#8e9a9d]"> free</span>
+                <b className="text-[14px] text-[#7de8bd]">{c.free}</b>
+                <span className="text-[#aaa598]"> free</span>
                 <br />
-                <span className="text-[#8e9a9d]">of {t.totalSeats}</span>
+                <span className="text-[#aaa598]">of {t.totalSeats}</span>
               </span>
             </button>
           )

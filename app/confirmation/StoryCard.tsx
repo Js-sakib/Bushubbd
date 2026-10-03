@@ -31,10 +31,10 @@ const StoryCard = forwardRef<HTMLDivElement, { booking: TicketBooking }>(functio
         width: 360,
         height: 640,
         fontFamily: BANGLA_FONT,
-        color: '#f6f1ea',
-        backgroundColor: '#0b0e0f',
+        color: '#e3dcd2',
+        backgroundColor: '#013328',
         backgroundImage:
-          'radial-gradient(circle at 12% 8%, rgba(242,102,29,0.55), transparent 42%), radial-gradient(circle at 95% 92%, rgba(18,165,148,0.45), transparent 45%), radial-gradient(circle at 80% 30%, rgba(245,165,36,0.12), transparent 40%)',
+          'radial-gradient(circle at 12% 8%, rgba(242,102,29,0.55), transparent 42%), radial-gradient(circle at 95% 92%, rgba(204,139,101,0.45), transparent 45%), radial-gradient(circle at 80% 30%, rgba(245,165,36,0.12), transparent 40%)',
       }}
       className="relative flex flex-col items-center overflow-hidden px-6 pb-7 pt-8"
     >
@@ -51,16 +51,16 @@ const StoryCard = forwardRef<HTMLDivElement, { booking: TicketBooking }>(functio
       {/* The trip, as a tilted ticket */}
       <div
         className="relative mt-6 w-full overflow-hidden rounded-[22px]"
-        style={{ backgroundColor: '#ffffff', color: '#16191a', transform: 'rotate(-3deg)', boxShadow: '0 24px 60px rgba(0,0,0,0.55)' }}
+        style={{ backgroundColor: '#ffffff', color: '#100c0d', transform: 'rotate(-3deg)', boxShadow: '0 24px 60px rgba(0,0,0,0.55)' }}
       >
-        <div className="flex items-center justify-between px-4 py-2.5" style={{ background: 'linear-gradient(135deg,#0e3f43,#16585d)' }}>
+        <div className="flex items-center justify-between px-4 py-2.5" style={{ background: 'linear-gradient(135deg,#013328,#0b4d3c)' }}>
           <span className="text-[14px] font-bold text-white">বাস টিকেট</span>
-          <span className="text-[9px] font-bold tracking-[0.2em]" style={{ color: '#a9c6c8' }}>BUSHUB</span>
+          <span className="text-[9px] font-bold tracking-[0.2em]" style={{ color: '#c3d6c9' }}>BUSHUB</span>
         </div>
         <div className="px-4 pb-4 pt-3.5">
           <div className="flex items-end justify-between gap-2">
             <div className="flex min-w-0 flex-col">
-              <span className="text-[10.5px] font-semibold" style={{ color: '#7b8689' }}>যাত্রা শুরু</span>
+              <span className="text-[10.5px] font-semibold" style={{ color: '#8a8f86' }}>যাত্রা শুরু</span>
               <span className="text-[26px] font-bold leading-tight">{from}</span>
             </div>
             <svg viewBox="0 0 24 24" fill="none" stroke="#f2661d" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mb-2 h-7 w-7 shrink-0">
@@ -70,17 +70,17 @@ const StoryCard = forwardRef<HTMLDivElement, { booking: TicketBooking }>(functio
               <circle cx="16.5" cy="19" r="1.6" />
             </svg>
             <div className="flex min-w-0 flex-col items-end text-right">
-              <span className="text-[10.5px] font-semibold" style={{ color: '#7b8689' }}>গন্তব্য</span>
+              <span className="text-[10.5px] font-semibold" style={{ color: '#8a8f86' }}>গন্তব্য</span>
               <span className="text-[26px] font-bold leading-tight">{to}</span>
             </div>
           </div>
-          <div className="mt-3 grid grid-cols-2 gap-2 border-t border-dashed pt-3" style={{ borderColor: '#dfe4e5' }}>
+          <div className="mt-3 grid grid-cols-2 gap-2 border-t border-dashed pt-3" style={{ borderColor: '#e6e0d6' }}>
             <div className="flex flex-col">
-              <span className="text-[10px] font-semibold" style={{ color: '#7b8689' }}>তারিখ</span>
+              <span className="text-[10px] font-semibold" style={{ color: '#8a8f86' }}>তারিখ</span>
               <span className="text-[12.5px] font-bold leading-snug">{bnDate(booking.date)}</span>
             </div>
             <div className="flex flex-col items-end text-right">
-              <span className="text-[10px] font-semibold" style={{ color: '#7b8689' }}>ছাড়বে</span>
+              <span className="text-[10px] font-semibold" style={{ color: '#8a8f86' }}>ছাড়বে</span>
               <span className="text-[12.5px] font-bold leading-snug">{dep === null ? '—' : bnClock(dep)}</span>
             </div>
             <div className="col-span-2 flex items-center justify-between gap-2 rounded-xl px-3 py-2" style={{ backgroundColor: '#f4f6f6' }}>
@@ -99,7 +99,7 @@ const StoryCard = forwardRef<HTMLDivElement, { booking: TicketBooking }>(functio
           <br />
           <span style={{ color: '#f5a524' }}>লাইন নেই, সিরিয়াল নেই</span>
         </span>
-        <span className="mt-2 text-[12.5px]" style={{ color: '#b9c4c6' }}>
+        <span className="mt-2 text-[12.5px]" style={{ color: '#cfc8bc' }}>
           আপনিও কাটুন নিজের পছন্দের সিট
         </span>
         <span

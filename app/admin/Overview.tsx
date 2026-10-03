@@ -14,7 +14,7 @@ const count = (v: number) => Math.round(v).toLocaleString('en-IN')
 function DeltaChip({ delta, upIsGood = true }: { delta: Delta; upIsGood?: boolean }) {
   if (delta.pct === null) {
     return (
-      <span className="rounded-full bg-white/[0.07] px-2 py-0.5 text-[11px] font-semibold text-[#9ba7aa]">
+      <span className="rounded-full bg-white/[0.07] px-2 py-0.5 text-[11px] font-semibold text-[#b8b2a6]">
         {delta.current > 0 ? 'New this week' : 'None yet'}
       </span>
     )
@@ -25,7 +25,7 @@ function DeltaChip({ delta, upIsGood = true }: { delta: Delta; upIsGood?: boolea
   return (
     <span
       className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-bold ${
-        good === null ? 'bg-white/[0.07] text-[#9ba7aa]' : good ? 'bg-[#34d399]/[0.14] text-[#6ee7b7]' : 'bg-[#f87171]/[0.14] text-[#fca5a5]'
+        good === null ? 'bg-white/[0.07] text-[#b8b2a6]' : good ? 'bg-[#7de8bd]/[0.14] text-[#6ee7b7]' : 'bg-[#f87171]/[0.14] text-[#fca5a5]'
       }`}
     >
       <svg viewBox="0 0 12 12" className={`h-2.5 w-2.5 ${flat ? 'hidden' : up ? '' : 'rotate-180'}`} fill="currentColor" aria-hidden>
@@ -68,11 +68,11 @@ function StatTile({
         <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-white shadow-lg sm:h-9 sm:w-9" style={{ background: glow }}>
           {icon}
         </span>
-        <span className="truncate text-[12px] font-semibold text-[#b7c1c3] sm:text-[12.5px]">{label}</span>
+        <span className="truncate text-[12px] font-semibold text-[#cfc8bc] sm:text-[12.5px]">{label}</span>
       </div>
       <div className="flex flex-col gap-1.5">
         <span className="display truncate text-[21px] font-bold leading-none sm:text-[30px]">{value}</span>
-        {note && <span className="truncate text-[11px] text-[#8e9a9d] sm:text-[11.5px]">{note}</span>}
+        {note && <span className="truncate text-[11px] text-[#aaa598] sm:text-[11.5px]">{note}</span>}
       </div>
       <div className="flex flex-wrap items-center gap-2">
         <DeltaChip delta={delta} upIsGood={upIsGood} />
@@ -116,7 +116,7 @@ function Card({ title, subtitle, action, children, className = '' }: { title: st
       <div className="flex items-center justify-between gap-3 px-5 pb-3 pt-4">
         <div className="flex flex-col">
           <h2 className="display text-[15.5px] font-bold">{title}</h2>
-          {subtitle && <span className="text-[11.5px] text-[#78868a]">{subtitle}</span>}
+          {subtitle && <span className="text-[11.5px] text-[#959488]">{subtitle}</span>}
         </div>
         {action}
       </div>
@@ -226,12 +226,12 @@ export default function Overview({
           <Card title="Boarding today" subtitle="Passengers scanned onto today's buses">
             <div className="flex flex-col gap-3 px-5 pb-5">
               {boardingToday.seats === 0 ? (
-                <p className="text-[13px] text-[#8e9a9d]">No tickets sold for today&apos;s trips yet.</p>
+                <p className="text-[13px] text-[#aaa598]">No tickets sold for today&apos;s trips yet.</p>
               ) : (
                 <>
                   <div className="flex items-baseline gap-1.5">
                     <span className="display text-[30px] font-bold leading-none">{count(boardingToday.boarded)}</span>
-                    <span className="text-[13px] text-[#8e9a9d]">of {count(boardingToday.seats)} passengers</span>
+                    <span className="text-[13px] text-[#aaa598]">of {count(boardingToday.seats)} passengers</span>
                   </div>
                   <Meter value={boardingToday.boarded} max={boardingToday.seats} label="Boarded" />
                 </>
@@ -246,12 +246,12 @@ export default function Overview({
                 { label: 'WhatsApp', value: channels.whatsapp, key: '#86efac' },
               ].map((c) => (
                 <div key={c.label} className="flex flex-col gap-1 rounded-2xl border border-white/[0.06] bg-white/[0.03] p-3.5">
-                  <span className="flex items-center gap-1.5 text-[11.5px] font-semibold text-[#9ba7aa]">
+                  <span className="flex items-center gap-1.5 text-[11.5px] font-semibold text-[#b8b2a6]">
                     <span className="h-2 w-2 rounded-full" style={{ background: c.key }} />
                     {c.label}
                   </span>
                   <span className="display text-[22px] font-bold leading-tight">{count(c.value)}</span>
-                  <span className="text-[11px] text-[#6e7b7e]">
+                  <span className="text-[11px] text-[#88908a]">
                     {channelTotal ? Math.round((c.value / channelTotal) * 100) : 0}% of tickets
                   </span>
                 </div>
@@ -265,7 +265,7 @@ export default function Overview({
         title="Recent bookings"
         subtitle="Newest first"
         action={
-          <button type="button" onClick={onSeeAllBookings} className="rounded-full border border-white/10 bg-white/[0.05] px-3.5 py-1.5 text-[12px] font-bold text-[#f5a524] transition hover:bg-white/[0.09]">
+          <button type="button" onClick={onSeeAllBookings} className="rounded-full border border-white/10 bg-white/[0.05] px-3.5 py-1.5 text-[12px] font-bold text-[#d99d78] transition hover:bg-white/[0.09]">
             See all
           </button>
         }
@@ -277,7 +277,7 @@ export default function Overview({
         <Card title="What you owe bus companies" subtitle="Their share of every paid ticket">
           <div className="flex flex-col gap-4 px-5 pb-5">
             {byCompany.length === 0 ? (
-              <p className="text-[13px] text-[#8e9a9d]">Nothing owed yet.</p>
+              <p className="text-[13px] text-[#aaa598]">Nothing owed yet.</p>
             ) : (
               <BarList
                 rows={byCompany.map((c) => ({ label: c.name, value: c.owed, sub: `${count(c.tickets)} tickets` }))}
@@ -285,28 +285,28 @@ export default function Overview({
               />
             )}
             <div className="flex items-center justify-between border-t border-white/[0.07] pt-3.5">
-              <span className="text-[12.5px] font-semibold text-[#9ba7aa]">Total to pay out</span>
-              <span className="display text-[19px] font-bold text-[#f5a524]">{taka(totals.owed)}</span>
+              <span className="text-[12.5px] font-semibold text-[#b8b2a6]">Total to pay out</span>
+              <span className="display text-[19px] font-bold text-[#d99d78]">{taka(totals.owed)}</span>
             </div>
           </div>
         </Card>
 
         <Card title="Next departures" subtitle="Seats sold on each bus">
           <ul className="flex flex-col px-5 pb-4">
-            {upcoming.length === 0 && <li className="pb-2 text-[13px] text-[#8e9a9d]">No upcoming buses. Add one in Buses.</li>}
+            {upcoming.length === 0 && <li className="pb-2 text-[13px] text-[#aaa598]">No upcoming buses. Add one in Buses.</li>}
             {upcoming.map((b) => {
               const taken = b.totalSeats - seatsLeft(b)
               return (
                 <li key={b._id} className="flex items-center gap-3 border-t border-white/[0.06] py-3 first:border-t-0 first:pt-0">
                   <span className="flex h-10 w-10 shrink-0 flex-col items-center justify-center rounded-xl border border-white/10 bg-white/[0.04] leading-none">
                     <span className="text-[13px] font-bold">{Number(b.date.slice(8))}</span>
-                    <span className="text-[9.5px] font-semibold uppercase text-[#8e9a9d]">{formatTripDate(b.date).split(' ')[2]}</span>
+                    <span className="text-[9.5px] font-semibold uppercase text-[#aaa598]">{formatTripDate(b.date).split(' ')[2]}</span>
                   </span>
                   <div className="flex min-w-0 grow flex-col gap-1">
                     <span className="truncate text-[13px] font-semibold">
                       {b.busName} · {b.departureTime}
                     </span>
-                    <span className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-[11.5px] text-[#78868a]">
+                    <span className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-[11.5px] text-[#959488]">
                       <span className="truncate">
                         {b.from} → {b.to} · {b.companyName}
                       </span>
@@ -316,7 +316,7 @@ export default function Overview({
                       <span className="block h-full rounded-full" style={{ width: `${(taken / Math.max(1, b.totalSeats)) * 100}%`, background: TEAL }} />
                     </span>
                   </div>
-                  <span className="shrink-0 text-right text-[12px] tabular-nums text-[#b7c1c3]">
+                  <span className="shrink-0 text-right text-[12px] tabular-nums text-[#cfc8bc]">
                     <span className="block text-[14px] font-bold text-white">{taken}</span>/{b.totalSeats}
                   </span>
                 </li>

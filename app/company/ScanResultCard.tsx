@@ -39,8 +39,8 @@ const VERDICTS: Record<ScanResult, { tone: Tone; title: string; detail: string }
 }
 
 const TONES: Record<Tone, { ring: string; bg: string; text: string; icon: string }> = {
-  good: { ring: 'border-[#34d399]', bg: 'bg-[#34d399]/[0.09]', text: 'text-[#34d399]', icon: 'bg-[#34d399] text-[#062b1d]' },
-  warn: { ring: 'border-[#f5a524]', bg: 'bg-[#f5a524]/[0.09]', text: 'text-[#f5a524]', icon: 'bg-[#f5a524] text-[#2b1a02]' },
+  good: { ring: 'border-[#7de8bd]', bg: 'bg-[#7de8bd]/[0.09]', text: 'text-[#7de8bd]', icon: 'bg-[#7de8bd] text-[#062b1d]' },
+  warn: { ring: 'border-[#cc8b65]', bg: 'bg-[#f5a524]/[0.09]', text: 'text-[#d99d78]', icon: 'bg-[#f5a524] text-[#2b1a02]' },
   bad: { ring: 'border-[#f87171]', bg: 'bg-[#f87171]/[0.09]', text: 'text-[#f87171]', icon: 'bg-[#f87171] text-[#2b0909]' },
 }
 
@@ -54,7 +54,7 @@ function dhakaTime(iso: string): string {
 function Row({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="flex items-start justify-between gap-3">
-      <span className="shrink-0 text-[12px] text-[#8e9a9d]">{label}</span>
+      <span className="shrink-0 text-[12px] text-[#aaa598]">{label}</span>
       <span className="text-right text-[13.5px] font-semibold">{children}</span>
     </div>
   )
@@ -86,12 +86,12 @@ export default function ScanResultCard({ scan }: { scan: ScanResponse }) {
         </span>
         <div className="flex flex-col gap-0.5">
           <span className={`display text-[22px] font-bold leading-tight ${tone.text}`}>{verdict.title}</span>
-          <span className="text-[12.5px] leading-snug text-[#c4cdcf]">{verdict.detail}</span>
+          <span className="text-[12.5px] leading-snug text-[#dad3c8]">{verdict.detail}</span>
         </div>
       </div>
 
       {scan.result === 'valid' && passengers > 0 && (
-        <div className="rounded-2xl bg-[#34d399] px-4 py-3 text-center text-[#062b1d]">
+        <div className="rounded-2xl bg-[#7de8bd] px-4 py-3 text-center text-[#062b1d]">
           <span className="display text-[26px] font-bold leading-none">{passengers}</span>
           <span className="ml-2 text-[14px] font-bold">
             passenger{passengers === 1 ? '' : 's'} to board · seat{passengers === 1 ? '' : 's'} {ticket?.seats.join(', ')}
@@ -106,23 +106,23 @@ export default function ScanResultCard({ scan }: { scan: ScanResponse }) {
       )}
 
       {ticket && (
-        <div className="flex flex-col gap-2.5 rounded-2xl border border-[#2a3437] bg-[#0f1517] p-4">
+        <div className="flex flex-col gap-2.5 rounded-2xl border border-[#2a5d50] bg-[#012a21] p-4">
           <Row label="Passenger">{ticket.passengerName}</Row>
           <Row label="Bus">{ticket.busName}</Row>
           <Row label="Route">
             {ticket.from} → {ticket.to}
           </Row>
           <Row label="Date">
-            <span className={scan.result === 'wrong_day' ? 'text-[#f5a524]' : ''}>{formatTripDate(ticket.date)}</span>
+            <span className={scan.result === 'wrong_day' ? 'text-[#d99d78]' : ''}>{formatTripDate(ticket.date)}</span>
           </Row>
           <Row label="Time">{ticket.departureTime}</Row>
           <Row label="Seats">
-            {ticket.seats.join(', ')} <span className="text-[#8e9a9d]">({passengers})</span>
+            {ticket.seats.join(', ')} <span className="text-[#aaa598]">({passengers})</span>
           </Row>
           {typeof ticket.bags === 'number' && (
             <Row label="Bags">{ticket.bags === 0 ? 'None' : `${ticket.bags} bag${ticket.bags === 1 ? '' : 's'}`}</Row>
           )}
-          <div className="border-t border-[#1f2729] pt-2.5">
+          <div className="border-t border-[#1f4f43] pt-2.5">
             <Row label="Booking code">
               <span className="display">{ticket.bookingCode}</span>
             </Row>
@@ -131,8 +131,8 @@ export default function ScanResultCard({ scan }: { scan: ScanResponse }) {
       )}
 
       {!ticket && scan.bookingCode && (
-        <p className="text-center text-[12px] text-[#8e9a9d]">
-          Code scanned: <span className="display font-bold text-[#c4cdcf]">{scan.bookingCode}</span>
+        <p className="text-center text-[12px] text-[#aaa598]">
+          Code scanned: <span className="display font-bold text-[#dad3c8]">{scan.bookingCode}</span>
         </p>
       )}
     </div>

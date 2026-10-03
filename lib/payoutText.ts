@@ -9,9 +9,9 @@ export const PAY_METHOD_LABELS: Record<PayMethod, string> = { bkash: 'bKash', na
 export const STATUS_TEXT: Record<PayoutStatus, { label: string; dark: string; light: string }> = {
   unpaid: { label: 'Waiting for BusHub to pay', dark: 'bg-[#f5a524]/[0.15] text-[#fbbf24]', light: 'bg-amber-100 text-amber-800' },
   paid: { label: 'Paid · waiting for the company to sign', dark: 'bg-[#60a5fa]/[0.15] text-[#93c5fd]', light: 'bg-blue-100 text-blue-800' },
-  confirmed: { label: 'Paid and signed', dark: 'bg-[#34d399]/[0.14] text-[#6ee7b7]', light: 'bg-emerald-100 text-emerald-800' },
+  confirmed: { label: 'Paid and signed', dark: 'bg-[#7de8bd]/[0.14] text-[#6ee7b7]', light: 'bg-emerald-100 text-emerald-800' },
   disputed: { label: 'Problem reported', dark: 'bg-[#f87171]/[0.14] text-[#fca5a5]', light: 'bg-red-100 text-red-800' },
-  cancelled: { label: 'Cancelled', dark: 'bg-white/[0.07] text-[#9ba7aa]', light: 'bg-gray-100 text-gray-600' },
+  cancelled: { label: 'Cancelled', dark: 'bg-white/[0.07] text-[#b8b2a6]', light: 'bg-gray-100 text-gray-600' },
 }
 
 export interface PayoutTotalsView {

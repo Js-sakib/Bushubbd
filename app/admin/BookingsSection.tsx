@@ -108,13 +108,13 @@ export default function BookingsSection({
       <div className="flex flex-col gap-3 px-4 pb-3 pt-4 sm:px-5">
         <div className="flex items-baseline justify-between gap-3">
           <h2 className="display text-[15.5px] font-bold">All bookings</h2>
-          <span className="text-[11.5px] text-[#78868a]">
+          <span className="text-[11.5px] text-[#959488]">
             {visible.length} of {source.length}
             {!ranged && bookings.length >= 200 ? ' latest' : ''}
           </span>
         </div>
         <div className="relative">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#6e7b7e]">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#88908a]">
             <circle cx="11" cy="11" r="7" />
             <path d="m20 20-3.5-3.5" />
           </svg>
@@ -135,7 +135,7 @@ export default function BookingsSection({
                   key={k}
                   type="button"
                   onClick={() => setBy(k)}
-                  className={`grow rounded-[10px] px-3 text-[12px] font-bold ${by === k ? 'bg-[#f6f1ea] text-[#14191b]' : 'text-[#9ba7aa]'}`}
+                  className={`grow rounded-[10px] px-3 text-[12px] font-bold ${by === k ? 'bg-[#e3dcd2] text-[#100c0d]' : 'text-[#b8b2a6]'}`}
                 >
                   {k === 'travel' ? 'Travel date' : 'Day bought'}
                 </button>
@@ -175,18 +175,18 @@ export default function BookingsSection({
           ))}
         </div>
       </div>
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-white/[0.06] px-4 py-2.5 text-[12px] text-[#9ba7aa] sm:px-5">
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-white/[0.06] px-4 py-2.5 text-[12px] text-[#b8b2a6] sm:px-5">
         <span>
-          Paid: <b className="text-[#f6f1ea]">{taka(sold.reduce((n, b) => n + b.totalPrice, 0))}</b>
+          Paid: <b className="text-[#e3dcd2]">{taka(sold.reduce((n, b) => n + b.totalPrice, 0))}</b>
         </span>
         <span>
-          Seats: <b className="text-[#f6f1ea]">{sold.reduce((n, b) => n + b.seats.length, 0)}</b>
+          Seats: <b className="text-[#e3dcd2]">{sold.reduce((n, b) => n + b.seats.length, 0)}</b>
         </span>
         <span>
-          BusHub commission: <b className="text-[#f5a524]">{taka(sold.reduce((n, b) => n + (b.commissionAmount || 0), 0))}</b>
+          BusHub commission: <b className="text-[#d99d78]">{taka(sold.reduce((n, b) => n + (b.commissionAmount || 0), 0))}</b>
         </span>
         {visible.length > 0 && (
-          <button type="button" onClick={() => select(visible.map((b) => b._id), true)} className="ml-auto font-bold text-[#f5a524]">
+          <button type="button" onClick={() => select(visible.map((b) => b._id), true)} className="ml-auto font-bold text-[#d99d78]">
             Select all shown
           </button>
         )}
@@ -194,7 +194,7 @@ export default function BookingsSection({
       {ticked.length > 0 && (
         <div className="sticky top-2 z-20 mx-3 mb-2 flex items-center gap-2 rounded-2xl border border-[#f87171]/30 bg-[#2a1416]/95 px-4 py-2.5 backdrop-blur">
           <span className="grow text-[13px] font-bold">{ticked.length} selected</span>
-          <button type="button" onClick={() => setSelected(new Set())} className="h-9 rounded-full border border-white/10 px-3.5 text-[12px] font-bold text-[#c4cdcf]">
+          <button type="button" onClick={() => setSelected(new Set())} className="h-9 rounded-full border border-white/10 px-3.5 text-[12px] font-bold text-[#dad3c8]">
             Clear
           </button>
           <button

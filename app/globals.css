@@ -3,21 +3,21 @@
 @tailwind utilities;
 
 :root {
-  --bg: #0b0e0f;
-  --surface: #141a1c;
-  --surface-2: #12181a;
-  --surface-3: #151b1d;
-  --line: #222b2e;
-  --line-soft: #1f2729;
-  --field: #0f1517;
-  --field-line: #2a3437;
+  --bg: #013328;
+  --surface: #0d3c32;
+  --surface-2: #0b3a30;
+  --surface-3: #0d3c32;
+  --line: #245549;
+  --line-soft: #1f4f43;
+  --field: #012a21;
+  --field-line: #2a5d50;
   --gold: #f5a524;
   --orange: #f2661d;
   --teal: #2dd4bf;
-  --teal-deep: #0e3f43;
-  --ink: #f6f4ef;
-  --muted: #9ba7aa;
-  --muted-2: #78868a;
+  --teal-deep: #013328;
+  --ink: #f3eee6;
+  --muted: #b8b2a6;
+  --muted-2: #959488;
 }
 
 * {
@@ -33,12 +33,12 @@ html {
 body {
   background: var(--bg);
   color: var(--ink);
-  font-family: var(--font-body), 'Manrope', system-ui, -apple-system, sans-serif;
+  font-family: var(--font-body), 'Inter', system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 
 h1, h2, h3, .display {
-  font-family: var(--font-display), 'Space Grotesk', system-ui, sans-serif;
+  font-family: var(--font-display), 'Plus Jakarta Sans', system-ui, sans-serif;
   letter-spacing: -0.01em;
 }
 
@@ -70,9 +70,9 @@ h1, h2, h3, .display {
 .nav-glow {
   background:
     radial-gradient(140% 220% at 0% 50%, rgba(242, 102, 29, 0.72) 0%, rgba(245, 165, 36, 0.26) 34%, rgba(245, 165, 36, 0) 58%),
-    radial-gradient(90% 200% at 100% 50%, rgba(18, 165, 148, 0.22) 0%, rgba(18, 165, 148, 0) 60%),
+    radial-gradient(90% 200% at 100% 50%, rgba(204, 139, 101, 0.24) 0%, rgba(204, 139, 101, 0) 60%),
     linear-gradient(150deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.02) 60%),
-    rgba(14, 18, 20, 0.9);
+    rgba(16, 12, 13, 0.9);
   border-color: rgba(255, 196, 140, 0.16);
   box-shadow: 0 18px 50px rgba(0, 0, 0, 0.38), 0 8px 30px rgba(242, 102, 29, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
@@ -156,7 +156,7 @@ h1, h2, h3, .display {
 }
 
 .input-dark::placeholder {
-  color: #6e7b7e;
+  color: #88908a;
   font-weight: 500;
 }
 
@@ -174,7 +174,7 @@ input[type='search'].input-dark::-webkit-search-cancel-button {
 
 select.input-dark {
   appearance: none;
-  background-image: linear-gradient(45deg, transparent 50%, #8e9a9d 50%), linear-gradient(135deg, #8e9a9d 50%, transparent 50%);
+  background-image: linear-gradient(45deg, transparent 50%, #aaa598 50%), linear-gradient(135deg, #aaa598 50%, transparent 50%);
   background-position: calc(100% - 18px) 21px, calc(100% - 13px) 21px;
   background-size: 5px 5px, 5px 5px;
   background-repeat: no-repeat;
@@ -183,7 +183,7 @@ select.input-dark {
 
 /* The field itself is see-through; the opened option list must not be. */
 select.input-dark option {
-  background: #12181a;
+  background: #0b3a30;
   color: var(--ink);
 }
 
@@ -230,7 +230,7 @@ input[type='date']::-webkit-calendar-picker-indicator {
   font-size: 10px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: #8e9a9d;
+  color: #aaa598;
   font-weight: 700;
 }
 
@@ -240,7 +240,7 @@ input[type='date']::-webkit-calendar-picker-indicator {
   border-radius: 999px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   background: rgba(255, 255, 255, 0.05);
-  color: #c4cdcf;
+  color: #dad3c8;
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
@@ -273,7 +273,7 @@ input[type='date']::-webkit-calendar-picker-indicator {
 @media print {
   body {
     background: #ffffff;
-    color: #16191a;
+    color: #100c0d;
   }
   .no-print {
     display: none !important;

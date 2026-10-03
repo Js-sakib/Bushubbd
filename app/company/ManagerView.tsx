@@ -65,34 +65,34 @@ function TripCard({ trip, open, onToggle, onChanged }: { trip: CompanyTrip; open
               </span>
               <Plate plate={trip.plateNumber} />
             </span>
-            <span className="truncate text-[11.5px] text-[#9ba7aa]">
+            <span className="truncate text-[11.5px] text-[#b8b2a6]">
               {formatTripDate(trip.date)} · {trip.busName}
             </span>
-            {trip.boardingPoint && <span className="truncate text-[11px] text-[#6e7b7e]">📍 {trip.boardingPoint}</span>}
+            {trip.boardingPoint && <span className="truncate text-[11px] text-[#88908a]">📍 {trip.boardingPoint}</span>}
           </div>
           <div className="flex shrink-0 flex-col items-end">
             <span className="display text-[17px] font-bold">
               {c.online + c.counter}
-              <span className="text-[12px] font-semibold text-[#8e9a9d]">/{trip.totalSeats}</span>
+              <span className="text-[12px] font-semibold text-[#aaa598]">/{trip.totalSeats}</span>
             </span>
-            <span className="text-[10.5px] text-[#8e9a9d]">sold</span>
+            <span className="text-[10.5px] text-[#aaa598]">sold</span>
           </div>
         </div>
-        <div className="flex h-2.5 overflow-hidden rounded-full bg-[#12372c]">
+        <div className="flex h-2.5 overflow-hidden rounded-full bg-[#1d5a49]">
           <span style={{ width: pct(c.online) }} className="bg-gradient-to-r from-[#f2661d] to-[#f5a524]" />
           <span style={{ width: pct(c.held) }} className="bg-[#f5a524]/40" />
           <span style={{ width: pct(c.counter) }} className="bg-[#6d4aff]" />
         </div>
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11.5px]">
-          <span className="text-[#f5a524]">BusHub {c.online}</span>
-          {c.held > 0 && <span className="text-[#f5a524]/70">Buying now {c.held}</span>}
+          <span className="text-[#d99d78]">BusHub {c.online}</span>
+          {c.held > 0 && <span className="text-[#d99d78]/70">Buying now {c.held}</span>}
           <span className="text-[#a78bfa]">Counter {c.counter}</span>
-          <span className="text-[#34d399]">Free {c.free}</span>
-          <span className="ml-auto text-[#f5a524]">{open ? 'Hide seats ‹' : 'Seat map ›'}</span>
+          <span className="text-[#7de8bd]">Free {c.free}</span>
+          <span className="ml-auto text-[#d99d78]">{open ? 'Hide seats ‹' : 'Seat map ›'}</span>
         </div>
       </button>
       {open && (
-        <div className="flex flex-col gap-4 border-t border-[#1a2123] bg-black/15 px-4 py-4">
+        <div className="flex flex-col gap-4 border-t border-[#1b4a3f] bg-black/15 px-4 py-4">
           <SeatMap trip={trip} busySeat={busySeat} onTap={trip.departed ? undefined : tap} />
           {bySeller.size > 0 && (
             <div className="flex flex-col gap-1.5">
@@ -100,7 +100,7 @@ function TripCard({ trip, open, onToggle, onChanged }: { trip: CompanyTrip; open
               {Array.from(bySeller).map(([seller, seats]) => (
                 <div key={seller} className="flex items-start justify-between gap-3 text-[12.5px]">
                   <span className="font-semibold text-[#c4b5fd]">{seller}</span>
-                  <span className="text-right text-[#c4cdcf]">
+                  <span className="text-right text-[#dad3c8]">
                     {seats.length} · {seats.join(', ')}
                   </span>
                 </div>
@@ -114,20 +114,20 @@ function TripCard({ trip, open, onToggle, onChanged }: { trip: CompanyTrip; open
                 <div key={t.code} className="flex items-start justify-between gap-3 text-[12.5px]">
                   <span className="flex min-w-0 flex-col">
                     <span>
-                      Seats {t.seats.join(', ')} <span className="text-[#78868a]">· sold by BusHub</span>
+                      Seats {t.seats.join(', ')} <span className="text-[#959488]">· sold by BusHub</span>
                     </span>
-                    <span className="truncate font-mono text-[11px] text-[#78868a]">
+                    <span className="truncate font-mono text-[11px] text-[#959488]">
                       {t.code}
                       {t.bookedAt ? ` · ${dhakaTime(t.bookedAt)}` : ''}
                     </span>
                   </span>
-                  <span className={`shrink-0 font-semibold ${t.boarded ? 'text-[#34d399]' : 'text-[#9ba7aa]'}`}>{t.boarded ? 'Boarded ✓' : taka(t.payout)}</span>
+                  <span className={`shrink-0 font-semibold ${t.boarded ? 'text-[#7de8bd]' : 'text-[#b8b2a6]'}`}>{t.boarded ? 'Boarded ✓' : taka(t.payout)}</span>
                 </div>
               ))}
             </div>
           )}
           {trip.counterSeats.some((s) => s.soldAt) && (
-            <p className="text-[11px] text-[#6e7b7e]">
+            <p className="text-[11px] text-[#88908a]">
               Last counter sale: {dhakaTime(trip.counterSeats.map((s) => s.soldAt || '').sort().pop() || null)}
             </p>
           )}
@@ -193,13 +193,13 @@ export default function ManagerView({ companyName }: { companyName: string }) {
     : null
   const toSign = payments?.invoices.filter((i) => i.status === 'paid').length ?? 0
 
-  if (!data) return <div className="py-16 text-center text-sm text-[#8e9a9d]">Loading...</div>
+  if (!data) return <div className="py-16 text-center text-sm text-[#aaa598]">Loading...</div>
 
   return (
     <div className="mt-5 flex flex-col gap-4">
       <div className="grid grid-cols-3 gap-2.5">
-        <div className="flex flex-col gap-1 rounded-[18px] bg-gradient-to-br from-[#12756c] to-[#0e5a54] p-3.5">
-          <span className="text-[11px] font-bold text-[#b8ede6]">Upcoming trips</span>
+        <div className="flex flex-col gap-1 rounded-[18px] bg-gradient-to-br from-[#b97b55] to-[#8e5636] p-3.5">
+          <span className="text-[11px] font-bold text-[#f7e6d6]">Upcoming trips</span>
           <span className="display text-[24px] font-bold leading-none text-white">{upcoming.length}</span>
         </div>
         <div className="flex flex-col gap-1 rounded-[18px] bg-gradient-to-br from-[#5b3fd6] to-[#3f2a9e] p-3.5">
@@ -242,7 +242,7 @@ export default function ManagerView({ companyName }: { companyName: string }) {
                   key={w}
                   type="button"
                   onClick={() => setWhen(w)}
-                  className={`h-9 rounded-full px-4 text-[12.5px] font-bold capitalize ${when === w ? 'bg-[#f6f1ea] text-[#14191b]' : 'text-[#9ba7aa]'}`}
+                  className={`h-9 rounded-full px-4 text-[12.5px] font-bold capitalize ${when === w ? 'bg-[#e3dcd2] text-[#100c0d]' : 'text-[#b8b2a6]'}`}
                 >
                   {w}
                 </button>
@@ -266,7 +266,7 @@ export default function ManagerView({ companyName }: { companyName: string }) {
             />
           )}
           {shown.length === 0 && (
-            <p className="glass-lite p-5 text-center text-[13px] text-[#8e9a9d]">
+            <p className="glass-lite p-5 text-center text-[13px] text-[#aaa598]">
               {search ? 'No trips match your search.' : when === 'upcoming' ? 'No upcoming trips.' : 'No finished trips in the last 30 days.'}
             </p>
           )}

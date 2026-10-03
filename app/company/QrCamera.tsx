@@ -134,7 +134,7 @@ export default function QrCamera({ onDetected }: { onDetected: (text: string) =>
       {/* Aiming frame: the four corners of the area to hold the ticket's QR code in. */}
       <div className="pointer-events-none absolute inset-[16%]">
         {['left-0 top-0 border-l-4 border-t-4 rounded-tl-2xl', 'right-0 top-0 border-r-4 border-t-4 rounded-tr-2xl', 'left-0 bottom-0 border-l-4 border-b-4 rounded-bl-2xl', 'right-0 bottom-0 border-r-4 border-b-4 rounded-br-2xl'].map((corner) => (
-          <span key={corner} className={`absolute h-10 w-10 border-[#f5a524] ${corner}`} />
+          <span key={corner} className={`absolute h-10 w-10 border-[#cc8b65] ${corner}`} />
         ))}
         <span className="absolute inset-x-3 top-1/2 h-0.5 animate-pulse bg-[#f5a524]/70" />
       </div>

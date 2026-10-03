@@ -73,15 +73,15 @@ export default function SeatManager({
         <h3 className="display text-[15px] font-bold">
           {bus.busName} · {bus.from} → {bus.to} ({bus.date})
         </h3>
-        <p className="mt-1 text-[12.5px] text-[#9ba7aa]">
-          Tap a seat to mark it <strong className="text-[#f5a524]">sold at your counter</strong>, tap again to put it
+        <p className="mt-1 text-[12.5px] text-[#b8b2a6]">
+          Tap a seat to mark it <strong className="text-[#d99d78]">sold at your counter</strong>, tap again to put it
           back on sale. Seats sold on BusHub are locked — refund the ticket to free one.
         </p>
       </div>
 
       <div className="flex flex-wrap gap-2 text-[12px] font-semibold">
-        <span className="rounded-full bg-[#34d399]/[0.13] px-3 py-1 text-[#34d399]">{free} available</span>
-        <span className="rounded-full bg-[#f5a524]/[0.13] px-3 py-1 text-[#f5a524]">{blocked.length} sold at counter</span>
+        <span className="rounded-full bg-[#7de8bd]/[0.13] px-3 py-1 text-[#7de8bd]">{free} available</span>
+        <span className="rounded-full bg-[#f5a524]/[0.13] px-3 py-1 text-[#d99d78]">{blocked.length} sold at counter</span>
         <span className="rounded-full bg-[#f87171]/[0.13] px-3 py-1 text-[#f87171]">{sold.length} sold on BusHub</span>
       </div>
 
@@ -93,7 +93,7 @@ export default function SeatManager({
             ? 'cursor-not-allowed border border-[#7a3230] bg-[#3a1a1a] text-[#d98a86]'
             : isBlocked
               ? 'border border-[#8a6216] bg-[#3a2c10] text-[#f5c24f] hover:bg-[#4a3814]'
-              : 'border border-[#2a6b52] bg-[#12372c] text-[#7de3b8] hover:bg-[#16452f]'
+              : 'border border-[#5aa287] bg-[#1d5a49] text-[#7de3b8] hover:bg-[#16452f]'
           return (
             <button
               key={seatLabel}
@@ -109,9 +109,9 @@ export default function SeatManager({
         })}
       </div>
 
-      <div className="flex flex-wrap gap-4 text-[12.5px] text-[#c4cdcf]">
+      <div className="flex flex-wrap gap-4 text-[12.5px] text-[#dad3c8]">
         <span className="inline-flex items-center gap-2">
-          <span className="h-3.5 w-3.5 rounded border border-[#2a6b52] bg-[#12372c]" />
+          <span className="h-3.5 w-3.5 rounded border border-[#5aa287] bg-[#1d5a49]" />
           Available now
         </span>
         <span className="inline-flex items-center gap-2">

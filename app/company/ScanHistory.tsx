@@ -30,8 +30,8 @@ export interface ScanStats {
 }
 
 const RESULT_CHIPS: Record<ScanResult, { label: string; className: string }> = {
-  valid: { label: 'Boarded', className: 'bg-[#34d399]/[0.14] text-[#34d399]' },
-  wrong_day: { label: 'Wrong day', className: 'bg-[#f5a524]/[0.14] text-[#f5a524]' },
+  valid: { label: 'Boarded', className: 'bg-[#7de8bd]/[0.14] text-[#7de8bd]' },
+  wrong_day: { label: 'Wrong day', className: 'bg-[#f5a524]/[0.14] text-[#d99d78]' },
   already_used: { label: 'Used twice', className: 'bg-[#f87171]/[0.14] text-[#f87171]' },
   expired: { label: 'Expired', className: 'bg-[#f87171]/[0.14] text-[#f87171]' },
   unpaid: { label: 'Not paid', className: 'bg-[#f87171]/[0.14] text-[#f87171]' },
@@ -54,56 +54,56 @@ export default function ScanHistory({ stats, showScanner = false }: { stats: Sca
       <div className="flex flex-col gap-4">
           {showScanner && stats?.byScanner && (
             <div className="card-2 overflow-hidden">
-              <div className="border-b border-[#1a2123] px-4 py-3">
+              <div className="border-b border-[#1b4a3f] px-4 py-3">
                 <span className="label-xs">Each scanner · passengers boarded</span>
               </div>
               {stats.byScanner.map((row, i) => (
-                <div key={`${row.name}-${i}`} className="flex items-center gap-3 border-b border-[#1a2123] px-4 py-3 last:border-b-0">
+                <div key={`${row.name}-${i}`} className="flex items-center gap-3 border-b border-[#1b4a3f] px-4 py-3 last:border-b-0">
                   <div className="flex min-w-0 grow flex-col">
                     <span className="truncate text-[13.5px] font-semibold text-[#5eead4]">{row.name}</span>
-                    <span className="text-[11.5px] text-[#78868a]">
+                    <span className="text-[11.5px] text-[#959488]">
                       7 days: {row.week.passengers} passenger{row.week.passengers === 1 ? '' : 's'} · {row.week.tickets} ticket{row.week.tickets === 1 ? '' : 's'}
                       {row.week.rejected > 0 ? ` · ${row.week.rejected} rejected` : ''}
                     </span>
                   </div>
                   <div className="flex shrink-0 flex-col items-end">
-                    <span className="display text-[20px] font-bold leading-none text-[#34d399]">{row.today.passengers}</span>
-                    <span className="text-[10.5px] text-[#8e9a9d]">today</span>
+                    <span className="display text-[20px] font-bold leading-none text-[#7de8bd]">{row.today.passengers}</span>
+                    <span className="text-[10.5px] text-[#aaa598]">today</span>
                   </div>
                 </div>
               ))}
               {stats.byScanner.length === 0 && (
-                <div className="px-4 py-6 text-center text-sm text-[#8e9a9d]">No scans in the last 7 days.</div>
+                <div className="px-4 py-6 text-center text-sm text-[#aaa598]">No scans in the last 7 days.</div>
               )}
             </div>
           )}
 
           <div className="card-2 overflow-hidden">
-            <div className="border-b border-[#1a2123] px-4 py-3">
+            <div className="border-b border-[#1b4a3f] px-4 py-3">
               <span className="label-xs">Passengers boarded, by day</span>
             </div>
             {(stats?.days ?? []).map((day, index) => (
-              <div key={day.date} className="flex items-center gap-3 border-b border-[#1a2123] px-4 py-3 last:border-b-0">
+              <div key={day.date} className="flex items-center gap-3 border-b border-[#1b4a3f] px-4 py-3 last:border-b-0">
                 <div className="flex grow flex-col">
                   <span className="text-[13.5px] font-semibold">{index === 0 ? 'Today' : formatTripDate(day.date)}</span>
-                  <span className="text-[11.5px] text-[#78868a]">
+                  <span className="text-[11.5px] text-[#959488]">
                     {day.tickets} ticket{day.tickets === 1 ? '' : 's'}
                     {day.rejected > 0 ? ` · ${day.rejected} rejected` : ''}
                   </span>
                 </div>
-                <span className="display text-[20px] font-bold text-[#34d399]">{day.passengers}</span>
+                <span className="display text-[20px] font-bold text-[#7de8bd]">{day.passengers}</span>
               </div>
             ))}
-            {!stats && <div className="px-4 py-8 text-center text-sm text-[#8e9a9d]">Loading...</div>}
+            {!stats && <div className="px-4 py-8 text-center text-sm text-[#aaa598]">Loading...</div>}
           </div>
 
       </div>
           <div className="card-2 overflow-hidden">
-            <div className="border-b border-[#1a2123] px-4 py-3">
+            <div className="border-b border-[#1b4a3f] px-4 py-3">
               <span className="label-xs">Recent scans</span>
             </div>
             {(stats?.recent.length || 0) > 4 && (
-              <div className="border-b border-[#1a2123] px-3 py-2.5">
+              <div className="border-b border-[#1b4a3f] px-3 py-2.5">
                 <SearchBox value={search} onChange={setSearch} placeholder="Search ticket code, bus, route, scanner" />
               </div>
             )}
@@ -112,25 +112,25 @@ export default function ScanHistory({ stats, showScanner = false }: { stats: Sca
               .map((item) => {
               const chip = RESULT_CHIPS[item.result] ?? RESULT_CHIPS.not_found
               return (
-                <div key={item.id} className="flex items-start gap-3 border-b border-[#1a2123] px-4 py-3 last:border-b-0">
-                  <span className="w-11 shrink-0 pt-0.5 text-[12px] font-semibold text-[#9ba7aa]">{dhakaClock(item.scannedAt)}</span>
+                <div key={item.id} className="flex items-start gap-3 border-b border-[#1b4a3f] px-4 py-3 last:border-b-0">
+                  <span className="w-11 shrink-0 pt-0.5 text-[12px] font-semibold text-[#b8b2a6]">{dhakaClock(item.scannedAt)}</span>
                   <div className="flex min-w-0 grow flex-col gap-0.5">
                     <span className="truncate text-[13px] font-semibold">
                       {item.busName ? `${item.busName} · ${item.from} → ${item.to}` : item.bookingCode || 'Unreadable code'}
                     </span>
                     {item.travelDate && (
-                      <span className="text-[11.5px] text-[#78868a]">
+                      <span className="text-[11.5px] text-[#959488]">
                         {formatTripDate(item.travelDate)} · {item.departureTime} · {item.seatCount} seat{item.seatCount === 1 ? '' : 's'}
                       </span>
                     )}
-                    {showScanner && item.scannerName && <span className="text-[11px] text-[#6e7b7e]">Scanned by {item.scannerName}</span>}
+                    {showScanner && item.scannerName && <span className="text-[11px] text-[#88908a]">Scanned by {item.scannerName}</span>}
                   </div>
                   <span className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] font-bold ${chip.className}`}>{chip.label}</span>
                 </div>
               )
             })}
             {stats && stats.recent.length === 0 && (
-              <div className="px-4 py-8 text-center text-sm text-[#8e9a9d]">No tickets scanned in the last 7 days.</div>
+              <div className="px-4 py-8 text-center text-sm text-[#aaa598]">No tickets scanned in the last 7 days.</div>
             )}
           </div>
         </div>
