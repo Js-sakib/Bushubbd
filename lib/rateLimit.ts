@@ -1,9 +1,9 @@
 import type { Db } from 'mongodb'
 
 /**
- * Counts wrong ticket codes per scanner, visitor or chat, so nobody can try code after code
- * until one matches. Counters sit in the database (the site runs on many servers at once) in
- * fixed ten-minute windows, and the database deletes them once they are old.
+ * Counts requests per visitor or per phone number (lost-ticket requests, for one), so nobody
+ * can send them again and again. Counters sit in the database (the site runs on many servers at
+ * once) in fixed ten-minute windows, and the database deletes them once they are old.
  */
 export const WINDOW_MS = 10 * 60 * 1000
 
