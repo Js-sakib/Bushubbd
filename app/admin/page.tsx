@@ -13,6 +13,8 @@ import BookingsSection from './BookingsSection'
 import BusesSection from './BusesSection'
 import CompaniesSection from './CompaniesSection'
 import CostsSection from './CostsSection'
+import ReviewsPanel from './ReviewsPanel'
+import TicketRequestsPanel, { type TicketRequest } from './TicketRequestsPanel'
 import SearchBox from '../SearchBox'
 import LeadsSection, { isDue } from './LeadsSection'
 import type { Booking, Bus, CompanyPrefill, CompanyRow, FleetBus, LeadRow, Section } from './types'
@@ -116,6 +118,14 @@ export default function AdminDashboard() {
   const [leads, setLeads] = useState<LeadRow[]>([])
   const [places, setPlaces] = useState<Places>(DEFAULT_PLACES)
   const [companyPrefill, setCompanyPrefill] = useState<CompanyPrefill | null>(null)
+  const [ticketRequests, setTicketRequests] = useState<TicketRequest[]>([])
+
+  const loadTicketRequests = useCallback(() => {
+    fetch('/api/admin/ticket-requests')
+      .then((r) => r.json())
+      .then((d) => setTicketRequests(d.requests || []))
+      .catch(() => undefined)
+  }, [])
 
   const clearPrefill = useCallback(() => setCompanyPrefill(null), [])
 
@@ -127,7 +137,15 @@ export default function AdminDashboard() {
     fetch('/api/fleet').then((r) => r.json()).then((d) => setFleet(d.fleet || [])).catch(() => undefined)
     fetch('/api/leads').then((r) => r.json()).then((d) => setLeads(d.leads || [])).catch(() => undefined)
     fetch('/api/places').then((r) => r.json()).then((d) => d?.cities && setPlaces(d)).catch(() => undefined)
-  }, [])
+    loadTicketRequests()
+  }, [loadTicketRequests])
+
+  // New lost-ticket requests show up without reloading the page.
+  useEffect(() => {
+    if (checking) return
+    const id = setInterval(loadTicketRequests, 60_000)
+    return () => clearInterval(id)
+  }, [checking, loadTicketRequests])
 
   useEffect(() => {
     fetch('/api/auth/me')
@@ -190,6 +208,15 @@ export default function AdminDashboard() {
     loadAll()
   }
 
+  // A dashboard number can open Bookings already filtered (e.g. Refunds opens the refunded ones).
+  const [bookingsStart, setBookingsStart] = useState<'all' | 'refunded'>('all')
+  const [bookingsKey, setBookingsKey] = useState(0)
+  const openBookings = (filter: 'all' | 'refunded') => {
+    setBookingsStart(filter)
+    setBookingsKey((k) => k + 1)
+    go('bookings')
+  }
+
   const go = (next: Section) => {
     setSection(next)
     window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -201,7 +228,9 @@ export default function AdminDashboard() {
 
   const passwordRequests = companies.filter((c) => c.passwordResetRequestedAt).length
   const leadsDue = leads.filter((l) => isDue(l)).length
-  const badgeFor = (key: Section) => (key === 'companies' ? passwordRequests : key === 'leads' ? leadsDue : 0)
+  const newTicketRequests = ticketRequests.filter((r) => r.status === 'new').length
+  const badgeFor = (key: Section) =>
+    key === 'companies' ? passwordRequests : key === 'leads' ? leadsDue : key === 'dashboard' ? newTicketRequests : 0
   const title = NAV.find((n) => n.key === section)?.label ?? 'Dashboard'
 
   return (
@@ -315,10 +344,19 @@ export default function AdminDashboard() {
               />
             </div>
           )}
+          {section === 'dashboard' && <TicketRequestsPanel requests={ticketRequests} onChanged={loadTicketRequests} />}
           {section === 'dashboard' && (
-            <Overview stats={stats} bookings={bookings} buses={buses} onRefund={handleRefund} onSeeAllBookings={() => go('bookings')} />
+            <Overview
+              stats={stats}
+              bookings={bookings}
+              buses={buses}
+              onRefund={handleRefund}
+              onSeeAllBookings={() => openBookings('all')}
+              onOpen={(next, filter) => (next === 'bookings' ? openBookings(filter ?? 'all') : go(next))}
+            />
           )}
-          {section === 'bookings' && <BookingsSection bookings={bookings} query={query} onQuery={setQuery} onRefund={handleRefund} onDelete={handleDelete} onDeleteMany={handleDeleteMany} />}
+          {section === 'dashboard' && <ReviewsPanel />}
+          {section === 'bookings' && <BookingsSection key={bookingsKey} startFilter={bookingsStart} bookings={bookings} query={query} onQuery={setQuery} onRefund={handleRefund} onDelete={handleDelete} onDeleteMany={handleDeleteMany} />}
           {section === 'buses' && <BusesSection buses={buses} bookings={bookings} companies={companies} fleet={fleet} places={places} onChanged={loadAll} />}
           {section === 'costs' && <CostsSection />}
           {section === 'companies' && (

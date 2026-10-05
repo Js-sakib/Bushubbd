@@ -36,11 +36,14 @@ export default function SeatMap({
   myStaffId,
   busySeat,
   onTap,
+  highlight = [],
 }: {
   trip: CompanyTrip
   myStaffId?: string | null
   busySeat?: string | null
   onTap?: (seat: string, kind: SeatKind) => void
+  /** Seat kinds to outline in orange, e.g. the free seats after tapping Free. */
+  highlight?: SeatKind[]
 }) {
   const kinds = seatKinds(trip, myStaffId)
   const labels = generateSeatLabels(trip.totalSeats)
@@ -58,7 +61,7 @@ export default function SeatMap({
         aria-label={`Seat ${seat}`}
         className={`h-10 min-w-0 grow basis-0 rounded-[10px] text-[12px] font-bold transition disabled:cursor-default ${STYLES[kind]} ${
           busySeat === seat ? 'animate-pulse' : ''
-        }`}
+        } ${highlight.includes(kind) ? 'ring-[3px] ring-[#f2661d] ring-offset-1' : ''}`}
       >
         {seat}
       </button>

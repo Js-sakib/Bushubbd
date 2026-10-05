@@ -698,6 +698,77 @@ const cancelE = await call(`/api/admin/payouts/${invE.data.invoice._id}`, { meth
 check('the company can question an invoice before payment, and the admin can then cancel it', disputedE.status === 200 && disputedE.data.invoice.status === 'disputed' && cancelE.status === 200)
 
 
+// ---- Reviews and finding a lost ticket ----
+const reviewPhone = `+880 1${String(Date.now()).slice(-9)}`
+let reviewBooking = null
+for (const seat of ['9D', '9C', '8D', '8C', '7D']) {
+  const r = await call('/api/bookings', { method: 'POST', body: { busId: trip._id, seats: [seat], passengerName: 'Nusrat Jahan', passengerPhone: reviewPhone, passengerEmail: `nusrat.${run}@example.com` } })
+  if (r.status === 201) { reviewBooking = r.data.booking; break }
+}
+check('a booking for the review tests is made', !!reviewBooking)
+const unpaidReview = await call('/api/reviews', { method: 'POST', body: { bookingCode: reviewBooking.bookingCode, rating: 5, name: 'Nusrat' } })
+check('an unpaid ticket cannot be reviewed', unpaidReview.status === 403, `status ${unpaidReview.status}`)
+await call(`/api/bookings/${reviewBooking._id}`, { method: 'PATCH', body: { paymentStatus: 'paid', paymentMethod: 'bkash' } })
+const fakeReview = await call('/api/reviews', { method: 'POST', body: { bookingCode: 'BH-20990101-NOPE1', rating: 5, name: 'Fake' } })
+check('a made-up ticket code cannot post a review', fakeReview.status === 403 || fakeReview.status === 404, `status ${fakeReview.status}`)
+const badStars = await call('/api/reviews', { method: 'POST', body: { bookingCode: reviewBooking.bookingCode, rating: 9, name: 'Nusrat' } })
+check('a rating outside 1 to 5 is refused', badStars.status === 400)
+const linkReview = await call('/api/reviews', { method: 'POST', body: { bookingCode: reviewBooking.bookingCode, rating: 5, name: 'Nusrat', text: 'cheap tickets at www.spam.example' } })
+check('a review with a link is refused', linkReview.status === 400)
+const postReview = await call('/api/reviews', { method: 'POST', body: { bookingCode: reviewBooking.bookingCode, rating: 4, text: 'Easy booking, good seat.', name: 'Nusrat' } })
+const editReview = await call('/api/reviews', { method: 'POST', body: { bookingCode: reviewBooking.bookingCode, rating: 5, text: 'Easy booking, great seat.', name: 'Nusrat J.' } })
+check('a paid ticket can post a review and change it', postReview.status === 200 && editReview.status === 200)
+check('one ticket has one review', (await db.collection('reviews').countDocuments({ bookingCode: reviewBooking.bookingCode })) === 1)
+const publicReviews = await call('/api/reviews')
+const mine = publicReviews.data?.reviews?.find((r) => r.text === 'Easy booking, great seat.')
+check('the review shows on the home page list, without the ticket code', !!mine && mine.rating === 5 && !('bookingCode' in mine) && publicReviews.data.summary.count >= 1, JSON.stringify(mine))
+const reviewId = (await db.collection('reviews').findOne({ bookingCode: reviewBooking.bookingCode }))._id.toString()
+const outsiderHide = await call(`/api/admin/reviews/${reviewId}`, { method: 'PATCH', body: { hidden: true } })
+check('only the admin can hide a review', outsiderHide.status === 401)
+await call(`/api/admin/reviews/${reviewId}`, { method: 'PATCH', cookie: admin, body: { hidden: true } })
+const afterHide = await call('/api/reviews')
+check('a hidden review leaves the home page', !afterHide.data.reviews.some((r) => r.id === reviewId))
+await call('/api/reviews', { method: 'POST', body: { bookingCode: reviewBooking.bookingCode, rating: 5, text: 'Changed again', name: 'Nusrat' } })
+check('editing a hidden review does not bring it back', (await db.collection('reviews').findOne({ _id: new ObjectId(reviewId) })).hidden === true)
+
+// Counters from an earlier run in the last ten minutes would block these requests.
+await db.collection('rate_limits').deleteMany({ _id: /^ticketreq-/ })
+const askFor = (contact, name, note = '') => call('/api/tickets/requests', { method: 'POST', body: { contact, name, note } })
+const toBangla = (v) => v.replace(/[0-9]/g, (d) => String.fromCharCode(0x09e6 + Number(d)))
+const ask1 = await askFor(toBangla(`0${reviewPhone.slice(-10)}`), 'Mst Nusrat Jahan', 'Cox trip')
+const askStranger = await askFor('01999999991', 'Nobody Here')
+check('a lost-ticket request gets the same answer whether or not tickets exist, and shows no ticket',
+  ask1.status === 200 && askStranger.status === 200 && JSON.stringify(ask1.data) === JSON.stringify(askStranger.data) && !JSON.stringify(ask1.data).includes('BH-'),
+  JSON.stringify([ask1.data, askStranger.data]))
+check('a request needs a real number, email or ticket number, and a name', (await askFor('hello', 'Nusrat')).status === 400 && (await askFor('01999999992', '')).status === 400)
+const askAgain = await askFor(`0${reviewPhone.slice(-10)}`, 'Nusrat')
+const askSpam = await askFor(`+880 ${reviewPhone.slice(-10)}`, 'Nusrat')
+check('one number can send only 2 requests in 10 minutes', askAgain.status === 200 && askSpam.status === 429, `${askAgain.status} ${askSpam.status}`)
+check('only the admin can see requests', (await call('/api/admin/ticket-requests')).status === 401)
+const adminReqs = await call('/api/admin/ticket-requests', { cookie: admin })
+const myReq = adminReqs.data?.requests?.find((r) => r.note === 'Cox trip')
+const strangerReq = adminReqs.data?.requests?.find((r) => r.name === 'Nobody Here')
+check('the admin sees the request with the matching ticket and that the name fits',
+  !!myReq && myReq.status === 'new' && myReq.matches.some((m) => m.bookingCode === reviewBooking.bookingCode && m.nameMatch === true && m.passengerPhone === reviewPhone),
+  JSON.stringify(myReq))
+check('a request for a number with no tickets shows no match', !!strangerReq && strangerReq.matches.length === 0)
+check('new requests are counted for the admin badge', adminReqs.data.newCount >= 2)
+const markSent = await call(`/api/admin/ticket-requests/${myReq._id}`, { method: 'PATCH', cookie: admin, body: { status: 'sent', bookingCode: reviewBooking.bookingCode, via: 'whatsapp' } })
+const outsiderMark = await call(`/api/admin/ticket-requests/${strangerReq._id}`, { method: 'PATCH', body: { status: 'rejected' } })
+const afterMark = (await call('/api/admin/ticket-requests', { cookie: admin })).data.requests.find((r) => r._id === myReq._id)
+check('the admin can mark a request sent; nobody else can change it', markSent.status === 200 && afterMark.status === 'sent' && afterMark.sentBookingCode === reviewBooking.bookingCode && outsiderMark.status === 401)
+check('the old searches that showed or sent tickets from a number are gone',
+  (await call('/api/tickets/lookup', { method: 'POST', body: { contact: `0${reviewPhone.slice(-10)}`, name: 'Nusrat' } })).status === 404 &&
+  (await call('/api/tickets/resend', { method: 'POST', body: { contact: `0${reviewPhone.slice(-10)}` } })).status === 404)
+
+const sub = await call('/api/subscribe', { method: 'POST', body: { email: `Offers.${run}@Example.com` } })
+const subAgain = await call('/api/subscribe', { method: 'POST', body: { email: `offers.${run}@example.com` } })
+const badSub = await call('/api/subscribe', { method: 'POST', body: { email: 'not-an-email' } })
+check('an email can sign up for offers once, and a bad one is refused',
+  sub.status === 200 && subAgain.status === 200 && badSub.status === 400 &&
+  (await db.collection('subscribers').countDocuments({ email: `offers.${run.toLowerCase()}@example.com` })) === 1)
+
+
 // ---- Ticket codes are unique ----
 const codes = await db.collection('bookings').aggregate([{ $group: { _id: '$bookingCode', n: { $sum: 1 } } }, { $match: { n: { $gt: 1 } } }]).toArray()
 check('no two tickets share a code', codes.length === 0, JSON.stringify(codes))

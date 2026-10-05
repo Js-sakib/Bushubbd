@@ -9,7 +9,9 @@ let cachedDb: Db | null = null
  * start; createIndex is a no-op when the index already exists.
  */
 async function ensureIndexes(db: Db) {
-  const indexes: [string, Record<string, 1>, { name: string } & Record<string, unknown>][] = [
+  const indexes: [string, Record<string, 1 | -1>, { name: string } & Record<string, unknown>][] = [
+    // Request counters (lib/rateLimit) are deleted once their window is over.
+    ['rate_limits', { expiresAt: 1 }, { expireAfterSeconds: 0, name: 'rate_limit_expiry' }],
     ['bookings', { bookingCode: 1 }, { unique: true, name: 'bookingCode_unique' }],
     ['fleet', { nameKey: 1 }, { unique: true, name: 'fleet_name_unique' }],
     // A number plate belongs to one bus.
@@ -29,6 +31,11 @@ async function ensureIndexes(db: Db) {
     ['tripCosts', { busId: 1 }, { name: 'trip_costs' }],
     // A refunded ticket is taken back from the company once.
     ['payoutRefunds', { bookingId: 1 }, { unique: true, name: 'payout_refund_unique' }],
+    // One review per ticket; the home page reads the newest visible ones.
+    ['reviews', { bookingCode: 1 }, { unique: true, name: 'review_ticket_unique' }],
+    ['reviews', { hidden: 1, createdAt: -1 }, { name: 'review_list' }],
+    // An email signs up for offers once.
+    ['subscribers', { email: 1 }, { unique: true, name: 'subscriber_email_unique' }],
   ]
   for (const [collection, key, options] of indexes) {
     try {

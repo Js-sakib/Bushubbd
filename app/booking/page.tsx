@@ -125,7 +125,8 @@ function BookingContent() {
       }
 
       toast.success('Booking confirmed')
-      const next = new URLSearchParams({ bookingId })
+      // new=1: the ticket page asks "did you save it?" before the passenger leaves.
+      const next = new URLSearchParams({ bookingId, new: '1' })
       // On a round trip the return leg is booked as its own ticket, so carry it to the confirmation.
       if (returnBusId) {
         next.set('returnBusId', returnBusId)
@@ -342,8 +343,11 @@ function BookingContent() {
                 value={passenger.phone}
                 onChange={(e) => setPassenger({ ...passenger, phone: e.target.value })}
                 className="input-dark"
-                placeholder="8801XXXXXXXXX"
+                placeholder="01XXXXXXXXX"
               />
+              <span className="text-[11.5px] leading-snug text-[#4a4a4a]">
+                Your ticket comes to this number. Lost it later? Find it again in My tickets with this number.
+              </span>
             </div>
             <div className="flex flex-col gap-1.5">
               <label htmlFor="email" className="label-xs">

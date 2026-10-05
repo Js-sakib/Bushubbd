@@ -26,7 +26,7 @@ const range = (from: string, to: string) => (from === to ? formatTripDate(from) 
  * owed now (tickets on trips that have left), open it to pay and record the reference, then the
  * company signs it.
  */
-export default function PayoutsPanel() {
+export default function PayoutsPanel({ onShowTrips }: { onShowTrips: (period: 'finished' | 'upcoming') => void }) {
   const [data, setData] = useState<{ companies: CompanyOwed[]; invoices: InvoiceSummaryView[] } | null>(null)
   const [busy, setBusy] = useState<string | null>(null)
   const [search, setSearch] = useState('')
@@ -62,16 +62,26 @@ export default function PayoutsPanel() {
       <SearchBox value={search} onChange={setSearch} placeholder="Search company, invoice number, date, status" className="lg:col-span-2" />
       <div className="flex flex-col gap-3">
       <div className="grid grid-cols-2 gap-2.5">
-        <div className="flex flex-col gap-1 rounded-[18px] bg-gradient-to-br from-[#f2661d] to-[#feb249] p-3.5 shadow-[0_10px_24px_rgba(242,102,29,0.3)]">
+        <button
+          type="button"
+          onClick={() => onShowTrips('finished')}
+          className="flex flex-col gap-1 rounded-[18px] bg-gradient-to-br from-[#f2661d] to-[#feb249] p-3.5 text-left shadow-[0_10px_24px_rgba(242,102,29,0.3)] transition hover:-translate-y-0.5"
+        >
           <span className="text-[11px] font-bold text-[#4a1d00]">To pay now</span>
           <span className="display text-[22px] font-bold leading-tight text-[#1a0d03]">{taka(owedNow)}</span>
           <span className="text-[10.5px] text-[#4a1d00]">Trips that have left</span>
-        </div>
-        <div className="flex flex-col gap-1 rounded-[18px] bg-gradient-to-br from-[#2f5bc4] to-[#24479b] p-3.5">
-          <span className="text-[11px] font-bold text-[#dbe6ff]">Owed later</span>
-          <span className="display text-[22px] font-bold leading-tight text-white">{taka(later)}</span>
-          <span className="text-[10.5px] text-[#dbe6ff]">Trips still to leave</span>
-        </div>
+          <span className="text-[10.5px] font-bold text-[#1a0d03]">Details ›</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => onShowTrips('upcoming')}
+          className="flex flex-col gap-1 rounded-[18px] bg-[#002447] p-3.5 text-left text-[#fbeceb] shadow-[0_10px_24px_rgba(0,36,71,0.3)] transition hover:-translate-y-0.5"
+        >
+          <span className="text-[11px] font-bold opacity-80">Owed later</span>
+          <span className="display text-[22px] font-bold leading-tight">{taka(later)}</span>
+          <span className="text-[10.5px] opacity-80">Trips still to leave</span>
+          <span className="text-[10.5px] font-bold">Details ›</span>
+        </button>
       </div>
       {toSign > 0 && <p className="px-1 text-[12px] text-[#2563eb]">{toSign} paid invoice{toSign === 1 ? ' is' : 's are'} waiting for the company to sign.</p>}
 

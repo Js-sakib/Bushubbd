@@ -5,6 +5,8 @@ import { useSearchParams } from 'next/navigation'
 import toast from 'react-hot-toast'
 import Ticket, { TicketBooking } from './Ticket'
 import StoryCard from './StoryCard'
+import ReviewForm from './ReviewForm'
+import { saveTicket } from '../savedTickets'
 import { MAX_SEATS_PER_BOOKING } from '@/lib/seats'
 import { jpegToPdf } from '@/lib/pdf'
 
@@ -28,6 +30,8 @@ function ConfirmationContent() {
   const bookingId = searchParams.get('bookingId')
   const returnBusId = searchParams.get('returnBusId')
   const passengers = Math.min(MAX_SEATS_PER_BOOKING, Math.max(1, Number(searchParams.get('passengers')) || 1))
+  // Just bought (not opened again later): ask "did you save it?" before they leave.
+  const fresh = searchParams.get('new') === '1'
 
   const ticketRef = useRef<HTMLDivElement>(null)
   const storyRef = useRef<HTMLDivElement>(null)
@@ -36,6 +40,29 @@ function ConfirmationContent() {
   const [error, setError] = useState('')
   const [busy, setBusy] = useState<'download' | 'pdf' | 'share' | 'story' | null>(null)
   const [canShareFiles, setCanShareFiles] = useState(false)
+  // Whether the passenger downloaded, shared or printed the ticket (or said they saved it).
+  const [savedIt, setSavedIt] = useState(false)
+  // Where they wanted to go when the "did you save it?" question came up.
+  const [leaving, setLeaving] = useState<string | null>(null)
+
+  const savedKey = booking ? `bushub.saved.${booking.bookingCode}` : ''
+  const markSaved = useCallback(() => {
+    setSavedIt(true)
+    try {
+      if (savedKey) localStorage.setItem(savedKey, '1')
+    } catch {
+      // Storage off: the question may come up again, nothing worse.
+    }
+  }, [savedKey])
+
+  useEffect(() => {
+    if (!savedKey) return
+    try {
+      if (localStorage.getItem(savedKey)) setSavedIt(true)
+    } catch {
+      // Storage off.
+    }
+  }, [savedKey])
 
   useEffect(() => {
     if (!bookingId) {
@@ -46,8 +73,24 @@ function ConfirmationContent() {
     fetch(`/api/bookings/${bookingId}`)
       .then((res) => res.json())
       .then((data) => {
-        if (data.error) setError(data.error)
-        else setBooking(data.booking)
+        if (data.error) {
+          setError(data.error)
+          return
+        }
+        setBooking(data.booking)
+        // Remember a paid ticket on this phone, so My tickets can list it even if it was never downloaded.
+        const b = data.booking
+        if (b?.paymentStatus === 'paid' && b.bookingCode) {
+          saveTicket({
+            bookingCode: b.bookingCode,
+            from: b.from,
+            to: b.to,
+            date: b.date,
+            departureTime: b.departureTime,
+            seats: b.seats || [],
+            companyName: b.companyName,
+          })
+        }
       })
       .catch(() => setError('Failed to load booking'))
       .finally(() => setLoading(false))
@@ -92,8 +135,8 @@ function ConfirmationContent() {
   }
 
   // The ticket as an A4 PDF, drawn on white like the printout, saved straight to the phone.
-  const handlePdf = async () => {
-    if (!booking || !ticketRef.current) return
+  const handlePdf = async (): Promise<boolean> => {
+    if (!booking || !ticketRef.current) return false
     setBusy('pdf')
     const node = ticketRef.current
     node.classList.add('pdf-capture')
@@ -111,8 +154,11 @@ function ConfirmationContent() {
       const pdf = jpegToPdf(new Uint8Array(await jpeg.arrayBuffer()), canvas.width, canvas.height, `BusHub ticket ${booking.bookingCode}`)
       saveFile(pdf, `BusHub-ticket-${booking.bookingCode}.pdf`)
       toast.success('Ticket PDF downloaded')
+      markSaved()
+      return true
     } catch {
       toast.error('Could not make the PDF. Try Download image instead.')
+      return false
     } finally {
       node.classList.remove('pdf-capture')
       setBusy(null)
@@ -127,6 +173,7 @@ function ConfirmationContent() {
       if (!blob) throw new Error('empty')
       saveFile(blob, `BusHub-ticket-${booking.bookingCode}.png`)
       toast.success('Ticket image downloaded')
+      markSaved()
     } catch {
       toast.error('Could not save the image. Try Download PDF instead.')
     } finally {
@@ -146,6 +193,7 @@ function ConfirmationContent() {
         title: 'BusHub ticket',
         text: `${booking.from} → ${booking.to} · ${booking.date} · ${booking.bookingCode}`,
       })
+      markSaved()
     } catch (err) {
       // A cancelled share sheet is not a failure worth shouting about.
       if ((err as Error)?.name !== 'AbortError') toast.error('Could not share the ticket')
@@ -181,6 +229,55 @@ function ConfirmationContent() {
     }
   }
 
+  // Right after buying, leaving the page (back button, a link, closing the tab) first asks whether
+  // the ticket is saved. Once it is downloaded, shared, printed or they say yes, it never asks again.
+  const guard = fresh && !!booking && booking.paymentStatus === 'paid' && booking.status !== 'refunded' && !savedIt
+  useEffect(() => {
+    if (!guard) return
+    window.history.pushState({ bushubGuard: true }, '')
+    const onBack = () => {
+      window.history.pushState({ bushubGuard: true }, '')
+      setLeaving('/')
+    }
+    const onLink = (e: MouseEvent) => {
+      const link = (e.target as HTMLElement | null)?.closest?.('a[href]') as HTMLAnchorElement | null
+      if (!link || link.target === '_blank' || link.hasAttribute('download') || e.defaultPrevented) return
+      const href = link.getAttribute('href') || ''
+      if (href.startsWith('#') || href.startsWith('mailto:') || href.startsWith('tel:')) return
+      e.preventDefault()
+      setLeaving(href)
+    }
+    const onClose = (e: BeforeUnloadEvent) => {
+      e.preventDefault()
+      e.returnValue = ''
+    }
+    window.addEventListener('popstate', onBack)
+    document.addEventListener('click', onLink, true)
+    window.addEventListener('beforeunload', onClose)
+    return () => {
+      window.removeEventListener('popstate', onBack)
+      document.removeEventListener('click', onLink, true)
+      window.removeEventListener('beforeunload', onClose)
+    }
+  }, [guard])
+
+  const leaveTo = (href: string) => {
+    setLeaving(null)
+    // The guard's listeners are gone once savedIt is set; go on to where they were heading.
+    setTimeout(() => window.location.assign(href), 0)
+  }
+  const answerYes = () => {
+    const to = leaving || '/'
+    markSaved()
+    leaveTo(to)
+  }
+  const answerNo = async () => {
+    const to = leaving || '/'
+    setLeaving(null)
+    const ok = await handlePdf()
+    if (ok) setTimeout(() => window.location.assign(to), 1500)
+  }
+
   if (loading) {
     return <div className="py-16 text-center text-sm text-[#4a4a4a]">Loading your ticket...</div>
   }
@@ -204,6 +301,33 @@ function ConfirmationContent() {
 
   return (
     <div className="mx-auto w-full max-w-xl px-5 pb-10 pt-5">
+      {leaving !== null && (
+        <div className="no-print fixed inset-0 z-[70] flex items-end justify-center bg-[#111111]/45 p-4 backdrop-blur-sm sm:items-center" role="dialog" aria-modal="true" aria-labelledby="save-question">
+          <div className="flex w-full max-w-sm flex-col gap-4 rounded-[26px] bg-white p-6 shadow-[0_30px_80px_rgba(0,0,0,0.3)]">
+            <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#feb249]/30 text-[#c2410c]">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="h-6 w-6" aria-hidden>
+                <path d="M12 4v11" />
+                <path d="m7.5 11 4.5 4.5 4.5-4.5" />
+                <path d="M5 19.5h14" />
+              </svg>
+            </span>
+            <div className="flex flex-col gap-1">
+              <h2 id="save-question" className="display text-[19px] font-bold">
+                Did you save your ticket?
+              </h2>
+              <span className="text-[14px] font-semibold text-[#3f3f3f]">টিকেট সেভ করেছেন?</span>
+              <p className="mt-1 text-[13px] leading-relaxed text-[#3f3f3f]">You need its QR code to board the bus. Save it now so you have it without internet.</p>
+            </div>
+            <button type="button" onClick={answerNo} className="glass-btn btn-orange h-12 text-sm">
+              No, download it now · ডাউনলোড করুন
+            </button>
+            <button type="button" onClick={answerYes} className="glass-btn glass-btn-plain h-12 text-sm">
+              Yes, I saved it · হ্যাঁ
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="no-print flex items-center gap-3">
         <a href="/" aria-label="Back to home" className="icon-btn">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round" className="h-[18px] w-[18px]">
@@ -308,7 +432,14 @@ function ConfirmationContent() {
               {busy === 'share' ? 'Sharing...' : 'Share'}
             </button>
           )}
-          <button type="button" onClick={() => window.print()} className="glass-btn glass-btn-plain h-12 whitespace-nowrap px-3 text-sm">
+          <button
+            type="button"
+            onClick={() => {
+              markSaved()
+              window.print()
+            }}
+            className="glass-btn glass-btn-plain h-12 whitespace-nowrap px-3 text-sm"
+          >
             Print
           </button>
         </div>
@@ -316,6 +447,25 @@ function ConfirmationContent() {
         <p className="text-center text-[11.5px] leading-snug text-[#555555]">
           Keep the PDF or image on your phone so you can board without internet.
         </p>
+
+        {paid && booking.status !== 'refunded' && (
+          <a href="/tickets" className="flex items-center gap-3 rounded-2xl border border-[#53d3d1]/60 bg-white/75 p-3.5 transition hover:border-[#f2661d]/50">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#53d3d1] text-[#111111]">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5" aria-hidden>
+                <path d="m5 12.5 4.5 4.5L19 7.5" />
+              </svg>
+            </span>
+            <span className="flex min-w-0 flex-col gap-0.5">
+              <span className="text-[13.5px] font-bold">Your ticket is saved · টিকেট সংরক্ষিত</span>
+              <span className="text-[12px] leading-snug text-[#3f3f3f]">
+                {booking.ticketEmailedAt || booking.ticketWhatsappedAt
+                  ? `A copy was sent to your ${[booking.ticketWhatsappedAt && 'WhatsApp', booking.ticketEmailedAt && 'email'].filter(Boolean).join(' and ')}. `
+                  : ''}
+                Lost it later? Ask in <b>My tickets</b> and our team sends it to your WhatsApp or email.
+              </span>
+            </span>
+          </a>
+        )}
 
         {paid && booking.status !== 'refunded' && (
           <button
@@ -338,6 +488,8 @@ function ConfirmationContent() {
           </p>
         )}
       </div>
+
+      {paid && booking.status !== 'refunded' && <ReviewForm bookingCode={booking.bookingCode} passengerName={booking.passengerName} />}
 
       {returnBusId && (
         <div className="no-print mt-5 flex flex-col gap-3 rounded-[20px] border border-[#c3d1e0] bg-gradient-to-br from-[#002447]/90 to-[#08324d]/90 p-4 sm:max-w-lg">
