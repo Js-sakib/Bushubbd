@@ -2,10 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { ObjectId } from 'mongodb'
 import { connectToDatabase } from '@/lib/db'
 import { getAdminFromCookies } from '@/lib/auth'
-import { isExpired, getVerifyUrl, ticketExpiry } from '@/lib/tickets'
+import { isExpired, ticketExpiry } from '@/lib/tickets'
 import { releaseExpiredHolds, repairWronglyExpiredTickets } from '@/lib/seatHold'
-import { sendWhatsAppMessage } from '@/lib/whatsapp'
-import { whatsappNumber } from '@/lib/phone'
+import { deliverNewTicket, type DeliverableTicket } from '@/lib/ticketDelivery'
 
 export const dynamic = 'force-dynamic'
 
@@ -84,12 +83,19 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
       return NextResponse.json({ error: 'This booking can no longer be paid' }, { status: 409 })
     }
 
-    const verifyUrl = getVerifyUrl(booking.bookingCode)
-    // WhatsApp needs 8801XXXXXXXXX; passengers type 01XXXXXXXXX, with spaces or dashes.
-    sendWhatsAppMessage(
-      whatsappNumber(booking.passengerPhone) ?? booking.passengerPhone,
-      `Your BusHub ticket is confirmed!\nBooking: ${booking.bookingCode}\n${booking.busName} (${booking.companyName})\n${booking.from} to ${booking.to}\nDate: ${booking.date} ${booking.departureTime}\nSeats: ${booking.seats.join(', ')}\nTotal: ৳${booking.totalPrice}\n\nShow this to the conductor:\n${verifyUrl}\n\nOne ticket boards once. Don't share your QR code.`
-    ).catch(() => {})
+    // The ticket goes straight to the passenger's email and WhatsApp, so a ticket that was never
+    // downloaded is still safe in their inbox. Waited for (with a limit) because the server may stop
+    // once the reply is sent; what was sent is recorded so the ticket page can say so.
+    const sent = await Promise.race([
+      deliverNewTicket(booking as unknown as DeliverableTicket).catch(() => ({ email: false, whatsapp: false })),
+      new Promise<{ email: boolean; whatsapp: boolean }>((resolve) => setTimeout(() => resolve({ email: false, whatsapp: false }), 6000)),
+    ])
+    if (sent.email || sent.whatsapp) {
+      const at = new Date().toISOString()
+      const stamp = { ...(sent.email ? { ticketEmailedAt: at } : {}), ...(sent.whatsapp ? { ticketWhatsappedAt: at } : {}) }
+      await db.collection('bookings').updateOne({ _id: booking._id }, { $set: stamp })
+      Object.assign(booking, stamp)
+    }
 
     return NextResponse.json({ booking })
   } catch (err) {

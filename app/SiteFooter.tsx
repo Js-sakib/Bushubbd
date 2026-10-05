@@ -169,7 +169,7 @@ export default function SiteFooter() {
               {[
                 ['QR ticket, checked at the bus door', 'bg-[#53d3d1]'],
                 ['Your seat is held 10 minutes while you pay', 'bg-[#feb249]'],
-                ['Lost ticket? Find it again any time', 'bg-[#f9c6dc]'],
+                ['Your ticket also comes to your WhatsApp and email', 'bg-[#f9c6dc]'],
               ].map(([text, dot]) => (
                 <li key={text} className="flex items-center gap-2.5 text-[12.5px] text-[#2b2b2b]">
                   <span className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full ${dot}`}>
@@ -233,7 +233,7 @@ export default function SiteFooter() {
               </span>
               <span className="flex flex-col">
                 <span className="text-[13.5px] font-bold">Lost your ticket?</span>
-                <span className="text-[12px] text-[#4a4a4a]">Find and download it again with your mobile number</span>
+                <span className="text-[12px] text-[#4a4a4a]">We send it again to your WhatsApp or email</span>
               </span>
             </a>
           </div>

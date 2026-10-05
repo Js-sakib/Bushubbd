@@ -1,9 +1,9 @@
 import { phoneDigits } from './phone'
 
 /**
- * Finding a passenger's tickets again from the mobile number or email they booked with plus
- * their name, for someone who lost the ticket page. Both must match, and wrong tries are
- * counted (see the lookup route), so nobody can open another person's ticket by guessing.
+ * Reading what a passenger types to get their tickets sent again: a mobile number (any format,
+ * English or Bangla digits), an email or a ticket number. The tickets only ever go to the number
+ * or email they were booked with (see /api/tickets/resend), never onto the screen.
  */
 
 /** Bangla digits (০১২…) as English ones, so a number typed on a Bangla keyboard works too. */
@@ -42,28 +42,4 @@ const escapeRegex = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 /** The exact email, whatever its capitals. */
 export function emailPattern(email: string): RegExp {
   return new RegExp(`^\\s*${escapeRegex(email.trim())}\\s*$`, 'i')
-}
-
-/** Titles many names start with, which people add or leave out: Md, Mohammad, Mst, Mrs... */
-const TITLES = new Set(['md', 'mohammad', 'mohammed', 'muhammad', 'mohd', 'mst', 'most', 'mosammat', 'mossammat', 'mrs', 'mr', 'ms', 'miss', 'sk', 'sheikh'])
-
-/** A name as its words: small letters, without dots, commas or titles like Md. */
-export function nameWords(name: string): string[] {
-  return String(name || '')
-    .toLowerCase()
-    .replace(/[.,'"`’()-]/g, ' ')
-    .split(/\s+/)
-    .filter((w) => w && !TITLES.has(w))
-}
-
-/**
- * The full name as booked (in any order, with or without Md and the like), or just the first
- * name, counts as a match.
- */
-export function nameMatches(typed: string, booked: string): boolean {
-  const a = nameWords(typed)
-  const b = nameWords(booked)
-  if (a.length === 0 || a.join('').length < 2 || b.length === 0) return false
-  const same = a.length === b.length && [...a].sort().join(' ') === [...b].sort().join(' ')
-  return same || (a.length === 1 && a[0] === b[0])
 }

@@ -126,7 +126,8 @@ function BookingContent() {
       }
 
       toast.success('Booking confirmed')
-      const next = new URLSearchParams({ bookingId })
+      // new=1: the ticket page asks "did you save it?" before the passenger leaves.
+      const next = new URLSearchParams({ bookingId, new: '1' })
       // On a round trip the return leg is booked as its own ticket, so carry it to the confirmation.
       if (returnBusId) {
         next.set('returnBusId', returnBusId)

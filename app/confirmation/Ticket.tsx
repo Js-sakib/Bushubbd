@@ -32,6 +32,10 @@ export interface TicketBooking {
   status: string
   qrCode: string
   validUntil: string
+  passengerEmail?: string
+  /** When the ticket was sent to the passenger's email / WhatsApp after payment. */
+  ticketEmailedAt?: string
+  ticketWhatsappedAt?: string
 }
 
 const INK = '#100c0d'
