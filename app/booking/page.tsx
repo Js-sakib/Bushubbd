@@ -343,8 +343,11 @@ function BookingContent() {
                 value={passenger.phone}
                 onChange={(e) => setPassenger({ ...passenger, phone: e.target.value })}
                 className="input-dark"
-                placeholder="8801XXXXXXXXX"
+                placeholder="01XXXXXXXXX"
               />
+              <span className="text-[11.5px] leading-snug text-[#4a4a4a]">
+                Your ticket comes to this number. Lost it later? Find it again in My tickets with this number.
+              </span>
             </div>
             <div className="flex flex-col gap-1.5">
               <label htmlFor="email" className="label-xs">

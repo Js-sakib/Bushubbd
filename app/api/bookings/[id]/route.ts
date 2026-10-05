@@ -5,6 +5,7 @@ import { getAdminFromCookies } from '@/lib/auth'
 import { isExpired, getVerifyUrl, ticketExpiry } from '@/lib/tickets'
 import { releaseExpiredHolds, repairWronglyExpiredTickets } from '@/lib/seatHold'
 import { sendWhatsAppMessage } from '@/lib/whatsapp'
+import { whatsappNumber } from '@/lib/phone'
 
 export const dynamic = 'force-dynamic'
 
@@ -84,8 +85,9 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     }
 
     const verifyUrl = getVerifyUrl(booking.bookingCode)
+    // WhatsApp needs 8801XXXXXXXXX; passengers type 01XXXXXXXXX, with spaces or dashes.
     sendWhatsAppMessage(
-      booking.passengerPhone,
+      whatsappNumber(booking.passengerPhone) ?? booking.passengerPhone,
       `Your BusHub ticket is confirmed!\nBooking: ${booking.bookingCode}\n${booking.busName} (${booking.companyName})\n${booking.from} to ${booking.to}\nDate: ${booking.date} ${booking.departureTime}\nSeats: ${booking.seats.join(', ')}\nTotal: ৳${booking.totalPrice}\n\nShow this to the conductor:\n${verifyUrl}\n\nOne ticket boards once. Don't share your QR code.`
     ).catch(() => {})
 

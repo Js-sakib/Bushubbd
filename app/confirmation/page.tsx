@@ -332,12 +332,24 @@ function ConfirmationContent() {
         </div>
 
         <p className="text-center text-[11.5px] leading-snug text-[#555555]">
-          Keep the PDF or image on your phone so you can board without internet. Lost it? Find it again any time in{' '}
-          <a href="/tickets" className="font-bold text-[#0b7f8c] underline-offset-2 hover:underline">
-            My tickets
-          </a>{' '}
-          with your mobile number.
+          Keep the PDF or image on your phone so you can board without internet.
         </p>
+
+        {paid && booking.status !== 'refunded' && (
+          <a href="/tickets" className="flex items-center gap-3 rounded-2xl border border-[#53d3d1]/60 bg-white/75 p-3.5 transition hover:border-[#f2661d]/50">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#53d3d1] text-[#111111]">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5" aria-hidden>
+                <path d="m5 12.5 4.5 4.5L19 7.5" />
+              </svg>
+            </span>
+            <span className="flex min-w-0 flex-col gap-0.5">
+              <span className="text-[13.5px] font-bold">Your ticket is saved · টিকেট সংরক্ষিত</span>
+              <span className="text-[12px] leading-snug text-[#3f3f3f]">
+                Lost it later? Open <b>My tickets</b> and type {booking.passengerPhone ? <b>{booking.passengerPhone}</b> : 'your number'} and your name.
+              </span>
+            </span>
+          </a>
+        )}
 
         {paid && booking.status !== 'refunded' && (
           <button

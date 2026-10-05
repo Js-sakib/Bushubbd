@@ -93,6 +93,8 @@ export default function MyTickets() {
         return
       }
       setFound(data.tickets)
+      // Bring the result into view on a phone, where it sits below the keyboard.
+      setTimeout(() => document.getElementById('found-tickets')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50)
     } catch {
       setError('No internet connection. Try again in a moment.')
     } finally {
@@ -131,22 +133,22 @@ export default function MyTickets() {
         <div className="flex flex-col gap-1">
           <span className="text-[16px] font-bold">Find your ticket again</span>
           <span className="text-[12.5px] leading-snug text-[#3f3f3f]">
-            Forgot to download it? Write the mobile number or email you booked with, and your name. টিকেট হারিয়ে গেলে এখানে খুঁজুন।
+            Forgot to download it? Type the mobile number you booked with and your name. টিকেট হারিয়ে গেলে মোবাইল নম্বর ও নাম দিয়ে খুঁজুন।
           </span>
         </div>
         <label className="flex flex-col gap-1">
-          <span className="label-xs">Mobile number or email</span>
+          <span className="label-xs">Mobile number, email or ticket number</span>
           <input
             required
             value={contact}
             onChange={(e) => setContact(e.target.value)}
-            placeholder="01712345678 or you@gmail.com"
+            placeholder="01712345678"
             className="input-dark"
           />
         </label>
         <label className="flex flex-col gap-1">
-          <span className="label-xs">Your name (as on the ticket)</span>
-          <input required value={name} onChange={(e) => setName(e.target.value)} placeholder="Rahima Akter" autoComplete="name" className="input-dark" />
+          <span className="label-xs">Your name (first name is enough)</span>
+          <input required value={name} onChange={(e) => setName(e.target.value)} placeholder="Rahima" autoComplete="given-name" className="input-dark" />
         </label>
         <button type="submit" disabled={searching} className="glass-btn btn-orange h-12 text-sm">
           {searching ? 'Searching...' : 'Find my tickets'}
@@ -157,12 +159,12 @@ export default function MyTickets() {
           </p>
         )}
         <span className="text-[11px] leading-snug text-[#555555]">
-          Tickets show only when both the number (or email) and the name match. Your details stay private.
+          Bangla or English digits both work. Tickets show only when the number and name match, so nobody else can open them.
         </span>
       </form>
 
       {found && (
-        <section className="mt-6 flex flex-col gap-3" aria-live="polite">
+        <section id="found-tickets" className="mt-6 flex scroll-mt-24 flex-col gap-3" aria-live="polite">
           <h2 className="text-[15px] font-bold">
             {found.length} ticket{found.length === 1 ? '' : 's'} found
           </h2>

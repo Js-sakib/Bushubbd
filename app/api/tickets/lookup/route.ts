@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { connectToDatabase } from '@/lib/db'
 import { clientIp, recordMiss, tooManyMisses } from '@/lib/rateLimit'
-import { emailPattern, looksLikeEmail, mobileCore, nameMatches, phonePattern } from '@/lib/ticketLookup'
+import { emailPattern, looksLikeEmail, mobileCore, nameMatches, phonePattern, ticketCode } from '@/lib/ticketLookup'
 import { ticketExpiry } from '@/lib/tickets'
 
 export const dynamic = 'force-dynamic'
@@ -15,7 +15,7 @@ const MISSES_PER_CONTACT = 5
 const NOT_FOUND = 'No tickets found. Check the number or email and the name you booked with.'
 
 /**
- * A passenger finds their tickets again with the mobile number or email they booked with and
+ * A passenger finds their tickets again with the mobile number, email or ticket number they booked with and
  * their name. Both have to match a paid ticket. Wrong tries are counted per visitor and per
  * number, so the name can't be guessed by trying again and again.
  */
@@ -28,19 +28,21 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Please write your mobile number or email, and your name' }, { status: 400 })
     }
 
-    const core = looksLikeEmail(contact) ? null : mobileCore(contact)
-    if (!core && !looksLikeEmail(contact)) {
-      return NextResponse.json({ error: 'Please write a mobile number like 01712345678, or an email' }, { status: 400 })
+    const email = looksLikeEmail(contact)
+    const code = email ? null : ticketCode(contact)
+    const core = email || code ? null : mobileCore(contact)
+    if (!email && !code && !core) {
+      return NextResponse.json({ error: 'Please write a mobile number like 01712345678, an email or a ticket number' }, { status: 400 })
     }
 
     const { db } = await connectToDatabase()
     const visitorKey = `lookup-ip|${clientIp(req.headers)}`
-    const contactKey = `lookup-contact|${core ?? contact.toLowerCase()}`
+    const contactKey = `lookup-contact|${core ?? code ?? contact.toLowerCase()}`
     if ((await tooManyMisses(db, visitorKey, MISSES_PER_VISITOR)) || (await tooManyMisses(db, contactKey, MISSES_PER_CONTACT))) {
       return NextResponse.json({ error: 'Too many tries. Please wait 10 minutes and try again.' }, { status: 429 })
     }
 
-    const match = core ? { passengerPhone: phonePattern(core) } : { passengerEmail: emailPattern(contact) }
+    const match = code ? { bookingCode: code } : core ? { passengerPhone: phonePattern(core) } : { passengerEmail: emailPattern(contact) }
     const candidates = await db
       .collection('bookings')
       .find({ ...match, paymentStatus: 'paid' })
