@@ -461,7 +461,7 @@ function ConfirmationContent() {
                 {booking.ticketEmailedAt || booking.ticketWhatsappedAt
                   ? `A copy was sent to your ${[booking.ticketWhatsappedAt && 'WhatsApp', booking.ticketEmailedAt && 'email'].filter(Boolean).join(' and ')}. `
                   : ''}
-                Lost it later? Open <b>My tickets</b> and we send it to your WhatsApp or email again.
+                Lost it later? Ask in <b>My tickets</b> and our team sends it to your WhatsApp or email.
               </span>
             </span>
           </a>

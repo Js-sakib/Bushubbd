@@ -782,23 +782,35 @@ check('a hidden review leaves the home page', !afterHide.data.reviews.some((r) =
 await call('/api/reviews', { method: 'POST', body: { bookingCode: reviewBooking.bookingCode, rating: 5, text: 'Changed again', name: 'Nusrat' } })
 check('editing a hidden review does not bring it back', (await db.collection('reviews').findOne({ _id: new ObjectId(reviewId) })).hidden === true)
 
-const resend = (contact) => call('/api/tickets/resend', { method: 'POST', body: { contact } })
+// Counters from an earlier run in the last ten minutes would block these requests.
+await db.collection('rate_limits').deleteMany({ _id: /^ticketreq-/ })
+const askFor = (contact, name, note = '') => call('/api/tickets/requests', { method: 'POST', body: { contact, name, note } })
 const toBangla = (v) => v.replace(/[0-9]/g, (d) => String.fromCharCode(0x09e6 + Number(d)))
-const mine1 = await resend(`0${reviewPhone.slice(-10)}`)
-const stranger = await resend('01999999990')
-check('asking to resend tickets gives the same answer whether or not the number has tickets, and shows no ticket',
-  mine1.status === 200 && stranger.status === 200 && JSON.stringify(mine1.data) === JSON.stringify(stranger.data) && !JSON.stringify(mine1.data).includes('BH-'),
-  JSON.stringify([mine1.data, stranger.data]))
-const byBanglaDigits = await resend(toBangla(`0${reviewPhone.slice(-10)}`))
-check('a number typed in Bangla digits is understood', byBanglaDigits.status === 200 && byBanglaDigits.data.via === 'whatsapp')
-const byMail = await resend(`NUSRAT.${run}@example.com`)
-const byTicket = await resend(reviewBooking.bookingCode.toLowerCase())
-check('an email or a ticket number can be used too', byMail.status === 200 && byMail.data.via === 'email' && byTicket.status === 200 && byTicket.data.via === 'both')
-check('nonsense is refused', (await resend('hello')).status === 400)
-await resend(`+880 ${reviewPhone.slice(-10)}`)
-const spam = await resend(`0${reviewPhone.slice(-10)}`)
-check('one number can ask only 3 times in 10 minutes, so nobody can flood a passenger', spam.status === 429, `status ${spam.status}`)
-check('the old search that showed tickets from a number and name is gone', (await call('/api/tickets/lookup', { method: 'POST', body: { contact: `0${reviewPhone.slice(-10)}`, name: 'Nusrat' } })).status === 404)
+const ask1 = await askFor(toBangla(`0${reviewPhone.slice(-10)}`), 'Mst Nusrat Jahan', 'Cox trip')
+const askStranger = await askFor('01999999991', 'Nobody Here')
+check('a lost-ticket request gets the same answer whether or not tickets exist, and shows no ticket',
+  ask1.status === 200 && askStranger.status === 200 && JSON.stringify(ask1.data) === JSON.stringify(askStranger.data) && !JSON.stringify(ask1.data).includes('BH-'),
+  JSON.stringify([ask1.data, askStranger.data]))
+check('a request needs a real number, email or ticket number, and a name', (await askFor('hello', 'Nusrat')).status === 400 && (await askFor('01999999992', '')).status === 400)
+const askAgain = await askFor(`0${reviewPhone.slice(-10)}`, 'Nusrat')
+const askSpam = await askFor(`+880 ${reviewPhone.slice(-10)}`, 'Nusrat')
+check('one number can send only 2 requests in 10 minutes', askAgain.status === 200 && askSpam.status === 429, `${askAgain.status} ${askSpam.status}`)
+check('only the admin can see requests', (await call('/api/admin/ticket-requests')).status === 401)
+const adminReqs = await call('/api/admin/ticket-requests', { cookie: admin })
+const myReq = adminReqs.data?.requests?.find((r) => r.note === 'Cox trip')
+const strangerReq = adminReqs.data?.requests?.find((r) => r.name === 'Nobody Here')
+check('the admin sees the request with the matching ticket and that the name fits',
+  !!myReq && myReq.status === 'new' && myReq.matches.some((m) => m.bookingCode === reviewBooking.bookingCode && m.nameMatch === true && m.passengerPhone === reviewPhone),
+  JSON.stringify(myReq))
+check('a request for a number with no tickets shows no match', !!strangerReq && strangerReq.matches.length === 0)
+check('new requests are counted for the admin badge', adminReqs.data.newCount >= 2)
+const markSent = await call(`/api/admin/ticket-requests/${myReq._id}`, { method: 'PATCH', cookie: admin, body: { status: 'sent', bookingCode: reviewBooking.bookingCode, via: 'whatsapp' } })
+const outsiderMark = await call(`/api/admin/ticket-requests/${strangerReq._id}`, { method: 'PATCH', body: { status: 'rejected' } })
+const afterMark = (await call('/api/admin/ticket-requests', { cookie: admin })).data.requests.find((r) => r._id === myReq._id)
+check('the admin can mark a request sent; nobody else can change it', markSent.status === 200 && afterMark.status === 'sent' && afterMark.sentBookingCode === reviewBooking.bookingCode && outsiderMark.status === 401)
+check('the old searches that showed or sent tickets from a number are gone',
+  (await call('/api/tickets/lookup', { method: 'POST', body: { contact: `0${reviewPhone.slice(-10)}`, name: 'Nusrat' } })).status === 404 &&
+  (await call('/api/tickets/resend', { method: 'POST', body: { contact: `0${reviewPhone.slice(-10)}` } })).status === 404)
 
 const sub = await call('/api/subscribe', { method: 'POST', body: { email: `Offers.${run}@Example.com` } })
 const subAgain = await call('/api/subscribe', { method: 'POST', body: { email: `offers.${run}@example.com` } })

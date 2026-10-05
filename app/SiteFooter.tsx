@@ -233,7 +233,7 @@ export default function SiteFooter() {
               </span>
               <span className="flex flex-col">
                 <span className="text-[13.5px] font-bold">Lost your ticket?</span>
-                <span className="text-[12px] text-[#4a4a4a]">We send it again to your WhatsApp or email</span>
+                <span className="text-[12px] text-[#4a4a4a]">Ask us and we send it to your WhatsApp or email</span>
               </span>
             </a>
           </div>

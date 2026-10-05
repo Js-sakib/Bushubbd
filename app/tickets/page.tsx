@@ -39,15 +39,17 @@ function SavedRow({ ticket, past, onForget }: { ticket: SavedTicket; past: boole
 }
 
 /**
- * My tickets: tickets this phone has opened, and "send my ticket again" for a passenger who
- * lost theirs. For privacy a ticket is never shown here from a number or email; it is sent to
- * the WhatsApp number or email it was booked with.
+ * My tickets: tickets this phone has opened, and a lost-ticket request for a passenger who lost
+ * theirs. For privacy a ticket is never shown here from a number or email: the BusHub team
+ * checks the request and sends the ticket to the WhatsApp number or email it was booked with.
  */
 export default function MyTickets() {
   const [contact, setContact] = useState('')
+  const [name, setName] = useState('')
+  const [note, setNote] = useState('')
   const [sending, setSending] = useState(false)
   const [error, setError] = useState('')
-  const [sent, setSent] = useState<{ via: 'whatsapp' | 'email' | 'both'; to: string } | null>(null)
+  const [sent, setSent] = useState(false)
   const [saved, setSaved] = useState<SavedTicket[]>([])
 
   useEffect(() => setSaved(readSavedTickets()), [])
@@ -55,20 +57,20 @@ export default function MyTickets() {
   const send = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
-    setSent(null)
+    setSent(false)
     setSending(true)
     try {
-      const res = await fetch('/api/tickets/resend', {
+      const res = await fetch('/api/tickets/requests', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ contact }),
+        body: JSON.stringify({ contact, name, note }),
       })
       const data = await res.json().catch(() => null)
       if (!res.ok) {
         setError(data?.error || 'Could not send right now, please try again')
         return
       }
-      setSent({ via: data.via, to: contact.trim() })
+      setSent(true)
     } catch {
       setError('No internet connection. Try again in a moment.')
     } finally {
@@ -122,25 +124,12 @@ export default function MyTickets() {
 
       <form onSubmit={send} className="card-2 mt-6 flex flex-col gap-3.5 p-5">
         <div className="flex flex-col gap-1">
-          <span className="text-[16px] font-bold">Lost your ticket? Get it again</span>
+          <span className="text-[16px] font-bold">Lost your ticket? Ask us</span>
           <span className="text-[12.5px] leading-snug text-[#3f3f3f]">
-            Type the mobile number or email you booked with. We send your tickets to that WhatsApp or email. টিকেট হারালে নম্বর দিন, আমরা আপনার WhatsApp বা ইমেইলে পাঠিয়ে দেব।
+            Our team checks your booking and sends the ticket to the WhatsApp number or email you booked with. টিকেট হারালে জানান, আমরা যাচাই করে আপনার WhatsApp বা ইমেইলে পাঠিয়ে দেব।
           </span>
         </div>
-        <label className="flex flex-col gap-1">
-          <span className="label-xs">Mobile number, email or ticket number</span>
-          <input required value={contact} onChange={(e) => setContact(e.target.value)} placeholder="01712345678" className="input-dark" />
-        </label>
-        <button type="submit" disabled={sending} className="glass-btn btn-orange h-12 text-sm">
-          {sending ? 'Sending...' : 'Send my tickets'}
-        </button>
-
-        {error && (
-          <p role="alert" className="rounded-2xl bg-[#f87171]/[0.12] px-3.5 py-2.5 text-[12.5px] font-semibold text-[#b91c1c]">
-            {error}
-          </p>
-        )}
-        {sent && (
+        {sent ? (
           <div role="status" className="flex gap-3 rounded-2xl border border-[#53d3d1]/70 bg-[#53d3d1]/15 p-3.5">
             <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#53d3d1] text-[#111111]">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4" aria-hidden>
@@ -148,15 +137,33 @@ export default function MyTickets() {
               </svg>
             </span>
             <span className="text-[12.5px] leading-snug text-[#1f1f1f]">
-              <b>Done.</b>{' '}
-              {sent.via === 'email'
-                ? `If you booked with ${sent.to}, your tickets are on their way to that inbox. Check Spam too.`
-                : sent.via === 'whatsapp'
-                  ? `If you booked with ${sent.to}, your tickets are on their way to that number's WhatsApp.`
-                  : 'If that ticket number is right, the ticket is on its way to the WhatsApp number and email it was booked with.'}{' '}
-              It can take a minute.
+              <b>Request sent · অনুরোধ পাঠানো হয়েছে।</b> Our team checks it and sends your ticket to the WhatsApp number or email you booked with, usually within a few hours. Please keep your phone with you.
             </span>
           </div>
+        ) : (
+          <>
+            <label className="flex flex-col gap-1">
+              <span className="label-xs">Mobile number, email or ticket number</span>
+              <input required value={contact} onChange={(e) => setContact(e.target.value)} placeholder="01712345678" className="input-dark" />
+            </label>
+            <label className="flex flex-col gap-1">
+              <span className="label-xs">Your name (as on the ticket)</span>
+              <input required value={name} onChange={(e) => setName(e.target.value)} placeholder="Rahima Akter" autoComplete="name" className="input-dark" />
+            </label>
+            <label className="flex flex-col gap-1">
+              <span className="label-xs">Route or travel date (optional)</span>
+              <input value={note} onChange={(e) => setNote(e.target.value.slice(0, 300))} placeholder="Dhaka to Cox's Bazar, 7 October" className="input-dark" />
+            </label>
+            <button type="submit" disabled={sending} className="glass-btn btn-orange h-12 text-sm">
+              {sending ? 'Sending...' : 'Send request'}
+            </button>
+          </>
+        )}
+
+        {error && (
+          <p role="alert" className="rounded-2xl bg-[#f87171]/[0.12] px-3.5 py-2.5 text-[12.5px] font-semibold text-[#b91c1c]">
+            {error}
+          </p>
         )}
 
         <div className="flex items-start gap-2.5 rounded-2xl bg-white/60 p-3">
@@ -165,7 +172,7 @@ export default function MyTickets() {
             <path d="M8 10.5V7.5a4 4 0 0 1 8 0v3" />
           </svg>
           <span className="text-[11.5px] leading-snug text-[#3f3f3f]">
-            For your safety, tickets never show on this page. They only go to the WhatsApp number or email they were booked with, so nobody else can get your ticket.
+            For your safety, tickets never show on this page. A person from BusHub checks every request and sends the ticket only to the number or email it was booked with.
           </span>
         </div>
       </form>

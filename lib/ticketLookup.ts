@@ -1,9 +1,9 @@
 import { phoneDigits } from './phone'
 
 /**
- * Reading what a passenger types to get their tickets sent again: a mobile number (any format,
- * English or Bangla digits), an email or a ticket number. The tickets only ever go to the number
- * or email they were booked with (see /api/tickets/resend), never onto the screen.
+ * Reading what a passenger types when asking for a lost ticket: a mobile number (any format,
+ * English or Bangla digits), an email or a ticket number. The admin checks each request and sends
+ * the ticket to the number or email it was booked with; nothing is ever shown to whoever asked.
  */
 
 /** Bangla digits (০১২…) as English ones, so a number typed on a Bangla keyboard works too. */
@@ -42,4 +42,35 @@ const escapeRegex = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 /** The exact email, whatever its capitals. */
 export function emailPattern(email: string): RegExp {
   return new RegExp(`^\\s*${escapeRegex(email.trim())}\\s*$`, 'i')
+}
+
+/** Titles many names start with, which people add or leave out: Md, Mohammad, Mst, Mrs... */
+const TITLES = new Set(['md', 'mohammad', 'mohammed', 'muhammad', 'mohd', 'mst', 'most', 'mosammat', 'mossammat', 'mrs', 'mr', 'ms', 'miss', 'sk', 'sheikh'])
+
+const nameWords = (name: string) =>
+  String(name || '')
+    .toLowerCase()
+    .replace(/[.,'"`’()-]/g, ' ')
+    .split(/\s+/)
+    .filter((w) => w && !TITLES.has(w))
+
+/**
+ * Whether the name in a lost-ticket request fits the name on a ticket: the same words in any
+ * order (with or without Md and the like), or the first name. A hint for the admin, who decides.
+ */
+export function nameMatches(typed: string, booked: string): boolean {
+  const a = nameWords(typed)
+  const b = nameWords(booked)
+  if (a.length === 0 || b.length === 0) return false
+  const same = a.length === b.length && [...a].sort().join(' ') === [...b].sort().join(' ')
+  return same || (a.length === 1 && a[0] === b[0])
+}
+
+/** The bookings a typed number, email or ticket number points to. */
+export function contactQuery(contact: string): Record<string, unknown> | null {
+  if (looksLikeEmail(contact)) return { passengerEmail: emailPattern(contact) }
+  const code = ticketCode(contact)
+  if (code) return { bookingCode: code }
+  const core = mobileCore(contact)
+  return core ? { passengerPhone: phonePattern(core) } : null
 }
