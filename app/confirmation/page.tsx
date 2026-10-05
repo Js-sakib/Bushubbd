@@ -5,6 +5,8 @@ import { useSearchParams } from 'next/navigation'
 import toast from 'react-hot-toast'
 import Ticket, { TicketBooking } from './Ticket'
 import StoryCard from './StoryCard'
+import ReviewForm from './ReviewForm'
+import { saveTicket } from '../savedTickets'
 import { MAX_SEATS_PER_BOOKING } from '@/lib/seats'
 import { jpegToPdf } from '@/lib/pdf'
 
@@ -46,8 +48,24 @@ function ConfirmationContent() {
     fetch(`/api/bookings/${bookingId}`)
       .then((res) => res.json())
       .then((data) => {
-        if (data.error) setError(data.error)
-        else setBooking(data.booking)
+        if (data.error) {
+          setError(data.error)
+          return
+        }
+        setBooking(data.booking)
+        // Remember a paid ticket on this phone, so My tickets can list it even if it was never downloaded.
+        const b = data.booking
+        if (b?.paymentStatus === 'paid' && b.bookingCode) {
+          saveTicket({
+            bookingCode: b.bookingCode,
+            from: b.from,
+            to: b.to,
+            date: b.date,
+            departureTime: b.departureTime,
+            seats: b.seats || [],
+            companyName: b.companyName,
+          })
+        }
       })
       .catch(() => setError('Failed to load booking'))
       .finally(() => setLoading(false))
@@ -314,7 +332,11 @@ function ConfirmationContent() {
         </div>
 
         <p className="text-center text-[11.5px] leading-snug text-[#555555]">
-          Keep the PDF or image on your phone so you can board without internet.
+          Keep the PDF or image on your phone so you can board without internet. Lost it? Find it again any time in{' '}
+          <a href="/tickets" className="font-bold text-[#0b7f8c] underline-offset-2 hover:underline">
+            My tickets
+          </a>{' '}
+          with your mobile number.
         </p>
 
         {paid && booking.status !== 'refunded' && (
@@ -338,6 +360,8 @@ function ConfirmationContent() {
           </p>
         )}
       </div>
+
+      {paid && booking.status !== 'refunded' && <ReviewForm bookingCode={booking.bookingCode} passengerName={booking.passengerName} />}
 
       {returnBusId && (
         <div className="no-print mt-5 flex flex-col gap-3 rounded-[20px] border border-[#c3d1e0] bg-gradient-to-br from-[#002447]/90 to-[#08324d]/90 p-4 sm:max-w-lg">

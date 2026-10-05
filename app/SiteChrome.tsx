@@ -3,6 +3,7 @@
 import { usePathname } from 'next/navigation'
 import Logo from './BrandLogo'
 import LivePurchases from './LivePurchases'
+import SiteFooter from './SiteFooter'
 
 const BARE_ROUTES = ['/admin', '/company', '/verify', '/invoice']
 
@@ -46,66 +47,27 @@ export default function SiteChrome({ children }: { children: React.ReactNode }) 
           <a href="/" className="flex items-center" aria-label="BusHub home">
             <Logo className="h-9 w-auto" tone="light" />
           </a>
-          <a
-            href="/about"
-            className="rounded-full border border-[#111111]/10 bg-[#111111]/[0.05] px-3.5 py-1.5 text-[12px] font-semibold text-[#222222] transition hover:border-[#cc8b65]/50 hover:text-[#0b7f8c]"
-          >
-            About us
-          </a>
+          <div className="flex items-center gap-2">
+            <a
+              href="/tickets"
+              className="rounded-full bg-gradient-to-r from-[#feb249] to-[#f2661d] px-3.5 py-1.5 text-[12px] font-bold text-[#1a0d03] shadow-[0_6px_16px_rgba(242,102,29,0.3)] transition hover:-translate-y-0.5"
+            >
+              My tickets
+            </a>
+            <a
+              href="/about"
+              className="rounded-full border border-[#111111]/10 bg-[#111111]/[0.05] px-3.5 py-1.5 text-[12px] font-semibold text-[#222222] transition hover:border-[#cc8b65]/50 hover:text-[#0b7f8c]"
+            >
+              About us
+            </a>
+          </div>
         </div>
       </nav>
 
       <main className="mx-auto w-full max-w-5xl">{children}</main>
       <LivePurchases />
 
-      <footer className="no-print mt-12 border-t border-[#111111]/10 bg-white/60">
-        <div className="mx-auto flex max-w-5xl flex-col gap-7 px-5 py-8">
-          <div className="flex flex-col gap-3 sm:max-w-sm">
-            <span className="display text-base font-bold">Get fare alerts</span>
-            <span className="text-[12.5px] leading-snug text-[#4a4a4a]">
-              New routes and seat drops, straight to your inbox.
-            </span>
-            <label htmlFor="footer-email" className="sr-only">
-              Email address
-            </label>
-            <input id="footer-email" type="email" placeholder="Email address" className="input-dark" />
-            <button type="button" className="glass-btn glass-btn-plain h-12 text-sm">
-              Subscribe
-            </button>
-          </div>
-
-          <div className="grid grid-cols-2 gap-x-6 gap-y-3 sm:grid-cols-3">
-            <a href="/routes" className="text-[13px] text-[#2b2b2b] hover:text-[#0b7f8c]">
-              Bus routes
-            </a>
-            <a href="/company/register" className="text-[13px] text-[#2b2b2b] hover:text-[#0b7f8c]">
-              For bus operators
-            </a>
-            <a href="#refund" className="text-[13px] text-[#2b2b2b] hover:text-[#0b7f8c]">
-              Refund policy
-            </a>
-            <a href="/about#contact" className="text-[13px] text-[#2b2b2b] hover:text-[#0b7f8c]">
-              Contact us
-            </a>
-            <a href="#terms" className="text-[13px] text-[#2b2b2b] hover:text-[#0b7f8c]">
-              Terms
-            </a>
-            <a href="#privacy" className="text-[13px] text-[#2b2b2b] hover:text-[#0b7f8c]">
-              Privacy
-            </a>
-            <a href="/about" className="text-[13px] text-[#2b2b2b] hover:text-[#0b7f8c]">
-              About BusHub
-            </a>
-          </div>
-
-          <div className="flex flex-col gap-3 border-t border-[#111111]/10 pt-5 sm:flex-row sm:items-center sm:justify-between">
-            <Logo className="h-8 w-auto" tone="light" />
-            <span className="text-[11.5px] leading-relaxed text-[#555555]">
-              © {new Date().getFullYear()} BusHub · bushubbd.com. All rights reserved.
-            </span>
-          </div>
-        </div>
-      </footer>
+      <SiteFooter />
     </>
   )
 }

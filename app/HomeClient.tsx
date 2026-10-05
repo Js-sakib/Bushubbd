@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import toast from 'react-hot-toast'
 import { DEFAULT_PLACES, Places } from '@/lib/places'
 import { MAX_SEATS_PER_BOOKING } from '@/lib/seats'
+import Reviews from './Reviews'
 
 export default function HomeClient() {
   const router = useRouter()
@@ -293,6 +294,8 @@ export default function HomeClient() {
           </div>
         </div>
       </section>
+
+      <Reviews />
 
       <section className="mt-6 flex items-center gap-3.5 rounded-[20px] border border-[#c3d1e0] bg-gradient-to-br from-[#002447]/90 to-[#08324d]/90 p-4">
         <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[14px] bg-[#2dd4bf]/[0.16] text-[#0f8f80]">
