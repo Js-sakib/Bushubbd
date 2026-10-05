@@ -297,8 +297,8 @@ export default function HomeClient() {
 
       <Reviews />
 
-      <section className="mt-6 flex items-center gap-3.5 rounded-[20px] border border-[#c3d1e0] bg-gradient-to-br from-[#002447]/90 to-[#08324d]/90 p-4">
-        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[14px] bg-[#2dd4bf]/[0.16] text-[#0f8f80]">
+      <section className="glass-lite mt-6 flex items-center gap-3.5 p-4">
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[14px] bg-[#25D366] text-white shadow-[0_8px_18px_rgba(37,211,102,0.3)]">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-[22px] w-[22px]">
             <path d="M21 11.5a8.4 8.4 0 0 1-12.3 7.4L3 20.5l1.7-5.5A8.4 8.4 0 1 1 21 11.5z" />
           </svg>

@@ -9,11 +9,12 @@ export const CONTACT_WHATSAPP = '+971 52 146 4698'
 export const CONTACT_EMAIL = 'info@bushubbd.com'
 
 /**
- * BusHub's social pages, shown as "Connect with us" in the footer. A link left empty is not shown.
+ * BusHub's social pages, shown under "Follow us" in the footer. Each logo shows either way; it
+ * becomes a link once its page address is filled in here.
  */
-export const SOCIAL_LINKS: { facebook: string; instagram: string; youtube: string; tiktok: string } = {
+export const SOCIAL_LINKS: { facebook: string; instagram: string; tiktok: string; telegram: string } = {
   facebook: '',
   instagram: '',
-  youtube: '',
   tiktok: '',
+  telegram: '',
 }
