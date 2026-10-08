@@ -11,8 +11,9 @@ interface AdminReview {
   name: string
   /** BusHub's rating. */
   rating: number
-  /** The bus company's rating; older reviews have none, and their one rating counts for both. */
-  companyRating?: number
+  /** The bus company's rating. null: reviewed before the trip, not rated yet. Missing: an older
+   * review, whose one rating counts for both. */
+  companyRating?: number | null
   text: string
   from: string
   to: string
@@ -124,7 +125,8 @@ export default function ReviewsPanel() {
                     BusHub <Stars value={r.rating} size="h-3.5 w-3.5" />
                   </span>
                   <span className="flex items-center gap-1 text-[11px] font-bold text-[#3f3f3f]">
-                    Company <Stars value={r.companyRating ?? r.rating} size="h-3.5 w-3.5" />
+                    Company{' '}
+                    {r.companyRating === null ? <span className="font-semibold text-[#555555]">after the trip</span> : <Stars value={r.companyRating ?? r.rating} size="h-3.5 w-3.5" />}
                   </span>
                   {r.hidden && <span className="rounded-full bg-[#111111]/[0.07] px-2 py-0.5 text-[10.5px] font-bold text-[#3f3f3f]">Hidden</span>}
                   <span className="ml-auto text-[11.5px] text-[#555555]">{shortDate(r.createdAt)}</span>

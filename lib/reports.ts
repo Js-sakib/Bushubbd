@@ -1,5 +1,6 @@
 import { ObjectId, type Db } from 'mongodb'
 import { dhakaDate, startOfDhakaDay } from './scan'
+import { companyStars } from './reviews'
 
 /**
  * Reports for any date range, compared with the same number of days just before it. One core
@@ -185,7 +186,7 @@ export async function buildReport(db: Db, range: ReportRange, companyId?: string
       .find({ ...(companyId ? { companyId } : {}), status: 'sold', soldAt: { $gte: start, $lt: end } }, { projection: { paymentMethod: 1, total: 1, soldAt: 1 } })
       .toArray(),
     db
-      .collection<{ companyName?: string; rating?: number; companyRating?: number }>('reviews')
+      .collection<{ companyName?: string; rating?: number; companyRating?: number | null }>('reviews')
       .find({ hidden: { $ne: true } }, { projection: { companyName: 1, rating: 1, companyRating: 1 } })
       .toArray(),
     db
@@ -322,16 +323,20 @@ export async function buildReport(db: Db, range: ReportRange, companyId?: string
       weekdays[weekday] += 1
     }
 
-  // Ratings by company name (reviews carry the name, not the id). Bus companies by their own stars (an older review's one rating counts for both); BusHub by
+  // Ratings by company name (reviews carry the name, not the id). Bus companies by their own stars (see companyStars); BusHub by
   // its own rating. No combined score.
   const ratingBy = new Map<string, { total: number; count: number }>()
   const bushubRating = { total: 0, count: 0 }
   for (const r of reviews) {
-    const key = String(r.companyName || '')
-    const g = ratingBy.get(key) || { total: 0, count: 0 }
-    g.total += Number(r.companyRating ?? r.rating) || 0
-    g.count += 1
-    ratingBy.set(key, g)
+    // A review posted before the trip has no company stars yet (null) and is left out.
+    const stars = companyStars({ rating: Number(r.rating) || 0, companyRating: r.companyRating })
+    if (stars) {
+      const key = String(r.companyName || '')
+      const g = ratingBy.get(key) || { total: 0, count: 0 }
+      g.total += stars
+      g.count += 1
+      ratingBy.set(key, g)
+    }
     bushubRating.total += Number(r.rating) || 0
     bushubRating.count += 1
   }

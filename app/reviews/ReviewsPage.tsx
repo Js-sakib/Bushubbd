@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
-import type { PublicReview } from '@/lib/reviews'
+import { REVIEW_SAVED_EVENT, type PublicReview } from '@/lib/reviews'
 import { ReviewCard, Stars } from '../Reviews'
 import HowToReview from '../HowToReview'
 
@@ -51,6 +51,10 @@ export default function ReviewsPage() {
 
   useEffect(() => {
     load(null)
+    // A review posted from the "Write a review" pop-up shows straight away.
+    const reload = () => load(null)
+    window.addEventListener(REVIEW_SAVED_EVENT, reload)
+    return () => window.removeEventListener(REVIEW_SAVED_EVENT, reload)
   }, [load])
 
   const b = summary?.bushub

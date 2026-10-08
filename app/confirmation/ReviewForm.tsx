@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import toast from 'react-hot-toast'
 import { REVIEW_NAME_MAX, REVIEW_TEXT_MAX, firstName } from '@/lib/reviews'
+import { formatTripDate } from '@/lib/dates'
 import { Stars } from '../Reviews'
 
 const LABELS = ['', 'Bad', 'Not good', 'Okay', 'Good', 'Excellent']
@@ -36,9 +37,20 @@ function StarPicker({ value, onChange, label }: { value: number; onChange: (n: n
 /**
  * "Rate your trip" under a paid ticket. The passenger rates BusHub (booking, payment, ticket)
  * and the bus company (bus, seat, time, staff) separately, may write a few words and chooses
- * the name to show. Their review can be changed later from the same ticket.
+ * the name to show. The bus company can only be rated once the travel date has come. Their
+ * review can be changed later from the same ticket.
  */
-export default function ReviewForm({ bookingCode, passengerName, companyName }: { bookingCode: string; passengerName: string; companyName: string }) {
+export default function ReviewForm({
+  bookingCode,
+  passengerName,
+  companyName,
+  onSaved,
+}: {
+  bookingCode: string
+  passengerName: string
+  companyName: string
+  onSaved?: () => void
+}) {
   const [loaded, setLoaded] = useState(false)
   const [saved, setSaved] = useState<{ rating: number; companyRating: number | null; text: string; name: string; hidden?: boolean } | null>(null)
   const [editing, setEditing] = useState(false)
@@ -47,11 +59,15 @@ export default function ReviewForm({ bookingCode, passengerName, companyName }: 
   const [text, setText] = useState('')
   const [name, setName] = useState(firstName(passengerName))
   const [sending, setSending] = useState(false)
+  const [tripDone, setTripDone] = useState(true)
+  const [travelDate, setTravelDate] = useState('')
 
   useEffect(() => {
     fetch(`/api/reviews?bookingCode=${encodeURIComponent(bookingCode)}`)
       .then((r) => (r.ok ? r.json() : null))
       .then((d) => {
+        if (d && typeof d.tripDone === 'boolean') setTripDone(d.tripDone)
+        if (d?.travelDate) setTravelDate(String(d.travelDate))
         if (d?.review) {
           setSaved(d.review)
           setRating(d.review.rating)
@@ -71,7 +87,7 @@ export default function ReviewForm({ bookingCode, passengerName, companyName }: 
       toast.error('Please tap the stars for BusHub')
       return
     }
-    if (!companyRating) {
+    if (tripDone && !companyRating) {
       toast.error(`Please tap the stars for ${company}`)
       return
     }
@@ -80,16 +96,17 @@ export default function ReviewForm({ bookingCode, passengerName, companyName }: 
       const res = await fetch('/api/reviews', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ bookingCode, rating, companyRating, text, name }),
+        body: JSON.stringify({ bookingCode, rating, companyRating: tripDone ? companyRating : null, text, name }),
       })
       const data = await res.json().catch(() => null)
       if (!res.ok) {
         toast.error(data?.error || 'Could not post your review')
         return
       }
-      setSaved({ rating, companyRating, text: text.trim(), name: name.trim(), hidden: saved?.hidden })
+      setSaved({ rating, companyRating: tripDone ? companyRating : null, text: text.trim(), name: name.trim(), hidden: saved?.hidden })
       setEditing(false)
       toast.success(saved ? 'Review updated. Thank you!' : 'Thank you! Your review is on our Reviews page.')
+      onSaved?.()
     } catch {
       toast.error('No internet connection. Try again in a moment.')
     } finally {
@@ -99,6 +116,7 @@ export default function ReviewForm({ bookingCode, passengerName, companyName }: 
 
   if (!loaded) return null
   const company = companyName || 'the bus company'
+  const afterTrip = `You can rate ${company} after your trip${travelDate ? ` on ${formatTripDate(travelDate)}` : ''}.`
 
   if (saved && !editing) {
     return (
@@ -116,11 +134,21 @@ export default function ReviewForm({ bookingCode, passengerName, companyName }: 
           </div>
           <div className="flex items-center gap-2">
             <span className="w-24 shrink-0 truncate text-[12px] font-bold text-[#3f3f3f]">{company}</span>
-            {saved.companyRating ? <Stars value={saved.companyRating} size="h-5 w-5" /> : <span className="text-[12px] text-[#b45309]">Not rated yet · tap Edit</span>}
+            {saved.companyRating ? (
+              <Stars value={saved.companyRating} size="h-5 w-5" />
+            ) : (
+              <span className="text-[12px] text-[#555555]">{tripDone ? 'Not rated yet' : 'After your trip'}</span>
+            )}
           </div>
           <span className="text-[12px] font-semibold text-[#4a4a4a]">by {saved.name}</span>
         </div>
         {saved.text && <p className="text-[13px] leading-relaxed text-[#2b2b2b]">{saved.text}</p>}
+        {!saved.companyRating && tripDone && (
+          <button type="button" onClick={() => setEditing(true)} className="glass-btn btn-orange h-11 text-[13.5px]">
+            Your trip is done. Rate {company} now
+          </button>
+        )}
+        {!saved.companyRating && !tripDone && <span className="text-[11.5px] text-[#555555]">{afterTrip}</span>}
         <span className="text-[11.5px] text-[#555555]">Thank you for helping other passengers choose.</span>
       </div>
     )
@@ -142,7 +170,13 @@ export default function ReviewForm({ bookingCode, passengerName, companyName }: 
       <div className="flex flex-col gap-1">
         <span className="text-[13px] font-bold">{company}</span>
         <span className="text-[11.5px] text-[#4a4a4a]">বাস, সিট, সময়, স্টাফ · bus, seat, time, staff</span>
-        <StarPicker value={companyRating} onChange={setCompanyRating} label={company} />
+        {tripDone ? (
+          <StarPicker value={companyRating} onChange={setCompanyRating} label={company} />
+        ) : (
+          <span className="rounded-xl bg-white/60 px-3 py-2 text-[12px] leading-relaxed text-[#3f3f3f]">
+            {afterTrip} যাত্রার পরে বাস কোম্পানিকে স্টার দিতে পারবেন।
+          </span>
+        )}
       </div>
 
       <label className="flex flex-col gap-1">
