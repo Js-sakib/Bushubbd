@@ -19,8 +19,8 @@ interface DayData {
 }
 
 /**
- * One day of counter sales: the money to hand over by cash, bKash and Nagad, every ticket with
- * reprint and cancel, the day-closing receipt and an Excel file. A counter sees its own sales;
+ * One day of counter sales: the money to hand over by cash, bKash and Nagad, every sale (open it
+ * to cancel), the day-closing slip and an Excel file. A counter sees its own sales;
  * the manager sees every counter, or one.
  */
 export default function DaySales({
@@ -59,7 +59,7 @@ export default function DaySales({
         notes: [`${companyName} · ${who}`, `Cash ${tk(s.byMethod.cash)} · bKash ${tk(s.byMethod.bkash)} · Nagad ${tk(s.byMethod.nagad)} · Total ${tk(s.money)}`],
         columns: [
           { header: 'Sold at', kind: 'datetime' },
-          { header: 'Ticket code' },
+          { header: 'Sale no.' },
           { header: 'Route' },
           { header: 'Travel date', kind: 'date' },
           { header: 'Time' },
@@ -101,7 +101,7 @@ export default function DaySales({
     ])
 
   const tiles: [string, string, string][] = [
-    ['Tickets', String(s.tickets), `${s.seats} seats`],
+    ['Sales', String(s.tickets), `${s.seats} seats`],
     ['Cash', tk(s.byMethod.cash), 'to hand over'],
     ['bKash', tk(s.byMethod.bkash), ''],
     ['Nagad', tk(s.byMethod.nagad), ''],
@@ -149,7 +149,7 @@ export default function DaySales({
       </div>
 
       {data.tickets.length === 0 ? (
-        <p className="glass-lite p-6 text-center text-[13px] text-[#4a4a4a]">No counter tickets {day === dhakaDate() ? 'yet today' : `on ${formatTripDate(day)}`}.</p>
+        <p className="glass-lite p-6 text-center text-[13px] text-[#4a4a4a]">No counter sales {day === dhakaDate() ? 'yet today' : `on ${formatTripDate(day)}`}.</p>
       ) : (
         <div className="flex flex-col gap-2">
           {data.tickets.map((t) => (
@@ -183,7 +183,7 @@ export default function DaySales({
   )
 }
 
-/** The manager's view of every counter's day, with its own ticket sheet and receipt printer. */
+/** The manager's view of every counter's day, with its own sale sheet and day-closing printer. */
 export function DaySalesPanel({ company }: { company: string }) {
   const [open, setOpen] = useState<CounterTicketView | null>(null)
   const [job, setJob] = useState<PrintJob | null>(null)
@@ -206,7 +206,6 @@ export function DaySalesPanel({ company }: { company: string }) {
           ticket={open}
           canCancel
           onClose={() => setOpen(null)}
-          onPrint={() => setJob({ kind: 'ticket', ticket: open, copy: true })}
           onCancelled={() => {
             setOpen(null)
             setKey((k) => k + 1)

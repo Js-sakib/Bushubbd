@@ -467,8 +467,8 @@ const dayAfter = await call('/api/company/counter-tickets', { cookie: counter2 }
 check('the day report counts the cancelled ticket apart from the money', dayAfter.data.totals.cancelled >= 1 && dayAfter.data.totals.byMethod.bkash === 0, JSON.stringify(dayAfter.data.totals))
 // Board the family's ticket: make its trip today, then scan it at the door.
 await db.collection('counterTickets').updateOne({ ticketCode: fam.data.ticket.ticketCode }, { $set: { date: dhakaToday } })
-const ctScan = await call('/api/scan', { method: 'POST', cookie: green.scan, body: { text: `https://www.bushubbd.com/verify/${fam.data.ticket.ticketCode}` } })
-check('the scanner boards a printed counter ticket from its QR', ctScan.data.result === 'valid' && ctScan.data.ticket?.counter === true && ctScan.data.ticket?.seats?.length === 3, JSON.stringify(ctScan.data))
+const ctScan = await call('/api/scan', { method: 'POST', cookie: green.scan, body: { text: fam.data.ticket.ticketCode } })
+check('the company scanner boards a counter sale by its sale code', ctScan.data.result === 'valid' && ctScan.data.ticket?.counter === true && ctScan.data.ticket?.seats?.length === 3, JSON.stringify(ctScan.data))
 const ctScan2 = await call('/api/scan', { method: 'POST', cookie: green.scan, body: { text: fam.data.ticket.ticketCode } })
 check('the same counter ticket cannot board twice', ctScan2.data.result === 'already_used', JSON.stringify(ctScan2.data))
 // The Hanif scanner was locked out by the wrong-code test above; let the 10 minutes pass.
@@ -481,7 +481,7 @@ await db.collection('counterTickets').updateOne({ ticketCode: student.data.ticke
 const cancelledScan = await call('/api/scan', { method: 'POST', cookie: green.scan, body: { text: student.data.ticket.ticketCode } })
 check('a cancelled counter ticket is refused at the door', cancelledScan.data.result === 'cancelled', JSON.stringify(cancelledScan.data))
 const pubCheck = await call(`/api/verify/${fam.data.ticket.ticketCode}`)
-check('the public QR check shows a counter ticket with the first name only', pubCheck.status === 200 && pubCheck.data.counter === true && pubCheck.data.passengerName === 'Rahima' && pubCheck.data.checkedIn === true, JSON.stringify(pubCheck.data))
+check('the public BusHub ticket check does not show counter sales (the company gives its own ticket)', pubCheck.status === 404, JSON.stringify(pubCheck.data))
 const fakeCt = await call(`/api/scan`, { method: 'POST', cookie: green.scan, body: { text: `CT-${dhakaToday.replace(/-/g, '')}-ZZZZZZZZZZ` } })
 check('a made-up counter code is not found', fakeCt.data.result === 'not_found', JSON.stringify(fakeCt.data))
 const managerUndo = await sell(green.cookie, ['4D'], 'unsell')

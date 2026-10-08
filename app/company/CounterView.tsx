@@ -76,9 +76,9 @@ const TABS = [
 
 /**
  * The counter's page. Pick the trip, tap the seats the passenger wants, take the phone and name,
- * cash/bKash/Nagad, and press Enter: the seats come off sale everywhere at once and the ticket
- * prints on the receipt printer with a QR the bus staff scan. Today's sales shows the money to hand
- * over and prints the day closing.
+ * cash/bKash/Nagad, and press Enter: the seats come off sale everywhere at once and the sale is
+ * recorded. BusHub prints no ticket here; the bus company gives the passenger its own. Today's
+ * sales shows the money to hand over and prints the day-closing slip.
  */
 export default function CounterView() {
   const { data, reload } = useTrips()
@@ -146,10 +146,10 @@ export default function CounterView() {
       return
     }
     const sale = trip.counterSeats.find((c) => c.seat === seat)
-    // A seat sold with a printed ticket opens that ticket (reprint, cancel).
+    // A seat sold through the sale form opens that sale (to cancel it).
     if (sale?.ticketCode && (kind === 'mine' || data.me.role === 'manager')) return openTicket(sale.ticketCode)
     if (kind === 'counter') return toast(`Seat ${seat} was sold by ${sale?.soldBy || 'another counter'}.`)
-    // Seats marked sold before printed tickets: free them the old way.
+    // Seats marked sold before the sale form: free them the old way.
     if (!confirm(`Free seat ${seat} again? It goes back on sale online.`)) return
     setBusySeat(seat)
     await changeSeat(trip, seat, 'unsell')
@@ -157,11 +157,10 @@ export default function CounterView() {
     setBusySeat(null)
   }
 
-  const onSold = async (ticket: CounterTicketView, print: boolean) => {
+  const onSold = async (ticket: CounterTicketView) => {
     setPicked([])
     setLastSold(ticket)
     setDayKey((k) => k + 1)
-    if (print) setJob({ kind: 'ticket', ticket })
     await reload()
   }
   const donePrinting = useCallback(() => setJob(null), [])
@@ -178,6 +177,7 @@ export default function CounterView() {
             {label}
           </button>
         ))}
+        {tab === 'day' && (
         <div className="ml-auto flex items-center gap-1 rounded-full bg-white/70 p-1 text-[11.5px] font-bold" role="group" aria-label="Receipt printer width">
           <span className="px-2 text-[#4a4a4a]">Printer</span>
           {([58, 80] as const).map((w) => (
@@ -186,6 +186,7 @@ export default function CounterView() {
             </button>
           ))}
         </div>
+        )}
       </div>
 
       {tab === 'add' && (
@@ -221,9 +222,6 @@ export default function CounterView() {
                       {lastSold.passengerName ? ` · ${lastSold.passengerName}` : ''}
                     </span>
                   </span>
-                  <button type="button" onClick={() => setJob({ kind: 'ticket', ticket: lastSold })} className="glass-btn h-10 px-4 text-[13px]">
-                    Print
-                  </button>
                   <button type="button" onClick={() => setLastSold(null)} className="text-[12px] font-bold text-[#0b7f8c]" aria-label="Dismiss">
                     ✕
                   </button>
@@ -264,7 +262,7 @@ export default function CounterView() {
                     ))}
                   </div>
                   {detail && <SeatDetail trip={trip} kind={detail} myStaffId={data.me.staffId} />}
-                  <p className="text-[12px] text-[#222222]">Tap free seats to add them to the sale. Tap a seat you sold to reprint or cancel its ticket.</p>
+                  <p className="text-[12px] text-[#222222]">Tap free seats to add them to the sale. Tap a seat you sold to see or cancel that sale.</p>
                   <SeatMap
                     trip={trip}
                     myStaffId={data.me.staffId}
@@ -309,7 +307,6 @@ export default function CounterView() {
           ticket={open}
           canCancel={data.me.role === 'manager' || open.staffId === data.me.staffId}
           onClose={() => setOpen(null)}
-          onPrint={() => setJob({ kind: 'ticket', ticket: open, copy: true })}
           onCancelled={async () => {
             setOpen(null)
             setDayKey((k) => k + 1)

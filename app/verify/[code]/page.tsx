@@ -20,8 +20,6 @@ interface VerifyResult {
   validUntil: string
   checkedIn: boolean
   checkedInAt?: string
-  /** Printed at the bus company's counter. */
-  counter?: boolean
 }
 
 const REASON_LABELS: Record<string, string> = {
@@ -143,7 +141,7 @@ export default function VerifyTicket() {
 
         <div className="mt-2 flex w-full flex-col gap-2.5 rounded-2xl border border-[#111111]/10 bg-white/60 p-4 text-left">
           <div className="flex items-center justify-between gap-3">
-            <span className="text-xs text-[#4a4a4a]">{result.counter ? 'Counter ticket' : 'Booking'}</span>
+            <span className="text-xs text-[#4a4a4a]">Booking</span>
             <span className="display text-sm font-bold">{result.bookingCode}</span>
           </div>
           <div className="flex items-center justify-between gap-3">

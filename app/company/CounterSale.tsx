@@ -11,7 +11,8 @@ const METHODS = ['cash', 'bkash', 'nagad'] as const
 
 /**
  * The sale being made at the counter: the chosen seats, the passenger, the fare and how they paid.
- * Enter sells and prints; the seats come off sale everywhere at once and the ticket is saved.
+ * Enter sells: the seats come off sale everywhere at once and the sale is recorded. No ticket is
+ * printed here: the bus company gives the passenger its own ticket.
  */
 export default function CounterSale({
   trip,
@@ -24,7 +25,7 @@ export default function CounterSale({
   seats: string[]
   onRemoveSeat: (seat: string) => void
   onClear: () => void
-  onSold: (ticket: CounterTicketView, print: boolean) => void
+  onSold: (ticket: CounterTicketView) => void
 }) {
   const [phone, setPhone] = useState('')
   const [name, setName] = useState('')
@@ -79,7 +80,7 @@ export default function CounterSale({
     lastLookup.current = ''
   }
 
-  const sell = async (print: boolean) => {
+  const sell = async () => {
     if (seats.length === 0) return toast.error('Tap the seats to sell first')
     if (phone && !mobileCore(phone)) return toast.error('Write the phone number like 01712345678')
     if (discounted && why.trim().length < 3) return toast.error(`Say why the fare is less than ৳${trip.price}`)
@@ -105,7 +106,7 @@ export default function CounterSale({
     if (!res?.ok || !data?.ticket) return toast.error(data?.error || 'Could not sell, check the connection and try again')
     toast.success(`Sold ${seats.length} seat${seats.length === 1 ? '' : 's'} · ${data.ticket.ticketCode}`)
     reset()
-    onSold(data.ticket, print)
+    onSold(data.ticket)
   }
 
   const field = 'input-dark !h-11 text-[14px]'
@@ -113,7 +114,7 @@ export default function CounterSale({
     <form
       onSubmit={(e) => {
         e.preventDefault()
-        sell(true)
+        sell()
       }}
       id="counter-sale"
       className="flex scroll-mt-24 flex-col gap-3 rounded-2xl border-2 border-[#f2661d]/40 bg-white/85 p-4"
@@ -230,14 +231,9 @@ export default function CounterSale({
         )}
       </div>
 
-      <div className="grid grid-cols-[1fr_auto] gap-2">
-        <button type="submit" disabled={busy || seats.length === 0} className="glass-btn h-12 text-[15px] disabled:opacity-50">
-          {busy ? 'Selling…' : 'Sell & print (Enter)'}
-        </button>
-        <button type="button" disabled={busy || seats.length === 0} onClick={() => sell(false)} className="glass-btn glass-btn-plain h-12 px-4 text-[13px] disabled:opacity-50">
-          Sell only
-        </button>
-      </div>
+      <button type="submit" disabled={busy || seats.length === 0} className="glass-btn h-12 text-[15px] disabled:opacity-50">
+        {busy ? 'Selling…' : `Sell ${seats.length || ''} seat${seats.length === 1 ? '' : 's'} (Enter)`}
+      </button>
     </form>
   )
 }

@@ -160,7 +160,7 @@ export function companySalesSheets(trips: CompanyTrip[], companyName: string, fi
     name: 'Counter sales',
     title: 'Counter sales · every seat',
     notes,
-    columns: [...TRIP_COLUMNS, { header: 'Seat' }, { header: 'Ticket code' }, { header: 'Sold by' }, { header: 'Sold at', kind: 'datetime' }, money('Price')],
+    columns: [...TRIP_COLUMNS, { header: 'Seat' }, { header: 'Sale no.' }, { header: 'Sold by' }, { header: 'Sold at', kind: 'datetime' }, money('Price')],
     rows: sorted.flatMap((t) => t.counterSeats.map((s) => [...tripCells(t), s.seat, s.ticketCode || '', s.soldBy, s.soldAt, typeof s.fare === 'number' ? s.fare : t.price])),
   }
 
