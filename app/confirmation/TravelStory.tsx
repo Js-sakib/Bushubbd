@@ -45,7 +45,7 @@ const TravelStory = forwardRef<HTMLDivElement, { booking: TicketBooking; mapDeta
 
       {/* Where the trip goes, on the map */}
       <div className="relative mt-1">
-        <RouteMap from={booking.from} to={booking.to} width={312} height={186} detail={mapDetail} />
+        <RouteMap from={booking.from} to={booking.to} width={312} height={222} detail={mapDetail} />
       </div>
 
       {/* The pass, tilted, with no code on it */}
