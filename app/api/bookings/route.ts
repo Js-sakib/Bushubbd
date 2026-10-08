@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { Db, ObjectId } from 'mongodb'
 import { connectToDatabase, isDuplicateKeyError } from '@/lib/db'
+import { ONLINE_SALES_OPEN, SALES_PAUSED_MESSAGE } from '@/lib/site'
 import {
   generateBookingCode,
   ticketExpiry,
@@ -27,6 +28,8 @@ export const revalidate = 0
 export const fetchCache = 'force-no-store'
 
 export async function POST(req: NextRequest) {
+  // No seats are held while online sales are paused (lib/site.ts).
+  if (!ONLINE_SALES_OPEN) return NextResponse.json({ error: SALES_PAUSED_MESSAGE }, { status: 503 })
   try {
     const body = await req.json()
     const { busId, seats, passengerName, passengerPhone, passengerEmail, source } = body
