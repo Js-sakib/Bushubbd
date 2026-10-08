@@ -15,6 +15,7 @@ import {
 } from '@/lib/busFilters'
 import BusCard, { SearchBus } from './BusCard'
 import { FiltersSheet, SortSheet } from './FilterSheet'
+import { track } from '@/lib/track'
 
 type Leg = 'outbound' | 'return'
 
@@ -65,6 +66,11 @@ function SearchResults() {
   const [sort, setSort] = useState<SortKey>('cheapest')
   const [filters, setFilters] = useState<BusFilters>(EMPTY_FILTERS)
   const [sheet, setSheet] = useState<'sort' | 'filters' | null>(null)
+
+  // Counted once per route searched, from the home page, a route page or a shared link alike.
+  useEffect(() => {
+    if (from && to) track({ name: 'search', from, to })
+  }, [from, to])
 
   const outbound = useLegBuses(from, to, date, true)
   const inbound = useLegBuses(to, from, returnDate, isRoundTrip && Boolean(returnDate))

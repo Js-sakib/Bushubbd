@@ -776,6 +776,36 @@ const indexes = await db.collection('bookings').indexes()
 check('the database itself refuses a duplicate ticket code', indexes.some((i) => i.unique && i.key.bookingCode === 1))
 
 // ---- The seat map and the tickets agree exactly ----
+// ---- Marketing: which channel sold the ticket ----
+const tagged = async (extra) => {
+  for (const seat of ['7C', '7B', '7A', '6D', '6C', '6B', '5D', '5C', '5B', '1D', '1C', '1B']) {
+    const r = await call('/api/bookings', { method: 'POST', body: { busId: trip._id, seats: [seat], passengerName: 'Ad Buyer', passengerPhone: `0171${String(Math.floor(Math.random() * 1e7)).padStart(7, '0')}`, ...extra } })
+    if (r.status === 201) return r.data.booking
+  }
+  return null
+}
+const adTag = `test_run_${run.toLowerCase()}`
+const adBooking = await tagged({ channel: `Test Run ${run}`, campaign: 'Eid Offer 2026!' })
+const adSaved = adBooking && (await db.collection('bookings').findOne({ _id: new ObjectId(adBooking._id) }))
+check('a booking keeps the channel and campaign that brought the buyer, cleaned', adSaved?.channel === adTag && adSaved?.campaign === 'eid_offer_2026', JSON.stringify({ channel: adSaved?.channel, campaign: adSaved?.campaign }))
+const oddTag = await tagged({ channel: '<script>alert(1)</script>' })
+const oddSaved = oddTag && (await db.collection('bookings').findOne({ _id: new ObjectId(oddTag._id) }))
+check('a channel with odd characters is stored as plain letters only', !!oddSaved && /^[a-z0-9_-]+$/.test(oddSaved.channel || ''), oddSaved?.channel)
+const plain = await tagged({})
+const plainSaved = plain && (await db.collection('bookings').findOne({ _id: new ObjectId(plain._id) }))
+check('a booking with no channel stores none', !!plainSaved && !('channel' in plainSaved))
+const outsiderMarketing = await call('/api/admin/marketing')
+check('only the admin can see the marketing numbers', outsiderMarketing.status === 401)
+const adRow = async () => (await call('/api/admin/marketing?days=7', { cookie: admin })).data.channels.find((c) => c.channel === adTag)
+check('an unpaid ticket is not counted as a sale', !(await adRow()))
+await call(`/api/bookings/${adBooking._id}`, { method: 'PATCH', body: { paymentStatus: 'paid', paymentMethod: 'bkash' } })
+const paidRow = await adRow()
+check('a paid ticket is counted under its channel with its price', paidRow?.tickets === 1 && paidRow?.sales === adBooking.totalPrice && paidRow?.campaigns?.[0]?.campaign === 'eid_offer_2026', JSON.stringify(paidRow))
+await db.collection('bookings').updateOne({ _id: new ObjectId(adBooking._id) }, { $set: { status: 'refunded' } })
+check('a refunded ticket is not counted', !(await adRow()))
+// Put the seat back the way a refund does, so the seat checks below stay true.
+await db.collection('buses').updateOne({ _id: new ObjectId(trip._id) }, { $pull: { bookedSeats: { $in: adBooking.seats } } })
+
 const bus = await db.collection('buses').findOne({ _id: new ObjectId(trip._id) })
 const live = await db.collection('bookings').find({ busId: trip._id, status: { $in: ['pending', 'confirmed'] } }).toArray()
 const liveSeats = live.flatMap((b) => b.seats)

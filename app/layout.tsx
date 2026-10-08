@@ -3,6 +3,7 @@ import { Hind_Siliguri, Inter, Plus_Jakarta_Sans } from 'next/font/google'
 import { Toaster } from 'react-hot-toast'
 import SiteChrome from './SiteChrome'
 import JsonLd from './routes/JsonLd'
+import Tracking from './Tracking'
 import { CONTACT_PHONE, SITE_NAME, SITE_URL } from '@/lib/site'
 import './globals.css'
 
@@ -105,6 +106,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="light-panel">
         <JsonLd data={ORGANIZATION} />
         <SiteChrome>{children}</SiteChrome>
+        <Tracking />
         <Toaster
           position="top-center"
           containerClassName="no-print"

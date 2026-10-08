@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import toast from 'react-hot-toast'
 import { MAX_SEATS_PER_BOOKING, generateSeatLabels, takenSeats } from '@/lib/seats'
 import { MAX_BAGS } from '@/lib/luggage'
+import { currentSource, track } from '@/lib/track'
 
 interface Bus {
   _id: string
@@ -46,8 +47,10 @@ function BookingContent() {
     fetch(`/api/buses/${busId}`)
       .then((res) => res.json())
       .then((data) => {
-        if (data.bus) setBus(data.bus)
-        else toast.error(data.error || 'Bus not found')
+        if (data.bus) {
+          setBus(data.bus)
+          track({ name: 'view_seats', from: data.bus.from, to: data.bus.to, price: data.bus.price })
+        } else toast.error(data.error || 'Bus not found')
       })
       .finally(() => setLoading(false))
   }, [busId])
@@ -84,6 +87,7 @@ function BookingContent() {
       toast.error('Please enter your name and phone number')
       return
     }
+    track({ name: 'begin_checkout', value: totalPrice, seats: selectedSeats.length })
     setStep('payment')
   }
 
@@ -102,6 +106,8 @@ function BookingContent() {
           passengerEmail: passenger.email || undefined,
           bags,
           source: 'web',
+          // Which marketing brought this buyer (lib/track), for the admin's Marketing panel.
+          ...currentSource(),
         }),
       })
       const data = await res.json()

@@ -15,6 +15,7 @@ import { tripDeparted } from '@/lib/trips'
 import { seatSelectionError, takenSeats } from '@/lib/seats'
 import { getCompanyFromCookies, getAdminFromCookies } from '@/lib/auth'
 import { Booking } from '@/lib/models'
+import { marketingTags } from '@/lib/attribution'
 import { getCompanyUser } from '@/lib/staff'
 import { cleanBags } from '@/lib/luggage'
 import { platesByTrip } from '@/lib/plates'
@@ -100,6 +101,7 @@ export async function POST(req: NextRequest) {
       status: 'pending',
       qrCode: '',
       source: source === 'whatsapp' ? 'whatsapp' : 'web',
+      ...marketingTags(body),
       createdAt: new Date().toISOString(),
       validUntil,
       holdExpiresAt,
