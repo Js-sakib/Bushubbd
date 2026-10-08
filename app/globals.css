@@ -477,3 +477,21 @@ input[type='date']::-webkit-calendar-picker-indicator {
   background-color: #002447 !important;
   color: #fbeceb !important;
 }
+
+/* Counter receipts (58 mm / 80 mm thermal printers). The receipt is drawn outside the app, at the
+   end of <body>; while it prints, everything else is left out, so the roll gets only the ticket. */
+.receipt-print {
+  display: none;
+}
+@media print {
+  body.printing-receipt > *:not(.receipt-print) {
+    display: none !important;
+  }
+  body.printing-receipt {
+    background: #ffffff !important;
+    margin: 0 !important;
+  }
+  body.printing-receipt .receipt-print {
+    display: block !important;
+  }
+}

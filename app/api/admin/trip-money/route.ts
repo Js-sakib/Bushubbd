@@ -56,6 +56,13 @@ export async function GET(req: NextRequest) {
       .toArray()
     const payoutById = new Map(payouts.map((p) => [p._id.toString(), p]))
     const companyName = new Map(companies.map((c) => [c._id.toString(), String(c.name)]))
+    // Counter seats sold with a printed ticket carry the fare actually taken (a discount shows).
+    const counterFares = await db
+      .collection('counterSales')
+      .find({ busId: { $in: trips.map((t) => t._id.toString()) }, fare: { $type: 'number' } })
+      .project({ busId: 1, seat: 1, fare: 1 })
+      .toArray()
+    const fareOf = new Map(counterFares.map((c) => [`${c.busId}|${c.seat}`, Number(c.fare)]))
     const byTrip = new Map<string, any[]>()
     for (const b of bookings) byTrip.set(b.busId, [...(byTrip.get(b.busId) || []), b])
 
@@ -93,7 +100,10 @@ export async function GET(req: NextRequest) {
             departureTime: t.departureTime,
             departed: tripDeparted(t.date, t.departureTime),
             totalSeats: t.totalSeats,
-            counter: { seats: counterSeats, total: counterSeats * (t.price || 0) },
+            counter: {
+              seats: counterSeats,
+              total: (t.blockedSeats || []).reduce((n: number, seat: string) => n + (fareOf.get(`${id}|${seat}`) ?? (t.price || 0)), 0),
+            },
             online: {
               tickets: lines.length,
               seats: onlineSeats,

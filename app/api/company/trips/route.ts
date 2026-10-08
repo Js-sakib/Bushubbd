@@ -92,7 +92,15 @@ export async function GET(req: NextRequest) {
             heldSeats: held.flatMap((b) => b.seats || []),
             counterSeats: blocked.map((seat) => {
               const sale = sales.find((s) => s.busId === id && s.seat === seat)
-              return { seat, soldBy: sale?.soldBy || 'BusHub admin', staffId: sale?.staffId || null, soldAt: sale?.soldAt || null }
+              return {
+                seat,
+                soldBy: sale?.soldBy || 'BusHub admin',
+                staffId: sale?.staffId || null,
+                soldAt: sale?.soldAt || null,
+                // The fare actually taken (a counter may give a discount) and the printed ticket's code.
+                fare: typeof sale?.fare === 'number' ? sale.fare : null,
+                ticketCode: sale?.ticketCode || null,
+              }
             }),
             ...(manager
               ? {

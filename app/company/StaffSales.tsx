@@ -41,7 +41,8 @@ export default function StaffSales({ trips, period }: { trips: CompanyTrip[]; pe
       online += trip.onlineSeats.length
       onlineMoney += (trip.onlineTickets || []).reduce((n, t) => n + t.total, 0)
       counter += trip.counterSeats.length
-      counterMoney += trip.counterSeats.length * trip.price
+      // The fare actually taken at the counter (a discount shows); older seats count at the trip price.
+      counterMoney += trip.counterSeats.reduce((n, c) => n + (typeof c.fare === 'number' ? c.fare : trip.price), 0)
       counterToday += trip.counterSeats.filter((s) => s.soldAt && dhakaDate(new Date(s.soldAt)) === today).length
       totalSeats += trip.totalSeats
       notSold += Math.max(0, trip.totalSeats - trip.onlineSeats.length - trip.counterSeats.length - trip.heldSeats.length)
@@ -53,7 +54,7 @@ export default function StaffSales({ trips, period }: { trips: CompanyTrip[]; pe
           map.set(key, seller)
         }
         seller.seats += 1
-        seller.value += trip.price
+        seller.value += typeof sale.fare === 'number' ? sale.fare : trip.price
         if (sale.soldAt && dhakaDate(new Date(sale.soldAt)) === today) seller.today += 1
         const row = seller.trips.find((t) => t.trip._id === trip._id)
         if (row) row.seats.push(sale.seat)

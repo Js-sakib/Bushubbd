@@ -16,6 +16,8 @@ export interface ScannedTicket {
   /** Bags declared at booking; null on tickets from before bags were asked. */
   bags?: number | null
   checkedInAt: string | null
+  /** Printed at the company's own counter rather than bought on BusHub. */
+  counter?: boolean
 }
 
 export interface ScanResponse {
@@ -107,6 +109,9 @@ export default function ScanResultCard({ scan }: { scan: ScanResponse }) {
 
       {ticket && (
         <div className="flex flex-col gap-2.5 rounded-2xl border border-[#bccbdc] bg-[#eef3f8] p-4">
+          {ticket.counter && (
+            <span className="w-fit rounded-full bg-[#feb249]/30 px-2.5 py-0.5 text-[11px] font-bold text-[#7a3b0c]">Counter ticket</span>
+          )}
           <Row label="Passenger">{ticket.passengerName}</Row>
           <Row label="Bus">{ticket.busName}</Row>
           <Row label="Route">

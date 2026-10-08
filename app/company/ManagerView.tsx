@@ -9,6 +9,7 @@ import type { SaleBooking } from './SalesBreakdown'
 import ScanHistory, { type ScanStats } from './ScanHistory'
 import SeatMap, { type SeatKind } from './SeatMap'
 import StaffPanel from './StaffPanel'
+import { DaySalesPanel } from './DaySales'
 import TripForm from './TripForm'
 import { changeSeat, useTrips } from './useTrips'
 import { busLabel, tripCounts, tripSearchText, type CompanyTrip } from './types'
@@ -19,6 +20,7 @@ import Plate from '../Plate'
 const TABS = [
   ['trips', 'Trips'],
   ['sales', 'Sales'],
+  ['counter', 'Counter sales'],
   ['payments', 'Payments'],
   ['scans', 'Scans'],
   ['staff', 'Staff'],
@@ -350,6 +352,7 @@ export default function ManagerView({ companyName }: { companyName: string }) {
       )}
 
       {tab === 'sales' && <MoneyView trips={trips} fleet={data.fleet} me={data.me} bookings={bookings} onChanged={reload} onFrom={setSince} companyName={companyName} key={salesKey} startView={salesStart} startPeriod={salesStart === 'sellers' ? 'upcoming' : 'all'} />}
+      {tab === 'counter' && <DaySalesPanel company={companyName} />}
       {tab === 'payments' && <PaymentsPanel data={payments} />}
       {tab === 'scans' && <ScanHistory stats={stats} showScanner />}
       {tab === 'staff' && <StaffPanel />}

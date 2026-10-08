@@ -16,6 +16,9 @@ export interface CounterSeat {
   soldBy: string
   staffId: string | null
   soldAt: string | null
+  /** The fare taken at the counter; null for seats marked sold before printed tickets. */
+  fare?: number | null
+  ticketCode?: string | null
 }
 
 /** A ticket sold on BusHub, as the company sees it: no passenger name or phone. */
@@ -85,6 +88,7 @@ export function companyTripMoney(trip: CompanyTrip) {
     price: trip.price,
     totalSeats: trip.totalSeats,
     counterSeats: trip.counterSeats.length,
+    counterTotal: trip.counterSeats.reduce((sum, c) => sum + (typeof c.fare === 'number' ? c.fare : trip.price || 0), 0),
     heldSeats: trip.heldSeats.length,
     online: (trip.onlineTickets || []).map((t) => ({ seats: t.seats.length, total: t.total, payout: t.payout })),
     costs: trip.costs || [],

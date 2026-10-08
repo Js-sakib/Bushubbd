@@ -20,7 +20,11 @@ export function lastDhakaDays(days: number, at: Date = new Date()): string[] {
 
 // New codes have 10 characters after the date, older ones 5; the longer form is tried first so
 // a new code is never cut short.
-const BOOKING_CODE = /BH-\d{8}-(?:[A-Z0-9]{10}|[A-Z0-9]{5})(?![A-Z0-9])/i
+// Counter tickets (printed at a bus company's counter) carry CT- codes of the new length.
+const BOOKING_CODE = /(?:BH-\d{8}-(?:[A-Z0-9]{10}|[A-Z0-9]{5})|CT-\d{8}-[A-Z0-9]{10})(?![A-Z0-9])/i
+
+/** True for a code printed on a counter ticket rather than bought on BusHub. */
+export const isCounterCode = (code: string) => /^CT-/i.test(code)
 
 /**
  * Pull a booking code out of whatever the scanner read. The QR holds the verify URL

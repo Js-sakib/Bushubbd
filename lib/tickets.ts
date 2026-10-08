@@ -13,10 +13,10 @@ const CODE_LENGTH = 10
  * a thousand million million codes a day. Tickets from before have five characters and still work. The database's unique index is what
  * finally guarantees no two tickets share a code; callers retry on the rare clash.
  */
-export function generateBookingCode(now = new Date()): string {
+export function generateBookingCode(now = new Date(), prefix: 'BH' | 'CT' = 'BH'): string {
   const datePart = now.toISOString().slice(0, 10).replace(/-/g, '')
   const randomPart = Array.from({ length: CODE_LENGTH }, () => CODE_ALPHABET[randomInt(CODE_ALPHABET.length)]).join('')
-  return `BH-${datePart}-${randomPart}`
+  return `${prefix}-${datePart}-${randomPart}`
 }
 
 export function isExpired(validUntil: string): boolean {
