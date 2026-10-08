@@ -7,6 +7,7 @@ import Ticket, { TicketBooking } from './Ticket'
 import StoryCard from './StoryCard'
 import ReviewForm from './ReviewForm'
 import { saveTicket } from '../savedTickets'
+import { trackPurchaseOnce } from '@/lib/track'
 import { MAX_SEATS_PER_BOOKING } from '@/lib/seats'
 import { jpegToPdf } from '@/lib/pdf'
 
@@ -90,6 +91,8 @@ function ConfirmationContent() {
             seats: b.seats || [],
             companyName: b.companyName,
           })
+          // A sale reported to Google and Facebook once, right after payment (not on a later visit).
+          if (fresh) trackPurchaseOnce(b.bookingCode, Number(b.totalPrice) || 0, (b.seats || []).length)
         }
       })
       .catch(() => setError('Failed to load booking'))

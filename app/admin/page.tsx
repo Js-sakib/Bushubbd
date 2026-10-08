@@ -14,6 +14,7 @@ import BusesSection from './BusesSection'
 import CompaniesSection from './CompaniesSection'
 import CostsSection from './CostsSection'
 import ReviewsPanel from './ReviewsPanel'
+import MarketingPanel from './MarketingPanel'
 import TicketRequestsPanel, { type TicketRequest } from './TicketRequestsPanel'
 import SearchBox from '../SearchBox'
 import LeadsSection, { isDue } from './LeadsSection'
@@ -355,6 +356,7 @@ export default function AdminDashboard() {
               onOpen={(next, filter) => (next === 'bookings' ? openBookings(filter ?? 'all') : go(next))}
             />
           )}
+          {section === 'dashboard' && <MarketingPanel />}
           {section === 'dashboard' && <ReviewsPanel />}
           {section === 'bookings' && <BookingsSection key={bookingsKey} startFilter={bookingsStart} bookings={bookings} query={query} onQuery={setQuery} onRefund={handleRefund} onDelete={handleDelete} onDeleteMany={handleDeleteMany} />}
           {section === 'buses' && <BusesSection buses={buses} bookings={bookings} companies={companies} fleet={fleet} places={places} onChanged={loadAll} />}

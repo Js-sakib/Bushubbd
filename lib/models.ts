@@ -87,6 +87,9 @@ export interface Booking {
   status: 'pending' | 'confirmed' | 'expired' | 'cancelled' | 'refunded'
   qrCode: string
   source: 'web' | 'whatsapp'
+  /** The marketing that brought the buyer (lib/attribution): facebook, tiktok, a poster's tag… */
+  channel?: string
+  campaign?: string
   createdAt: string
   validUntil: string
   holdExpiresAt: string
