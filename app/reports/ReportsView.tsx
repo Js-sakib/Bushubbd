@@ -360,7 +360,7 @@ export default function ReportsView({ scope }: { scope: 'admin' | 'company' }) {
         <Card title="How early people book" note="Online tickets: days between buying and travelling">
           <BarList rows={r.leadTime.map((l) => ({ label: l.label, value: l.tickets }))} format={(v) => `${count(v)} tickets`} />
         </Card>
-        <Card title={isAdmin ? 'Passenger ratings' : 'Your passenger rating'} note="All reviews so far">
+        <Card title={isAdmin ? 'Passenger ratings' : 'Your passenger rating'} note={isAdmin ? 'BusHub rating, then each bus company · all reviews so far' : 'Bus, seat, time, staff · all reviews so far'}>
           <div className="flex items-baseline gap-2">
             <span className="display text-[34px] font-extrabold leading-none">{r.rating.avg ?? '–'}</span>
             <span className="text-[18px] text-[#e8601a]" aria-hidden>

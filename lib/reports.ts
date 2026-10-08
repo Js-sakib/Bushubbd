@@ -185,8 +185,8 @@ export async function buildReport(db: Db, range: ReportRange, companyId?: string
       .find({ ...(companyId ? { companyId } : {}), status: 'sold', soldAt: { $gte: start, $lt: end } }, { projection: { paymentMethod: 1, total: 1, soldAt: 1 } })
       .toArray(),
     db
-      .collection<{ companyName?: string; rating?: number }>('reviews')
-      .find({ hidden: { $ne: true } }, { projection: { companyName: 1, rating: 1 } })
+      .collection<{ companyName?: string; rating?: number; companyRating?: number }>('reviews')
+      .find({ hidden: { $ne: true } }, { projection: { companyName: 1, rating: 1, companyRating: 1 } })
       .toArray(),
     db
       .collection('companies')
@@ -322,14 +322,18 @@ export async function buildReport(db: Db, range: ReportRange, companyId?: string
       weekdays[weekday] += 1
     }
 
-  // Ratings by company name (reviews carry the name, not the id).
+  // Ratings by company name (reviews carry the name, not the id). Bus companies by their own stars (an older review's one rating counts for both); BusHub by
+  // its own rating. No combined score.
   const ratingBy = new Map<string, { total: number; count: number }>()
+  const bushubRating = { total: 0, count: 0 }
   for (const r of reviews) {
     const key = String(r.companyName || '')
     const g = ratingBy.get(key) || { total: 0, count: 0 }
-    g.total += Number(r.rating) || 0
+    g.total += Number(r.companyRating ?? r.rating) || 0
     g.count += 1
     ratingBy.set(key, g)
+    bushubRating.total += Number(r.rating) || 0
+    bushubRating.count += 1
   }
   const avgRating = (g?: { total: number; count: number }) => (g && g.count ? Math.round((g.total / g.count) * 10) / 10 : null)
   const nameOf = new Map(companies.map((c) => [c._id.toString(), c.name || 'Bus company']))
@@ -408,7 +412,6 @@ export async function buildReport(db: Db, range: ReportRange, companyId?: string
     .slice(0, 5)
 
   const ownRating = scope === 'company' ? ratingBy.get(nameOf.get(companyId!) || '') : undefined
-  const allRatings = Array.from(ratingBy.values()).reduce((s, g) => ({ total: s.total + g.total, count: s.count + g.count }), { total: 0, count: 0 })
 
   return {
     scope,
@@ -438,7 +441,7 @@ export async function buildReport(db: Db, range: ReportRange, companyId?: string
     hours,
     weekdays,
     leadTime,
-    rating: scope === 'company' ? { avg: avgRating(ownRating), count: ownRating?.count || 0 } : { avg: avgRating(allRatings), count: allRatings.count },
+    rating: scope === 'company' ? { avg: avgRating(ownRating), count: ownRating?.count || 0 } : { avg: avgRating(bushubRating), count: bushubRating.count },
     lowFill,
   }
 }

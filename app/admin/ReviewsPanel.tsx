@@ -9,7 +9,10 @@ interface AdminReview {
   _id: string
   bookingCode: string
   name: string
+  /** BusHub's rating. */
   rating: number
+  /** The bus company's rating; older reviews have none, and their one rating counts for both. */
+  companyRating?: number
   text: string
   from: string
   to: string
@@ -98,6 +101,7 @@ export default function ReviewsPanel() {
           </div>
           {visible.length > 0 && (
             <span className="flex items-center gap-2 rounded-full bg-white/70 px-3 py-1.5">
+              <span className="text-[12.5px] font-bold">BusHub</span>
               <Stars value={Math.round(average)} size="h-3.5 w-3.5" />
               <span className="text-[12.5px] font-bold">
                 {average.toFixed(1)} · {visible.length} showing
@@ -116,7 +120,12 @@ export default function ReviewsPanel() {
               <div key={r._id} className={`flex flex-col gap-2 rounded-2xl border border-[#111111]/10 bg-white/70 p-3.5 ${r.hidden ? 'opacity-60' : ''}`}>
                 <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1">
                   <span className="text-[14px] font-bold">{r.name}</span>
-                  <Stars value={r.rating} size="h-3.5 w-3.5" />
+                  <span className="flex items-center gap-1 text-[11px] font-bold text-[#3f3f3f]">
+                    BusHub <Stars value={r.rating} size="h-3.5 w-3.5" />
+                  </span>
+                  <span className="flex items-center gap-1 text-[11px] font-bold text-[#3f3f3f]">
+                    Company <Stars value={r.companyRating ?? r.rating} size="h-3.5 w-3.5" />
+                  </span>
                   {r.hidden && <span className="rounded-full bg-[#111111]/[0.07] px-2 py-0.5 text-[10.5px] font-bold text-[#3f3f3f]">Hidden</span>}
                   <span className="ml-auto text-[11.5px] text-[#555555]">{shortDate(r.createdAt)}</span>
                 </div>

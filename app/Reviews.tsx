@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import Link from 'next/link'
 import type { PublicReview } from '@/lib/reviews'
 
 /** Five stars, the first `value` filled. */
@@ -30,7 +31,7 @@ const monthYear = (iso: string) => {
   return y && m ? `${MONTHS[m - 1]} ${y}` : ''
 }
 
-function ReviewCard({ review }: { review: PublicReview }) {
+export function ReviewCard({ review }: { review: PublicReview }) {
   return (
     <article className="glass-lite flex gap-3.5 p-4">
       <span className="relative h-12 w-12 shrink-0">
@@ -44,14 +45,22 @@ function ReviewCard({ review }: { review: PublicReview }) {
         </span>
       </span>
       <div className="flex min-w-0 flex-col gap-1">
-        <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1">
-          <span className="text-sm font-bold">{review.name}</span>
-          <Stars value={review.rating} size="h-3.5 w-3.5" />
+        <span className="text-sm font-bold">{review.name}</span>
+        <div className="flex flex-col gap-0.5">
+          <span className="flex min-w-0 items-center gap-2">
+            <Stars value={review.rating} size="h-3.5 w-3.5" />
+            <span className="truncate text-[11.5px] font-bold text-[#3f3f3f]">BusHub</span>
+          </span>
+          {review.companyName && (
+            <span className="flex min-w-0 items-center gap-2">
+              <Stars value={review.companyRating} size="h-3.5 w-3.5" />
+              <span className="truncate text-[11.5px] font-bold text-[#3f3f3f]">{review.companyName}</span>
+            </span>
+          )}
         </div>
         {review.text && <p className="text-[12.5px] leading-relaxed text-[#2b2b2b]">{review.text}</p>}
         <span className="text-[11.5px] font-semibold text-[#4a4a4a]">
           {review.from} → {review.to}
-          {review.companyName ? ` · ${review.companyName}` : ''}
           {monthYear(review.travelDate) ? ` · ${monthYear(review.travelDate)}` : ''}
         </span>
       </div>
@@ -74,7 +83,7 @@ export default function Reviews() {
       .then((d) => {
         if (!d?.reviews) return
         setReviews(d.reviews)
-        setSummary(d.summary)
+        setSummary({ count: d.summary?.bushub?.count || 0, average: d.summary?.bushub?.average || 0 })
       })
       .catch(() => undefined)
   }, [])
@@ -92,6 +101,7 @@ export default function Reviews() {
           <span className="text-[12.5px] font-semibold text-[#3f3f3f]">যাত্রীরা যা বলছেন</span>
         </div>
         <span className="glass-lite inline-flex items-center gap-2 !rounded-full px-3 py-1.5">
+          <span className="text-[12.5px] font-bold">BusHub</span>
           <Stars value={Math.round(summary.average)} size="h-3.5 w-3.5" />
           <span className="text-[12.5px] font-bold">
             {summary.average.toFixed(1)} · {summary.count} review{summary.count === 1 ? '' : 's'}
@@ -108,6 +118,9 @@ export default function Reviews() {
           {showAll ? 'Show fewer' : `Show more reviews (${reviews.length - 3})`}
         </button>
       )}
+      <Link href="/reviews" className="glass-btn h-12 text-[14px]">
+        See all reviews · সব মতামত দেখুন →
+      </Link>
     </section>
   )
 }
