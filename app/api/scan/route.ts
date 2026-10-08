@@ -154,43 +154,6 @@ export async function POST(req: NextRequest) {
       return respond('valid', asTicket, ct.companyId, at)
     }
 
-    // A ticket printed at the company's own counter: same rules, its own record.
-    if (isCounterCode(bookingCode)) {
-      const ct = await db.collection('counterTickets').findOne({ ticketCode: bookingCode })
-      if (!ct) return respond('not_found')
-      const asTicket = {
-        _id: ct._id,
-        bookingCode: ct.ticketCode,
-        passengerName: ct.passengerName || 'Counter passenger',
-        busName: ct.busName,
-        companyName: ct.companyName,
-        from: ct.from,
-        to: ct.to,
-        date: ct.date,
-        departureTime: ct.departureTime,
-        seats: ct.seats || [],
-        checkedIn: !!ct.checkedIn,
-        checkedInAt: ct.checkedInAt,
-        paymentStatus: 'paid',
-        status: ct.status === 'cancelled' ? 'cancelled' : 'confirmed',
-        counter: true,
-      }
-      const verdict = judgeTicket(asTicket as any, ct.companyId, scanner.companyId, now)
-      if (verdict !== 'valid') return respond(verdict, asTicket, ct.companyId)
-      const at = now.toISOString()
-      const boardedCt = await db
-        .collection('counterTickets')
-        .updateOne(
-          { _id: ct._id, status: 'sold', checkedIn: { $ne: true } },
-          { $set: { checkedIn: true, checkedInAt: at, checkedInBy: scanner.id, checkedInByName: scanner.name } }
-        )
-      if (boardedCt.modifiedCount === 0) {
-        const latest = await db.collection('counterTickets').findOne({ _id: ct._id })
-        return respond(latest?.status === 'cancelled' ? 'cancelled' : 'already_used', { ...asTicket, checkedInAt: latest?.checkedInAt }, ct.companyId)
-      }
-      return respond('valid', asTicket, ct.companyId, at)
-    }
-
     await repairWronglyExpiredTickets(db, { bookingCode })
     const booking = await db.collection('bookings').findOne({ bookingCode })
     if (!booking) return miss()
