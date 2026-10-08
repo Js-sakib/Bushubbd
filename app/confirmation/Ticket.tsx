@@ -41,7 +41,7 @@ export interface TicketBooking {
 const INK = '#100c0d'
 const REPORT_MINUTES = 30
 const MUTED = '#8a8f86'
-const PAYMENT_NAMES: Record<string, string> = { bkash: 'বিকাশ', nagad: 'নগদ', card: 'কার্ড' }
+const PAYMENT_NAMES: Record<string, string> = { bkash: 'বিকাশ', nagad: 'নগদ', card: 'কার্ড', cash: 'ক্যাশ' }
 const BUS_TYPES: Record<string, string> = { AC: 'এসি', 'Non-AC': 'নন-এসি', Sleeper: 'স্লিপার' }
 const BANGLA_FONT = 'var(--font-bangla), var(--font-body), sans-serif'
 
@@ -111,7 +111,14 @@ function Watermark() {
  * on a white card with inline colours so it looks the same in all three, with a notched
  * tear line above the QR stub.
  */
-const Ticket = forwardRef<HTMLDivElement, { booking: TicketBooking }>(function Ticket({ booking }, ref) {
+/** A ticket sold at a bus company's counter: titled as one, with the counter that sold it. */
+export interface CounterMark {
+  soldBy: string
+  /** navy: the online ticket's colours; aqua: a teal header so it is told apart at a glance. */
+  tone?: 'navy' | 'aqua'
+}
+
+const Ticket = forwardRef<HTMLDivElement, { booking: TicketBooking; counter?: CounterMark }>(function Ticket({ booking, counter }, ref) {
   const refunded = booking.status === 'refunded'
   const paid = booking.paymentStatus === 'paid' && !refunded
   const seatCount = booking.seats.length
@@ -137,6 +144,7 @@ const Ticket = forwardRef<HTMLDivElement, { booking: TicketBooking }>(function T
   const statusText = refunded ? 'ফেরত দেওয়া হয়েছে' : paid ? 'পরিশোধিত' : 'অপেক্ষমাণ'
   const taka = (n: number) => `৳${bnDigits(n.toLocaleString('en-US'))}`
   const year = bnDigits(new Date().getFullYear())
+  const head = counter?.tone === 'aqua' ? { from: '#0a6e69', to: '#0a8a84' } : { from: '#002447', to: '#042a2b' }
 
   return (
     <div
@@ -146,12 +154,12 @@ const Ticket = forwardRef<HTMLDivElement, { booking: TicketBooking }>(function T
       className="ticket-print relative overflow-hidden rounded-[24px] shadow-[0_26px_50px_rgba(0,0,0,0.5)]"
     >
       {/* Header */}
-      <div className="relative bg-gradient-to-br from-[#002447] to-[#042a2b] px-5 pb-4 pt-4" style={{ zIndex: 1 }}>
+      <div className="relative px-5 pb-4 pt-4" style={{ zIndex: 1, backgroundImage: `linear-gradient(135deg, ${head.from}, ${head.to})` }}>
         <div className="flex items-center justify-between gap-3">
           <Logo tone="dark" className="h-6 w-auto" />
           <div className="flex flex-col items-end leading-none">
-            <span className="text-[19px] font-bold text-white">বাস টিকেট</span>
-            <span className="mt-1 text-[9.5px] font-bold tracking-[0.2em] text-[#c9dde6]">BUS TICKET</span>
+            <span className="text-[19px] font-bold text-white">{counter ? 'কাউন্টার টিকেট' : 'বাস টিকেট'}</span>
+            <span className="mt-1 text-[9.5px] font-bold tracking-[0.2em] text-[#c9dde6]">{counter ? 'COUNTER TICKET' : 'BUS TICKET'}</span>
           </div>
         </div>
         <div className="mt-3.5 flex items-center gap-3 rounded-2xl px-3 py-2.5" style={{ backgroundColor: 'rgba(255,255,255,0.08)' }}>
@@ -166,6 +174,14 @@ const Ticket = forwardRef<HTMLDivElement, { booking: TicketBooking }>(function T
             </span>
           )}
         </div>
+        {counter && (
+          <div className="mt-2.5 flex items-center gap-2 text-[11.5px] text-white">
+            <span className="rounded-full px-2.5 py-0.5 text-[10.5px] font-bold" style={{ backgroundColor: '#feb249', color: '#1a0d03' }}>
+              কাউন্টার
+            </span>
+            <span className="truncate">বিক্রি করেছে: {counter.soldBy}</span>
+          </div>
+        )}
       </div>
 
       <div className="relative">
@@ -276,7 +292,8 @@ const Ticket = forwardRef<HTMLDivElement, { booking: TicketBooking }>(function T
           </div>
         </div>
 
-        {/* Additional: luggage */}
+        {/* Additional: luggage (asked online only) */}
+        {!counter && (
         <div
           className="relative mx-5 mt-3 flex items-center gap-3 rounded-2xl border border-dashed px-3.5 py-2.5"
           style={{ zIndex: 1, borderColor: 'rgba(242,102,29,0.45)', backgroundColor: 'rgba(255,244,236,0.92)' }}
@@ -292,11 +309,12 @@ const Ticket = forwardRef<HTMLDivElement, { booking: TicketBooking }>(function T
             <span className="text-[13.5px] font-bold leading-snug">লাগেজ: {bagsText}</span>
           </div>
         </div>
+        )}
 
         {/* Tear line */}
         <div className="relative mt-4 h-5" style={{ zIndex: 1 }}>
-          <span className="ticket-notch absolute -left-2.5 top-0 h-5 w-5 rounded-full bg-[#002447]" />
-          <span className="ticket-notch absolute -right-2.5 top-0 h-5 w-5 rounded-full bg-[#002447]" />
+          <span className="ticket-notch absolute -left-2.5 top-0 h-5 w-5 rounded-full" style={{ backgroundColor: head.from }} />
+          <span className="ticket-notch absolute -right-2.5 top-0 h-5 w-5 rounded-full" style={{ backgroundColor: head.from }} />
           <span className="absolute left-4 right-4 top-2.5 h-0.5 bg-[repeating-linear-gradient(90deg,#d6dcde_0_6px,transparent_6px_12px)]" />
         </div>
 
