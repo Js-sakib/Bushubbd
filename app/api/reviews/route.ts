@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { connectToDatabase } from '@/lib/db'
 import { ObjectId, type Db } from 'mongodb'
-import { PUBLIC_REVIEW_LIMIT, Review, cleanReview, toPublicReview } from '@/lib/reviews'
+import { PUBLIC_REVIEW_LIMIT, Review, cleanReview, toPublicReview, tripDone } from '@/lib/reviews'
+import { dhakaDate } from '@/lib/scan'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -11,8 +12,9 @@ const CODE = /^[A-Z0-9-]{6,40}$/
 /** How many reviews the Reviews page loads at a time. */
 const PAGE = 20
 const VISIBLE = { hidden: { $ne: true } }
-/** The bus company's stars; an older review's one rating counts for both. */
-const COMPANY_STARS = { $ifNull: ['$companyRating', '$rating'] }
+/** The bus company's stars: an older review (no companyRating at all) counts its one rating for
+ * both; a review posted before the trip (companyRating null) has none yet and is left out. */
+const COMPANY_STARS = { $cond: [{ $eq: [{ $type: '$companyRating' }, 'missing'] }, '$rating', '$companyRating'] }
 
 /** BusHub's average and star breakdown, and each bus company's own average. No combined score. */
 async function ratings(db: Db) {
@@ -29,7 +31,9 @@ async function ratings(db: Db) {
       .collection<Review>('reviews')
       .aggregate<{ _id: string; count: number; average: number }>([
         { $match: { ...VISIBLE, companyName: { $nin: [null, ''] } } },
-        { $group: { _id: '$companyName', count: { $sum: 1 }, average: { $avg: COMPANY_STARS } } },
+        { $project: { companyName: 1, stars: COMPANY_STARS } },
+        { $match: { stars: { $gte: 1 } } },
+        { $group: { _id: '$companyName', count: { $sum: 1 }, average: { $avg: '$stars' } } },
         { $sort: { average: -1, count: -1 } },
       ])
       .toArray(),
@@ -54,9 +58,15 @@ export async function GET(req: NextRequest) {
     const code = (params.get('bookingCode') || '').trim().toUpperCase()
     if (code) {
       if (!CODE.test(code)) return NextResponse.json({ review: null })
-      const review = await db.collection<Review>('reviews').findOne({ bookingCode: code })
+      const [review, booking] = await Promise.all([
+        db.collection<Review>('reviews').findOne({ bookingCode: code }),
+        db.collection('bookings').findOne({ bookingCode: code }, { projection: { date: 1 } }),
+      ])
+      const travelDate = String(booking?.date || review?.travelDate || '')
       return NextResponse.json({
         review: review ? { name: review.name, rating: review.rating, companyRating: review.companyRating ?? null, text: review.text, hidden: review.hidden } : null,
+        travelDate,
+        tripDone: tripDone(travelDate, dhakaDate()),
       })
     }
 
@@ -121,14 +131,15 @@ export async function POST(req: NextRequest) {
       .trim()
       .toUpperCase()
     if (!CODE.test(code)) return NextResponse.json({ error: 'Ticket not found' }, { status: 404 })
-    const clean = cleanReview(body)
-    if ('error' in clean) return NextResponse.json({ error: clean.error }, { status: 400 })
 
     const { db } = await connectToDatabase()
     const booking = await db.collection('bookings').findOne({ bookingCode: code })
     if (!booking || booking.paymentStatus !== 'paid' || booking.status === 'refunded' || booking.status === 'cancelled') {
       return NextResponse.json({ error: 'Only a paid ticket can be reviewed' }, { status: 403 })
     }
+    // The bus company is rated only once the trip date has come.
+    const clean = cleanReview(body, { tripDone: tripDone(String(booking.date || ''), dhakaDate()) })
+    if ('error' in clean) return NextResponse.json({ error: clean.error }, { status: 400 })
 
     const now = new Date().toISOString()
     await db.collection<Review>('reviews').updateOne(

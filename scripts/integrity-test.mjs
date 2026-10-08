@@ -832,6 +832,51 @@ check('"Load more" gives the next reviews with none repeated or missed', page1?.
   JSON.stringify({ p1: page1?.reviews?.length, p2: page2?.reviews?.length, unique: new Set(pagedIds).size }))
 await db.collection('reviews').deleteMany({ companyName: { $in: [oldCo, pageCo] } })
 
+// "Write a review" from the home page: the ticket number and the phone it was booked with.
+await db.collection('rate_limits').deleteMany({ _id: /^review-find:/ })
+const findReview = (ticket, phone) => call('/api/reviews/find', { method: 'POST', body: { ticket, phone } })
+const bnDigits = (v) => v.replace(/[0-9]/g, (d) => String.fromCharCode(0x09e6 + Number(d)))
+const found1 = await findReview(` ${reviewBooking.bookingCode.toLowerCase()} `, bnDigits(`0${reviewPhone.slice(-10)}`))
+check('a review can be started from the home page with the ticket number and phone, typed any way',
+  found1.status === 200 && found1.data.bookingCode === reviewBooking.bookingCode && found1.data.companyName === reviewBooking.companyName, JSON.stringify(found1.data))
+check('finding a ticket to review never shows the passenger name or phone',
+  !JSON.stringify(found1.data).includes('Nusrat') && !JSON.stringify(found1.data).includes(reviewPhone.slice(-8)) && !('passengerPhone' in found1.data) && !('passengerName' in found1.data))
+const wrongPhone = await findReview(reviewBooking.bookingCode, '01999999999')
+const wrongTicket = await findReview('BH-20990101-NOPE1', `0${reviewPhone.slice(-10)}`)
+check('a wrong phone or ticket number is refused with the same message',
+  wrongPhone.status === 404 && wrongTicket.status === 404 && wrongPhone.data.error === wrongTicket.data.error, JSON.stringify([wrongPhone.data, wrongTicket.data]))
+check('an unpaid ticket cannot be found to review', (await findReview(at12.bookingCode, at12.passengerPhone)).status === 404)
+let findBlocked = false
+for (let i = 0; i < 12 && !findBlocked; i++) findBlocked = (await findReview(reviewBooking.bookingCode, '01888888888')).status === 429
+check('too many wrong tries are stopped for a while', findBlocked && (await findReview(reviewBooking.bookingCode, `0${reviewPhone.slice(-10)}`)).status === 429)
+await db.collection('rate_limits').deleteMany({ _id: /^review-find:/ })
+
+// The bus company is rated only after the travel date; BusHub can be rated straight away.
+let futureReview = null
+for (const seat of ['2A', '2B', '3A', '3B']) {
+  const r = await call('/api/bookings', { method: 'POST', body: { busId: rateTrip._id, seats: [seat], passengerName: 'Karim Ahmed', passengerPhone: '0195' + String(Math.floor(Math.random() * 1e7)).padStart(7, '0') } })
+  if (r.status === 201) { futureReview = r.data.booking; break }
+}
+await call(`/api/bookings/${futureReview._id}`, { method: 'PATCH', body: { paymentStatus: 'paid', paymentMethod: 'nagad' } })
+const rateCoName = rateCo.data.company.name
+const earlyWithCompany = await call('/api/reviews', { method: 'POST', body: { bookingCode: futureReview.bookingCode, rating: 5, companyRating: 2, name: 'Karim' } })
+check('before the trip, stars for the bus company are refused', earlyWithCompany.status === 400, `status ${earlyWithCompany.status}`)
+const earlyReview = await call('/api/reviews', { method: 'POST', body: { bookingCode: futureReview.bookingCode, rating: 5, text: 'Booking was quick.', name: 'Karim' } })
+const earlyOwn = (await call(`/api/reviews?bookingCode=${futureReview.bookingCode}`)).data
+check('before the trip, BusHub can be rated alone', earlyReview.status === 200 && earlyOwn.review?.rating === 5 && earlyOwn.review?.companyRating === null && earlyOwn.tripDone === false, JSON.stringify(earlyOwn))
+const earlyList = (await call(`/api/reviews?list=1&route=${encodeURIComponent('Dhaka→Sylhet')}`)).data
+const earlyCard = earlyList?.reviews?.find((r) => r.text === 'Booking was quick.')
+check('a review from before the trip does not count for the bus company',
+  !!earlyCard && earlyCard.companyRating === null && !earlyList.summary.companies.some((c) => c.name === rateCoName), JSON.stringify({ earlyCard, companies: earlyList?.summary?.companies }))
+// The travel day comes: now the bus company must be rated, and its average counts it.
+await db.collection('bookings').updateOne({ _id: new ObjectId(futureReview._id) }, { $set: { date: dhakaToday } })
+const lateNoCompany = await call('/api/reviews', { method: 'POST', body: { bookingCode: futureReview.bookingCode, rating: 5, name: 'Karim' } })
+const lateReview = await call('/api/reviews', { method: 'POST', body: { bookingCode: futureReview.bookingCode, rating: 5, companyRating: 3, text: 'Booking was quick.', name: 'Karim' } })
+const lateRow = (await call('/api/reviews?list=1')).data?.summary?.companies?.find((c) => c.name === rateCoName)
+check('after the trip, the bus company must be rated, and its rating then counts',
+  lateNoCompany.status === 400 && lateReview.status === 200 && lateRow?.average === 3 && lateRow?.count === 1, JSON.stringify({ s: lateNoCompany.status, lateRow }))
+await db.collection('reviews').deleteMany({ bookingCode: futureReview.bookingCode })
+
 // Counters from an earlier run in the last ten minutes would block these requests.
 await db.collection('rate_limits').deleteMany({ _id: /^ticketreq-/ })
 const askFor = (contact, name, note = '') => call('/api/tickets/requests', { method: 'POST', body: { contact, name, note } })

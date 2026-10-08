@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import type { PublicReview } from '@/lib/reviews'
+import { REVIEW_SAVED_EVENT, type PublicReview } from '@/lib/reviews'
 
 /** Five stars, the first `value` filled. */
 export function Stars({ value, size = 'h-4 w-4' }: { value: number; size?: string }) {
@@ -51,7 +51,7 @@ export function ReviewCard({ review }: { review: PublicReview }) {
             <Stars value={review.rating} size="h-3.5 w-3.5" />
             <span className="truncate text-[11.5px] font-bold text-[#3f3f3f]">BusHub</span>
           </span>
-          {review.companyName && (
+          {review.companyName && review.companyRating != null && (
             <span className="flex min-w-0 items-center gap-2">
               <Stars value={review.companyRating} size="h-3.5 w-3.5" />
               <span className="truncate text-[11.5px] font-bold text-[#3f3f3f]">{review.companyName}</span>
@@ -78,14 +78,19 @@ export default function Reviews() {
   const [showAll, setShowAll] = useState(false)
 
   useEffect(() => {
-    fetch('/api/reviews')
-      .then((r) => (r.ok ? r.json() : null))
-      .then((d) => {
-        if (!d?.reviews) return
-        setReviews(d.reviews)
-        setSummary({ count: d.summary?.bushub?.count || 0, average: d.summary?.bushub?.average || 0 })
-      })
-      .catch(() => undefined)
+    const load = () =>
+      fetch('/api/reviews', { cache: 'no-store' })
+        .then((r) => (r.ok ? r.json() : null))
+        .then((d) => {
+          if (!d?.reviews) return
+          setReviews(d.reviews)
+          setSummary({ count: d.summary?.bushub?.count || 0, average: d.summary?.bushub?.average || 0 })
+        })
+        .catch(() => undefined)
+    load()
+    // A review posted from the "Write a review" pop-up shows straight away.
+    window.addEventListener(REVIEW_SAVED_EVENT, load)
+    return () => window.removeEventListener(REVIEW_SAVED_EVENT, load)
   }, [])
 
   if (reviews.length === 0) return null
