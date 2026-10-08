@@ -7,6 +7,7 @@ import { banglaCity } from '@/lib/routes'
 import { BRAND_SKY, cityCode, toMinutes } from './BoardingPass'
 import type { TicketBooking } from './Ticket'
 import RouteMap from './RouteMap'
+import { watermark } from './watermark'
 import type { MapDetail } from '@/lib/bdMap'
 
 const INK = '#111111'
@@ -26,7 +27,7 @@ const TravelStory = forwardRef<HTMLDivElement, { booking: TicketBooking; mapDeta
   const firstName = (booking.passengerName || '').trim().split(/\s+/)[0] || ''
 
   return (
-    <div ref={ref} className="relative flex flex-col items-center overflow-hidden px-6 pb-6 pt-5" style={{ width: 360, height: 640, fontFamily: BANGLA_FONT, color: INK, backgroundImage: BRAND_SKY }}>
+    <div ref={ref} className="relative flex flex-col items-center overflow-hidden px-6 pb-6 pt-5" style={{ width: 360, height: 640, fontFamily: BANGLA_FONT, color: INK, backgroundImage: `${watermark('#ffffff', 0.13, 14)}, ${BRAND_SKY}` }}>
       {/* Soft clouds and a sun, so the sky reads as travel */}
       <span aria-hidden className="absolute rounded-full" style={{ width: 220, height: 220, right: -70, top: -60, background: 'radial-gradient(circle, rgba(254,178,73,0.9), rgba(242,102,29,0.35) 55%, transparent 70%)' }} />
       <span aria-hidden className="absolute rounded-full" style={{ width: 300, height: 120, left: -90, top: 150, backgroundColor: 'rgba(255,255,255,0.22)', filter: 'blur(14px)' }} />
@@ -49,7 +50,7 @@ const TravelStory = forwardRef<HTMLDivElement, { booking: TicketBooking; mapDeta
       </div>
 
       {/* The pass, tilted, with no code on it */}
-      <div className="relative mt-3 w-full shrink-0 overflow-hidden rounded-[20px]" style={{ backgroundColor: '#ffffff', transform: 'rotate(-2deg)', boxShadow: '0 26px 50px rgba(40,30,90,0.35)' }}>
+      <div className="relative mt-3 w-full shrink-0 overflow-hidden rounded-[20px]" style={{ backgroundColor: '#ffffff', backgroundImage: watermark('#4b3f8f', 0.06), transform: 'rotate(-2deg)', boxShadow: '0 26px 50px rgba(40,30,90,0.35)' }}>
         <div className="flex items-center justify-between px-4 py-1.5" style={{ background: `linear-gradient(135deg, #feb249, ${ORANGE})`, color: '#1a0d03' }}>
           <span className="text-[10px] font-extrabold tracking-[0.24em]" style={{ fontFamily: 'var(--font-body), sans-serif' }}>
             BOARDING PASS

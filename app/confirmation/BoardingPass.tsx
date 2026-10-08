@@ -7,6 +7,7 @@ import { CONTACT_PHONE } from '@/lib/site'
 import { bnClock, bnDate, bnDigits, bnDuration } from '@/lib/bangla'
 import { banglaCity } from '@/lib/routes'
 import type { TicketBooking } from './Ticket'
+import { watermark } from './watermark'
 
 const INK = '#111111'
 const MUTED = '#6b6f78'
@@ -91,7 +92,11 @@ const BoardingPass = forwardRef<HTMLDivElement, { booking: TicketBooking }>(func
   const status = refunded ? { t: 'ফেরত দেওয়া হয়েছে', bg: '#fde8e8', c: '#c53030' } : paid ? { t: 'পরিশোধিত', bg: '#e3f6ee', c: '#1f7a55' } : { t: 'অপেক্ষমাণ', bg: '#fff4e0', c: '#b7791f' }
 
   return (
-    <div ref={ref} className="ticket-print relative overflow-hidden rounded-[26px]" style={{ backgroundColor: '#ffffff', color: INK, fontFamily: BANGLA_FONT, boxShadow: '0 24px 50px rgba(40,30,90,0.28)' }}>
+    <div
+      ref={ref}
+      className="ticket-print relative overflow-hidden rounded-[26px]"
+      style={{ backgroundColor: '#ffffff', backgroundImage: watermark('#4b3f8f', 0.07), color: INK, fontFamily: BANGLA_FONT, boxShadow: '0 24px 50px rgba(40,30,90,0.28)' }}
+    >
       {/* Header: the site's sky, with the operator */}
       <div className="relative px-5 pb-4 pt-4" style={{ backgroundImage: BRAND_SKY }}>
         <div className="flex items-center justify-between gap-3">
