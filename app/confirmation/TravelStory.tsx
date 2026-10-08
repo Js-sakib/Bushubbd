@@ -7,6 +7,7 @@ import { banglaCity } from '@/lib/routes'
 import { BRAND_SKY, cityCode, toMinutes } from './BoardingPass'
 import type { TicketBooking } from './Ticket'
 import RouteMap from './RouteMap'
+import type { MapDetail } from '@/lib/bdMap'
 
 const INK = '#111111'
 const MUTED = '#6b6f78'
@@ -18,7 +19,7 @@ const BANGLA_FONT = 'var(--font-bangla), var(--font-body), sans-serif'
  * site's sky. A story is public, so it has no QR code, ticket number, phone number or full name:
  * nobody can board with it. Drawn at 360×640 and saved at 3x (1080×1920).
  */
-const TravelStory = forwardRef<HTMLDivElement, { booking: TicketBooking }>(function TravelStory({ booking }, ref) {
+const TravelStory = forwardRef<HTMLDivElement, { booking: TicketBooking; mapDetail?: MapDetail }>(function TravelStory({ booking, mapDetail }, ref) {
   const to = banglaCity(booking.to) || booking.to
   const from = banglaCity(booking.from) || booking.from
   const dep = toMinutes(booking.departureTime)
@@ -37,18 +38,18 @@ const TravelStory = forwardRef<HTMLDivElement, { booking: TicketBooking }>(funct
       <span className="relative mt-3 text-[10px] font-extrabold tracking-[0.3em]" style={{ fontFamily: 'var(--font-body), sans-serif' }}>
         NEXT STOP
       </span>
-      <span className="relative text-center text-[31px] font-bold leading-[1.15]" style={{ textShadow: '0 2px 18px rgba(255,255,255,0.45)' }}>
+      <span className="relative mt-1 text-center text-[31px] font-bold leading-[1.3]" style={{ textShadow: '0 2px 18px rgba(255,255,255,0.45)' }}>
         {to}
       </span>
       <span className="relative text-[13px] font-bold">{firstName ? `${firstName}-এর পরের যাত্রা` : 'আমার পরের যাত্রা'} ✨</span>
 
       {/* Where the trip goes, on the map */}
       <div className="relative mt-1">
-        <RouteMap from={booking.from} to={booking.to} width={312} height={206} />
+        <RouteMap from={booking.from} to={booking.to} width={312} height={186} detail={mapDetail} />
       </div>
 
       {/* The pass, tilted, with no code on it */}
-      <div className="relative mt-3 w-full shrink-0 overflow-hidden rounded-[20px]" style={{ backgroundColor: '#ffffff', transform: 'rotate(-3deg)', boxShadow: '0 26px 50px rgba(40,30,90,0.35)' }}>
+      <div className="relative mt-3 w-full shrink-0 overflow-hidden rounded-[20px]" style={{ backgroundColor: '#ffffff', transform: 'rotate(-2deg)', boxShadow: '0 26px 50px rgba(40,30,90,0.35)' }}>
         <div className="flex items-center justify-between px-4 py-1.5" style={{ background: `linear-gradient(135deg, #feb249, ${ORANGE})`, color: '#1a0d03' }}>
           <span className="text-[10px] font-extrabold tracking-[0.24em]" style={{ fontFamily: 'var(--font-body), sans-serif' }}>
             BOARDING PASS
@@ -97,7 +98,7 @@ const TravelStory = forwardRef<HTMLDivElement, { booking: TicketBooking }>(funct
           <span className="absolute -right-2 top-0 h-4 w-4 rounded-full" style={{ backgroundColor: '#7fd7f5' }} />
           <span className="absolute left-4 right-4 top-2 h-0.5" style={{ backgroundImage: 'repeating-linear-gradient(90deg,#d8d3e6 0 6px,transparent 6px 11px)' }} />
         </div>
-        <div className="truncate px-4 pb-2.5 pt-0.5 text-center text-[11px] font-bold" style={{ color: MUTED }}>
+        <div className="truncate px-4 pb-2 pt-0 text-center text-[11px] font-bold" style={{ color: MUTED }}>
           ✓ টিকেট কনফার্মড · {booking.busName}
         </div>
       </div>

@@ -1,26 +1,13 @@
 /**
- * A small hand-drawn map of Bangladesh for share pictures: the country's outline and where the
- * towns BusHub serves are, so a trip can be drawn as two pins and a route. No map service is
- * used, so a saved picture always looks the same. Accurate to a few kilometres, not for navigation.
+ * A small map of Bangladesh for share pictures: the divisions and districts (lib/bdMapData.ts)
+ * and where the towns BusHub serves are, so a trip can be drawn as two pins and a route with the
+ * start and end areas lit up. No map service is used, so a saved picture always looks the same.
+ * Accurate to about a kilometre, not for navigation.
  */
 
-type LatLon = readonly [number, number]
+import { DISTRICTS, DIVISIONS, type Area } from './bdMapData'
 
-/** The border, clockwise from the northern tip (Panchagarh). */
-const OUTLINE: LatLon[] = [
-  [26.63, 88.45], [26.42, 88.72], [26.1, 88.98], [26.32, 89.35], [26.15, 89.65], [26.05, 89.85],
-  [25.75, 89.88], [25.4, 89.85], [25.27, 90.05], [25.18, 90.4], [25.2, 90.75], [25.17, 91.25],
-  [25.2, 91.7], [25.18, 92.05], [24.95, 92.45], [24.62, 92.28], [24.4, 92.12], [24.22, 91.9],
-  [24.1, 91.62], [24.25, 91.3], [23.95, 91.15], [23.65, 91.2], [23.4, 91.18], [23.1, 91.35],
-  [22.95, 91.52], [23.2, 91.78], [23.58, 91.98], [23.68, 92.3], [23.2, 92.4], [22.9, 92.55],
-  [22.45, 92.6], [22.05, 92.68], [21.65, 92.62], [21.3, 92.64], [21.0, 92.45], [20.74, 92.33],
-  [20.95, 92.2], [21.25, 92.05], [21.48, 91.98], [21.85, 91.9], [22.2, 91.8], [22.45, 91.68],
-  [22.6, 91.5], [22.78, 91.38], [22.68, 91.15], [22.5, 91.05], [22.3, 90.95], [22.05, 90.75],
-  [21.88, 90.45], [21.82, 90.12], [21.78, 89.8], [21.7, 89.45], [21.65, 89.1], [21.95, 89.05],
-  [22.35, 89.0], [22.75, 88.95], [23.15, 88.85], [23.55, 88.65], [23.85, 88.6], [24.1, 88.72],
-  [24.3, 88.3], [24.55, 88.1], [24.85, 88.02], [25.1, 88.35], [25.2, 88.6], [25.3, 88.95],
-  [25.5, 88.75], [25.65, 88.45], [25.95, 88.25], [26.2, 88.2], [26.45, 88.25],
-]
+type LatLon = readonly [number, number]
 
 /** Town centres, by the names trips use (lib/routes.ts BANGLA_CITY). */
 const TOWNS: Record<string, LatLon> = {
@@ -114,26 +101,94 @@ export interface Point {
   y: number
 }
 
-/** Latitude/longitude → a point in the box, keeping the country's shape (scaled for ~23.5° N). */
-function projector(box: MapBox) {
-  const kx = Math.cos((23.7 * Math.PI) / 180)
-  const w = (BOUNDS.maxLon - BOUNDS.minLon) * kx
-  const h = BOUNDS.maxLat - BOUNDS.minLat
+interface Bounds {
+  minLat: number
+  maxLat: number
+  minLon: number
+  maxLon: number
+}
+
+const KX = Math.cos((23.7 * Math.PI) / 180)
+
+/** Latitude/longitude → a point in the box, keeping shapes true (scaled for ~23.7° N). */
+function projector(box: MapBox, bounds: Bounds = BOUNDS) {
+  const w = (bounds.maxLon - bounds.minLon) * KX
+  const h = bounds.maxLat - bounds.minLat
   const scale = Math.min((box.width - box.pad * 2) / w, (box.height - box.pad * 2) / h)
   const ox = (box.width - w * scale) / 2
   const oy = (box.height - h * scale) / 2
   return ([lat, lon]: LatLon): Point => ({
-    x: ox + (lon - BOUNDS.minLon) * kx * scale,
-    y: oy + (BOUNDS.maxLat - lat) * scale,
+    x: ox + (lon - bounds.minLon) * KX * scale,
+    y: oy + (bounds.maxLat - lat) * scale,
   })
+}
+
+/** The box around some areas, with a margin, in degrees. */
+function boundsOf(areas: Area[], margin: number): Bounds {
+  const b = { minLat: 90, maxLat: -90, minLon: 180, maxLon: -180 }
+  for (const a of areas)
+    for (const r of a.rings)
+      for (const [lon, lat] of r) {
+        b.minLat = Math.min(b.minLat, lat)
+        b.maxLat = Math.max(b.maxLat, lat)
+        b.minLon = Math.min(b.minLon, lon)
+        b.maxLon = Math.max(b.maxLon, lon)
+      }
+  return { minLat: b.minLat - margin, maxLat: b.maxLat + margin, minLon: b.minLon - margin, maxLon: b.maxLon + margin }
 }
 
 export function townLatLon(name: string): LatLon | null {
   return TOWNS[name] ?? TOWNS[name.trim().replace(/^\w/, (c) => c.toUpperCase())] ?? null
 }
 
+export interface AreaShape {
+  key: string
+  bn: string
+  path: string
+  /** Whether the trip starts or ends here (or both, for a trip inside one division). */
+  role: 'from' | 'to' | 'both' | null
+}
+
+/** True when the point is inside the ring (lon/lat), by counting crossings. */
+function inside([lat, lon]: LatLon, ring: [number, number][]): boolean {
+  let hit = false
+  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+    const [xi, yi] = ring[i]
+    const [xj, yj] = ring[j]
+    if (yi > lat !== yj > lat && lon < ((xj - xi) * (lat - yi)) / (yj - yi) + xi) hit = !hit
+  }
+  return hit
+}
+
+/** The area a town is in, or the nearest one for a town on the coast or a river edge. */
+export function areaOf(ll: LatLon, areas: Area[]): string | null {
+  const exact = areas.find((d) => d.rings.some((r) => inside(ll, r)))
+  if (exact) return exact.key
+  let best: string | null = null
+  let bestD = 0.15 * 0.15
+  for (const d of areas)
+    for (const r of d.rings)
+      for (const [lon, lat] of r) {
+        const dd = (lat - ll[0]) ** 2 + (lon - ll[1]) ** 2
+        if (dd < bestD) {
+          bestD = dd
+          best = d.key
+        }
+      }
+  return best
+}
+
+export type MapDetail = 'division' | 'district'
+
 export interface RouteMapShape {
-  outline: string | null
+  /** division: the whole country, start and end divisions lit. district: zoomed in to a short
+   * trip, start and end districts lit. */
+  detail: MapDetail
+  areas: AreaShape[]
+  /** Faint inner borders: districts inside the divisions. */
+  fineLines: string[]
+  /** Strong borders over a zoomed map: the divisions. */
+  boldLines: string[]
   a: Point
   b: Point
   route: string
@@ -142,28 +197,61 @@ export interface RouteMapShape {
   towns: Point[]
 }
 
-const LANDMARK_TOWNS = ['Dhaka', 'Chittagong', 'Sylhet', 'Rajshahi', 'Khulna', 'Barishal', 'Rangpur', 'Mymensingh', "Cox's Bazar"]
+const LANDMARK_TOWNS = ['Dhaka', 'Chittagong', 'Sylhet', 'Rajshahi', 'Khulna', 'Barishal', 'Rangpur', 'Mymensingh', "Cox's Bazar", 'Comilla', 'Feni', 'Noakhali', 'Bogura', 'Jessore', 'Tangail', 'Sreemangal', 'Kushtia', 'Dinajpur', 'Patuakhali']
 
 /**
- * The country, the two towns and a gently bent route between them, laid out in the box. When a
- * town is not on the map the trip is drawn on its own (two pins and the route, no country).
+ * The trip laid out in the box: two towns and a gently bent route between them on the map. A long
+ * trip shows the whole country with its two divisions lit; a short one (inside one division, or
+ * close by) zooms in so its two districts are big enough to see. When a town is not on the map
+ * the trip is drawn on its own (two pins and the route, no country).
  */
-export function routeMapShape(from: string, to: string, box: MapBox): RouteMapShape {
+export function routeMapShape(from: string, to: string, box: MapBox, force?: MapDetail): RouteMapShape {
   const pa = townLatLon(from)
   const pb = townLatLon(to)
   let a: Point
   let b: Point
-  let outline: string | null = null
+  let areas: AreaShape[] = []
+  let fineLines: string[] = []
+  let boldLines: string[] = []
   let towns: Point[] = []
+  let detail: MapDetail = 'division'
   if (pa && pb) {
-    const p = projector(box)
-    towns = LANDMARK_TOWNS.filter((t) => t !== from && t !== to && TOWNS[t] !== pa && TOWNS[t] !== pb).map((t) => p(TOWNS[t]))
+    const divA = areaOf(pa, DIVISIONS)
+    const divB = areaOf(pb, DIVISIONS)
+    const close = Math.hypot(pa[0] - pb[0], (pa[1] - pb[1]) * KX) < 1.1
+    detail = force ?? (divA === divB || close ? 'district' : 'division')
+    const disA = areaOf(pa, DISTRICTS)
+    const disB = areaOf(pb, DISTRICTS)
+    const bounds = detail === 'district' ? boundsOf(DISTRICTS.filter((d) => d.key === disA || d.key === disB), 0.35) : BOUNDS
+    const p = projector(box, bounds)
+    const pathOf = (area: Area) =>
+      area.rings
+        .map(
+          (r) =>
+            r
+              .map(([lon, lat], i) => {
+                const { x, y } = p([lat, lon])
+                return `${i ? 'L' : 'M'}${x.toFixed(1)} ${y.toFixed(1)}`
+              })
+              .join(' ') + ' Z'
+        )
+        .join(' ')
+    const roleOf = (key: string, ka: string | null, kb: string | null) => (key === ka && key === kb ? 'both' : key === ka ? 'from' : key === kb ? 'to' : null)
+    if (detail === 'district') {
+      areas = DISTRICTS.map((d) => ({ key: d.key, bn: d.bn, path: pathOf(d), role: roleOf(d.key, disA, disB) }))
+      boldLines = DIVISIONS.map(pathOf)
+    } else {
+      areas = DIVISIONS.map((d) => ({ key: d.key, bn: d.bn, path: pathOf(d), role: roleOf(d.key, divA, divB) }))
+      fineLines = DISTRICTS.map(pathOf)
+    }
     a = p(pa)
     b = p(pb)
-    outline = OUTLINE.map((ll, i) => {
-      const { x, y } = p(ll)
-      return `${i ? 'L' : 'M'}${x.toFixed(1)} ${y.toFixed(1)}`
-    }).join(' ') + ' Z'
+    const inBox = (t: Point) => t.x > 4 && t.x < box.width - 4 && t.y > 4 && t.y < box.height - 4
+    towns = LANDMARK_TOWNS.filter((t) => TOWNS[t] && TOWNS[t] !== pa && TOWNS[t] !== pb)
+      .map((t) => p(TOWNS[t]))
+      .filter(inBox)
+      .filter((t) => Math.hypot(t.x - a.x, t.y - a.y) > 14 && Math.hypot(t.x - b.x, t.y - b.y) > 14)
+    if (detail === 'division') towns = towns.slice(0, 9)
   } else {
     a = { x: box.width * 0.28, y: box.height * 0.3 }
     b = { x: box.width * 0.72, y: box.height * 0.72 }
@@ -175,5 +263,5 @@ export function routeMapShape(from: string, to: string, box: MapBox): RouteMapSh
   const bend = Math.min(60, len * 0.22)
   const c = { x: (a.x + b.x) / 2 + (dy / len) * bend, y: (a.y + b.y) / 2 - (dx / len) * bend }
   const mid = { x: 0.25 * a.x + 0.5 * c.x + 0.25 * b.x, y: 0.25 * a.y + 0.5 * c.y + 0.25 * b.y }
-  return { outline, a, b, route: `M${a.x.toFixed(1)} ${a.y.toFixed(1)} Q${c.x.toFixed(1)} ${c.y.toFixed(1)} ${b.x.toFixed(1)} ${b.y.toFixed(1)}`, mid, towns }
+  return { detail, areas, fineLines, boldLines, a, b, route: `M${a.x.toFixed(1)} ${a.y.toFixed(1)} Q${c.x.toFixed(1)} ${c.y.toFixed(1)} ${b.x.toFixed(1)} ${b.y.toFixed(1)}`, mid, towns }
 }
