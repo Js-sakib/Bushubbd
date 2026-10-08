@@ -37,6 +37,8 @@ export interface MoneyInput {
   totalSeats: number
   /** Seats sold at the counter. */
   counterSeats: number
+  /** What the counter actually took for them, when fares differ from the price (a discount). */
+  counterTotal?: number
   /** Paid BusHub tickets on this trip. */
   online: { seats: number; total: number; payout: number }[]
   /** Held right now by someone paying online; not sold, not free either. */
@@ -61,7 +63,7 @@ export function tripMoney(input: MoneyInput): TripMoney {
   const onlineSeats = input.online.reduce((n, t) => n + t.seats, 0)
   const onlineTotal = input.online.reduce((n, t) => n + (t.total || 0), 0)
   const payout = input.online.reduce((n, t) => n + (t.payout || 0), 0)
-  const counterTotal = input.counterSeats * (input.price || 0)
+  const counterTotal = input.counterTotal ?? input.counterSeats * (input.price || 0)
   const costs = { fuel: 0, road: 0, toll: 0, other: 0, total: 0 }
   for (const c of input.costs) {
     const type = COST_TYPES.includes(c.type) ? c.type : 'other'

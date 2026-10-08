@@ -13,6 +13,8 @@ const STYLES: Record<SeatKind, string> = {
   mine: 'border-2 border-white bg-[#5eb1bf] text-white',
 }
 
+const CHOSEN = 'border-2 border-[#f2661d] bg-[#feb249]/45 text-[#111111] shadow-[0_4px_12px_rgba(242,102,29,0.35)]'
+
 export const SEAT_LEGEND: { kind: SeatKind; label: string }[] = [
   { kind: 'free', label: 'Free' },
   { kind: 'online', label: 'Sold on BusHub' },
@@ -37,6 +39,7 @@ export default function SeatMap({
   busySeat,
   onTap,
   highlight = [],
+  selected = [],
 }: {
   trip: CompanyTrip
   myStaffId?: string | null
@@ -44,6 +47,8 @@ export default function SeatMap({
   onTap?: (seat: string, kind: SeatKind) => void
   /** Seat kinds to outline in orange, e.g. the free seats after tapping Free. */
   highlight?: SeatKind[]
+  /** Seats picked for the sale being made at the counter, not sold yet. */
+  selected?: string[]
 }) {
   const kinds = seatKinds(trip, myStaffId)
   const labels = generateSeatLabels(trip.totalSeats)
@@ -52,14 +57,16 @@ export default function SeatMap({
 
   const seatButton = (seat: string) => {
     const kind = kinds.get(seat) || 'free'
+    const picked = selected.includes(seat)
     return (
       <button
         key={seat}
         type="button"
         disabled={!onTap || busySeat === seat}
         onClick={() => onTap?.(seat, kind)}
-        aria-label={`Seat ${seat}`}
-        className={`h-10 min-w-0 grow basis-0 rounded-[10px] text-[12px] font-bold transition disabled:cursor-default ${STYLES[kind]} ${
+        aria-label={`Seat ${seat}${picked ? ', chosen' : ''}`}
+        aria-pressed={selected.length ? picked : undefined}
+        className={`h-10 min-w-0 grow basis-0 rounded-[10px] text-[12px] font-bold transition disabled:cursor-default ${picked ? CHOSEN : STYLES[kind]} ${
           busySeat === seat ? 'animate-pulse' : ''
         } ${highlight.includes(kind) ? 'ring-[3px] ring-[#f2661d] ring-offset-1' : ''}`}
       >
@@ -77,6 +84,12 @@ export default function SeatMap({
             {l.label}
           </span>
         ))}
+        {selected.length > 0 && (
+          <span className="flex items-center gap-1.5 text-[11px] font-bold text-[#3f3f3f]">
+            <span className={`h-3 w-3 rounded-[4px] ${CHOSEN}`} />
+            Chosen ({selected.length})
+          </span>
+        )}
         {myStaffId && (
           <span className="flex items-center gap-1.5 text-[11px] text-[#3f3f3f]">
             <span className={`h-3 w-3 rounded-[4px] ${STYLES.mine}`} />

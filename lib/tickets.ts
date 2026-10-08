@@ -10,10 +10,10 @@ const CODE_ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
  * source, so codes can't be guessed from one another. The database's unique index is what
  * finally guarantees no two tickets share a code; callers retry on the rare clash.
  */
-export function generateBookingCode(now = new Date()): string {
+export function generateBookingCode(now = new Date(), prefix: 'BH' | 'CT' = 'BH'): string {
   const datePart = now.toISOString().slice(0, 10).replace(/-/g, '')
   const randomPart = Array.from({ length: 5 }, () => CODE_ALPHABET[randomInt(CODE_ALPHABET.length)]).join('')
-  return `BH-${datePart}-${randomPart}`
+  return `${prefix}-${datePart}-${randomPart}`
 }
 
 export function isExpired(validUntil: string): boolean {

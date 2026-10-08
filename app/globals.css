@@ -200,6 +200,9 @@ select.input-dark option {
 }
 
 /* The ticket as captured for its PDF: printed on white, so the notches become white holes. */
+.pdf-capture.ticket-backdrop {
+  background: #ffffff !important;
+}
 .pdf-capture .ticket-print {
   box-shadow: none !important;
   border: 1px solid #d5dbdc;
@@ -318,6 +321,9 @@ input[type='date']::-webkit-calendar-picker-indicator {
   .ticket-notch {
     background: #ffffff !important;
     border: 1px solid #d5dbdc;
+  }
+  .ticket-backdrop {
+    background: none !important;
   }
 }
 
@@ -476,4 +482,22 @@ input[type='date']::-webkit-calendar-picker-indicator {
 .panel-buttons button[class~='bg-[#111111]'] {
   background-color: #002447 !important;
   color: #fbeceb !important;
+}
+
+/* Counter receipts (58 mm / 80 mm thermal printers). The receipt is drawn outside the app, at the
+   end of <body>; while it prints, everything else is left out, so the roll gets only the ticket. */
+.receipt-print {
+  display: none;
+}
+@media print {
+  body.printing-receipt > *:not(.receipt-print) {
+    display: none !important;
+  }
+  body.printing-receipt {
+    background: #ffffff !important;
+    margin: 0 !important;
+  }
+  body.printing-receipt .receipt-print {
+    display: block !important;
+  }
 }

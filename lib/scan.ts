@@ -18,7 +18,12 @@ export function lastDhakaDays(days: number, at: Date = new Date()): string[] {
   return Array.from({ length: days }, (_, i) => dhakaDate(new Date(today + (i - days + 1) * DAY_MS)))
 }
 
-const BOOKING_CODE = /BH-\d{8}-[A-Z0-9]{5}/i
+// Booking codes bought on BusHub start BH-; counter tickets (sold at a bus company's counter)
+// start CT-.
+const BOOKING_CODE = /(?:BH|CT)-\d{8}-[A-Z0-9]{5}/i
+
+/** True for a code from a counter sale rather than bought on BusHub. */
+export const isCounterCode = (code: string) => /^CT-/i.test(code)
 
 /**
  * Pull a booking code out of whatever the scanner read. The QR holds the verify URL

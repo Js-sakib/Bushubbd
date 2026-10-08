@@ -6,6 +6,13 @@ import { busLabel, tripCounts, tripSearchText, type CompanyTrip, type FleetOptio
 import SearchBox from '../SearchBox'
 import { matches } from '@/lib/search'
 import Plate from '../Plate'
+import { dhakaDate } from '@/lib/scan'
+
+const DAYS = [
+  ['today', 'Today'],
+  ['tomorrow', 'Tomorrow'],
+  ['all', 'All days'],
+] as const
 
 /** Bus drop-down, then the trips of that bus as cards to pick from. */
 export default function TripPicker({
@@ -24,10 +31,24 @@ export default function TripPicker({
   onTrip: (id: string) => void
 }) {
   const [search, setSearch] = useState('')
-  const shown = trips.filter((t) => (!busId || t.fleetId === busId) && matches(search, tripSearchText(t)))
+  const [day, setDay] = useState<(typeof DAYS)[number][0]>('all')
+  const today = dhakaDate()
+  const tomorrow = dhakaDate(new Date(Date.now() + 86_400_000))
+  const onDay = (t: CompanyTrip) => (day === 'today' ? t.date === today : day === 'tomorrow' ? t.date === tomorrow : true)
+  // Soonest first, so the next bus to leave is at the top.
+  const shown = trips
+    .filter((t) => (!busId || t.fleetId === busId) && onDay(t) && matches(search, tripSearchText(t)))
+    .sort((a, b) => `${a.date} ${a.departureTime}`.localeCompare(`${b.date} ${b.departureTime}`))
   return (
     <div className="flex flex-col gap-3">
       <SearchBox value={search} onChange={setSearch} placeholder="Search route, number plate, time, date" />
+      <div className="flex gap-2" role="group" aria-label="Day">
+        {DAYS.map(([id, label]) => (
+          <button key={id} type="button" onClick={() => setDay(id)} aria-pressed={day === id} className={`chip ${day === id ? 'chip-active' : ''}`}>
+            {label}
+          </button>
+        ))}
+      </div>
       <select value={busId} onChange={(e) => onBus(e.target.value)} className="input-dark" aria-label="Bus">
         <option value="">All buses</option>
         {fleet.map((f) => (
@@ -36,7 +57,7 @@ export default function TripPicker({
           </option>
         ))}
       </select>
-      {shown.length === 0 && <p className="glass-lite p-4 text-center text-[13px] text-[#4a4a4a]">{search ? 'No trips match your search.' : 'No upcoming trips for this bus.'}</p>}
+      {shown.length === 0 && <p className="glass-lite p-4 text-center text-[13px] text-[#4a4a4a]">{search ? 'No trips match your search.' : day === 'all' ? 'No upcoming trips for this bus.' : `No trips ${day}.`}</p>}
       <div className="flex flex-col gap-2">
         {shown.map((t) => {
           const c = tripCounts(t)
