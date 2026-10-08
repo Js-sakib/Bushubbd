@@ -233,10 +233,10 @@ const BoardingPass = forwardRef<HTMLDivElement, { booking: TicketBooking }>(func
 
       {/* Its own row: a ticket code is long, and the supervisor may type it in. */}
       <div className="mx-5 mb-4 flex items-center justify-between gap-2 rounded-xl px-3.5 py-2" style={{ backgroundColor: '#f6f4fb' }}>
-        <span className="text-[9px] font-extrabold tracking-[0.14em]" style={{ color: MUTED, fontFamily: 'var(--font-body), sans-serif' }}>
+        <span className="whitespace-nowrap text-[9px] font-extrabold tracking-[0.14em]" style={{ color: MUTED, fontFamily: 'var(--font-body), sans-serif' }}>
           TICKET NO
         </span>
-        <span className="display whitespace-nowrap text-[15px] font-bold tracking-[0.02em]">{booking.bookingCode}</span>
+        <span className="display whitespace-nowrap text-[14px] font-bold tracking-[0.01em]">{booking.bookingCode}</span>
       </div>
 
       {/* Footer strip in the brand colours */}

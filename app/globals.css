@@ -200,6 +200,9 @@ select.input-dark option {
 }
 
 /* The ticket as captured for its PDF: printed on white, so the notches become white holes. */
+.pdf-capture.ticket-backdrop {
+  background: #ffffff !important;
+}
 .pdf-capture .ticket-print {
   box-shadow: none !important;
   border: 1px solid #d5dbdc;
@@ -318,6 +321,9 @@ input[type='date']::-webkit-calendar-picker-indicator {
   .ticket-notch {
     background: #ffffff !important;
     border: 1px solid #d5dbdc;
+  }
+  .ticket-backdrop {
+    background: none !important;
   }
 }
 

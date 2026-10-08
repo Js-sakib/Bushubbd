@@ -3,8 +3,9 @@
 import { Suspense, useCallback, useEffect, useRef, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import toast from 'react-hot-toast'
-import Ticket, { TicketBooking } from './Ticket'
-import StoryCard from './StoryCard'
+import type { TicketBooking } from './Ticket'
+import BoardingPass, { BRAND_SKY } from './BoardingPass'
+import TravelStory from './TravelStory'
 import ReviewForm from './ReviewForm'
 import { saveTicket } from '../savedTickets'
 import { trackPurchaseOnce } from '@/lib/track'
@@ -112,12 +113,10 @@ function ConfirmationContent() {
   const renderTicket = useCallback(async (): Promise<Blob | null> => {
     if (!ticketRef.current) return null
     const { toBlob } = await import('html-to-image')
-    // backgroundColor is written onto the captured root, which is the wrapper around the ticket,
-    // so the saved image gets the dark backdrop the notches are cut from while the page shows
-    // the glass background. (Put on the ticket itself, it would paint over the white card.)
+    // The wrapper around the pass carries the site's sky, so the saved image has the colours the
+    // perforation notches are cut from.
     return toBlob(ticketRef.current, {
       pixelRatio: 2.5,
-      backgroundColor: '#002447',
       cacheBust: true,
       imagePlaceholder: BLANK_PIXEL,
       filter: onScreenOnly,
@@ -368,18 +367,18 @@ function ConfirmationContent() {
         )}
       </div>
 
-      {/* The capture wrapper carries the dark backdrop so the perforation notches, which are
-          cut out in the page colour, blend in the saved image exactly as they do on screen. */}
+      {/* The capture wrapper carries the site's sky so the perforation notches, cut out in its
+          colours, blend in the saved image exactly as they do on screen. */}
       <div className="mt-4 sm:max-w-lg">
         {/* The margin stays outside the captured node, or it shows up as a blank strip in the image. */}
-        <div ref={ticketRef} className="p-3">
-          <Ticket booking={booking} />
+        <div ref={ticketRef} className="ticket-backdrop rounded-[34px] p-3" style={{ backgroundImage: BRAND_SKY }}>
+          <BoardingPass booking={booking} />
         </div>
       </div>
 
       {/* Drawn off screen; only captured when the story button is used. */}
       <div aria-hidden className="no-print" style={{ position: 'fixed', left: -10000, top: 0 }}>
-        <StoryCard ref={storyRef} booking={booking} />
+        <TravelStory ref={storyRef} booking={booking} />
       </div>
 
       <div className="no-print mt-5 flex flex-col gap-2.5 sm:max-w-lg">
