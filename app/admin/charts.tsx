@@ -226,7 +226,7 @@ export function BarList({
       {rows.map((r) => (
         <div key={r.label} className="group flex flex-col gap-1.5">
           <div className="flex items-baseline justify-between gap-3">
-            <span className="truncate text-[13px] font-semibold text-[#e8eef0]">{r.label}</span>
+            <span className="truncate text-[13px] font-semibold text-[#111111]">{r.label}</span>
             <span className="shrink-0 text-[13px] font-bold tabular-nums text-[#111111]">{format(r.value)}</span>
           </div>
           <div className="flex items-center gap-2">
@@ -261,6 +261,173 @@ export function Meter({ value, max, label }: { value: number; max: number; label
       <div className="flex justify-between text-[11.5px] text-[#4a4a4a]">
         <span>{label}</span>
         <span className="font-semibold text-[#222222]">{pct}%</span>
+      </div>
+    </div>
+  )
+}
+
+/** The previous period's line: a quiet gray, dashed, so "now" is the one that stands out. */
+export const PREVIOUS = '#8a8f98'
+
+/**
+ * This period against the one before, one line each on the same axis: the current period in
+ * the accent, the previous dashed gray. Hover snaps to a day and shows both values.
+ */
+export function TrendChart({
+  current,
+  previous,
+  labels,
+  prevLabels,
+  format,
+  height = 190,
+}: {
+  current: number[]
+  previous: number[]
+  /** Short label per day (x axis) and the full date for the tooltip. */
+  labels: { short: string; full: string }[]
+  prevLabels: string[]
+  format: (v: number) => string
+  height?: number
+}) {
+  const [hover, setHover] = useState<number | null>(null)
+  const W = 600
+  const H = height
+  const n = current.length
+  const top = niceMax(Math.max(0, ...current, ...previous))
+  const x = (i: number) => (n > 1 ? (i / (n - 1)) * W : W / 2)
+  const y = (v: number) => H - (v / top) * H
+  const line = (vals: number[]) => vals.map((v, i) => `${i === 0 ? 'M' : 'L'}${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(' ')
+  const area = `${line(current)} L${x(n - 1).toFixed(1)},${H} L${x(0).toFixed(1)},${H} Z`
+  const ticks = [top, top / 2, 0]
+  const every = Math.max(1, Math.ceil(n / 7))
+
+  const pick = (e: React.PointerEvent<HTMLDivElement>) => {
+    const box = e.currentTarget.getBoundingClientRect()
+    const i = Math.round(((e.clientX - box.left) / box.width) * (n - 1))
+    setHover(Math.max(0, Math.min(n - 1, i)))
+  }
+
+  return (
+    <div className="flex flex-col gap-2">
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[11.5px] text-[#3f3f3f]">
+        <span className="flex items-center gap-1.5">
+          <span className="h-[3px] w-4 rounded-full" style={{ background: ACCENT }} />
+          This period
+        </span>
+        <span className="flex items-center gap-1.5">
+          <span className="h-0 w-4 border-t-2 border-dashed" style={{ borderColor: PREVIOUS }} />
+          Period before
+        </span>
+      </div>
+      <div className="flex gap-2">
+        <div className="flex flex-col justify-between pb-6 text-right text-[10.5px] tabular-nums text-[#5e5e5e]" style={{ height: H + 24 }}>
+          {ticks.map((t) => (
+            <span key={t} className="leading-none">
+              {format(t)}
+            </span>
+          ))}
+        </div>
+        <div className="relative min-w-0 grow">
+          <div
+            className="relative touch-none"
+            style={{ height: H }}
+            onPointerMove={pick}
+            onPointerDown={pick}
+            onPointerLeave={() => setHover(null)}
+            role="img"
+            aria-label={`This period by day: ${current.map((v, i) => `${labels[i]?.full} ${format(v)}`).join(', ')}`}
+          >
+            <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" className="absolute inset-0 h-full w-full overflow-visible">
+              {ticks.map((t, i) => (
+                <line key={t} x1={0} x2={W} y1={(i / 2) * H} y2={(i / 2) * H} stroke={i === 2 ? 'rgba(17,17,17,0.16)' : GRID} strokeWidth={1} vectorEffect="non-scaling-stroke" />
+              ))}
+              <path d={area} fill={ACCENT} opacity={0.08} />
+              <path d={line(previous)} fill="none" stroke={PREVIOUS} strokeWidth={2} strokeDasharray="5 5" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+              <path d={line(current)} fill="none" stroke={ACCENT} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+              {hover !== null && <line x1={x(hover)} x2={x(hover)} y1={0} y2={H} stroke="rgba(17,17,17,0.25)" strokeWidth={1} vectorEffect="non-scaling-stroke" />}
+            </svg>
+            {hover !== null && (
+              <>
+                <span
+                  className="pointer-events-none absolute h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white"
+                  style={{ left: `${(x(hover) / W) * 100}%`, top: `${(y(previous[hover] || 0) / H) * 100}%`, background: PREVIOUS }}
+                />
+                <span
+                  className="pointer-events-none absolute h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white"
+                  style={{ left: `${(x(hover) / W) * 100}%`, top: `${(y(current[hover] || 0) / H) * 100}%`, background: ACCENT }}
+                />
+                <div
+                  role="status"
+                  className="pointer-events-none absolute z-20 flex -translate-x-1/2 flex-col gap-0.5 whitespace-nowrap rounded-xl border border-[#111111]/10 bg-white/95 px-3 py-2 text-[11.5px] shadow-[0_8px_24px_rgba(0,0,0,0.18)]"
+                  style={{ left: `${Math.min(85, Math.max(15, (x(hover) / W) * 100))}%`, top: -8, transform: 'translate(-50%, -100%)' }}
+                >
+                  <span className="flex items-center gap-1.5 font-bold text-[#111111]">
+                    <span className="h-2 w-2 rounded-full" style={{ background: ACCENT }} />
+                    {labels[hover]?.full}: {format(current[hover] || 0)}
+                  </span>
+                  <span className="flex items-center gap-1.5 text-[#4a4a4a]">
+                    <span className="h-2 w-2 rounded-full" style={{ background: PREVIOUS }} />
+                    {prevLabels[hover]}: {format(previous[hover] || 0)}
+                  </span>
+                </div>
+              </>
+            )}
+          </div>
+          <div className="relative h-6">
+            {labels.map((l, i) =>
+              i % every === 0 || i === n - 1 ? (
+                <span
+                  key={i}
+                  className={`absolute top-1.5 -translate-x-1/2 whitespace-nowrap text-[10.5px] ${i === n - 1 ? 'font-bold text-[#222222]' : 'text-[#5e5e5e]'} ${
+                    i !== n - 1 && i !== 0 && (i / every) % 2 === 1 ? 'max-sm:hidden' : ''
+                  }`}
+                  style={{ left: `${(x(i) / W) * 100}%` }}
+                >
+                  {l.short}
+                </span>
+              ) : null
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/**
+ * Parts of one whole as a single bar, a 2px gap between parts, with a legend that names each
+ * part and gives its value and share, so no part is told apart by colour alone.
+ */
+export function SplitBar({
+  parts,
+  format,
+}: {
+  parts: { key: string; label: string; value: number; color: string; note?: string }[]
+  format: (v: number) => string
+}) {
+  const total = parts.reduce((s, p) => s + p.value, 0)
+  const shown = parts.filter((p) => p.value > 0)
+  if (total <= 0) return <p className="py-3 text-[12.5px] text-[#4a4a4a]">Nothing in this period yet.</p>
+  return (
+    <div className="flex flex-col gap-3">
+      <div className="flex h-4 w-full gap-[2px] overflow-hidden rounded-full" role="img" aria-label={shown.map((p) => `${p.label} ${Math.round((p.value / total) * 100)}%`).join(', ')}>
+        {shown.map((p) => (
+          <span key={p.key} title={`${p.label}: ${format(p.value)}`} className="h-full first:rounded-l-full last:rounded-r-full" style={{ width: `${(p.value / total) * 100}%`, minWidth: 4, background: p.color }} />
+        ))}
+      </div>
+      <div className="grid grid-cols-2 gap-x-4 gap-y-2 sm:grid-cols-3">
+        {parts.map((p) => (
+          <div key={p.key} className="flex items-start gap-2">
+            <span className="mt-1 h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: p.color }} />
+            <span className="flex min-w-0 flex-col">
+              <span className="truncate text-[12px] font-semibold text-[#3f3f3f]">{p.label}</span>
+              <span className="text-[13.5px] font-bold tabular-nums text-[#111111]">
+                {format(p.value)} <span className="text-[11px] font-semibold text-[#5e5e5e]">{Math.round((p.value / total) * 100)}%</span>
+              </span>
+              {p.note && <span className="text-[11px] text-[#5e5e5e]">{p.note}</span>}
+            </span>
+          </div>
+        ))}
       </div>
     </div>
   )

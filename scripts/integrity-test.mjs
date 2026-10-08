@@ -923,6 +923,53 @@ check('a refunded ticket is not counted', !(await adRow()))
 // Put the seat back the way a refund does, so the seat checks below stay true.
 await db.collection('buses').updateOne({ _id: new ObjectId(trip._id) }, { $pull: { bookedSeats: { $in: adBooking.seats } } })
 
+// ---- Reports: any dates, compared with the period before ----
+check('only the admin can see the BusHub reports', (await call('/api/admin/reports')).status === 401)
+check('a counter cannot see the company reports', (await call('/api/company/reports', { cookie: counter1 })).status === 403)
+check('a bad date range is refused', (await call('/api/admin/reports?from=2026-10-10&to=2026-10-01', { cookie: admin })).status === 400)
+const longReport = (await call(`/api/admin/reports?from=2020-01-01&to=${dhakaToday}`, { cookie: admin })).data
+check('a report longer than 400 days is cut to 400', longReport?.range?.days === 400, JSON.stringify(longReport?.range))
+const dhakaDay = (iso) => new Date(new Date(iso).getTime() + 6 * 3600e3).toISOString().slice(0, 10)
+// One more paid ticket, then refunded by the admin, so the report has a refund to count.
+const refundMe = await tagged({})
+if (refundMe) {
+  await call(`/api/bookings/${refundMe._id}`, { method: 'PATCH', body: { paymentStatus: 'paid', paymentMethod: 'nagad' } })
+  await call(`/api/bookings/${refundMe._id}/refund`, { method: 'PATCH', cookie: admin })
+}
+const expectFor = async (companyId) => {
+  const tripRows = await db.collection('buses').find({ companyId }).toArray()
+  const ids = tripRows.map((t) => t._id.toString())
+  const price = new Map(tripRows.map((t) => [t._id.toString(), t.price || 0]))
+  const paid = (await db.collection('bookings').find({ busId: { $in: ids }, paymentStatus: 'paid', status: 'confirmed' }).toArray()).filter((b) => dhakaDay(b.paidAt || b.createdAt) === dhakaToday)
+  const counter = (await db.collection('counterSales').find({ companyId }).toArray()).filter((c) => dhakaDay(c.soldAt) === dhakaToday)
+  const refunded = (await db.collection('bookings').find({ busId: { $in: ids }, status: 'refunded' }).toArray()).filter((b) => b.refundedAt && dhakaDay(b.refundedAt) === dhakaToday)
+  const counterCash = await db.collection('counterTickets').countDocuments({ companyId, status: 'sold', paymentMethod: 'cash', soldAt: { $gte: new Date(Date.parse(`${dhakaToday}T00:00:00Z`) - 6 * 3600e3).toISOString() } })
+  return {
+    tickets: paid.length,
+    seats: paid.reduce((s, b) => s + b.seats.length, 0) + counter.length,
+    sales: paid.reduce((s, b) => s + b.totalPrice, 0) + counter.reduce((s, c) => s + (typeof c.fare === 'number' ? c.fare : price.get(String(c.busId)) || 0), 0),
+    refunds: refunded.length,
+    counterCash,
+  }
+}
+const greenWant = await expectFor(green.id)
+const greenReport = (await call(`/api/company/reports?from=${dhakaToday}&to=${dhakaToday}`, { cookie: green.cookie })).data
+check("the company report counts today's paid tickets, seats and money, online and counter",
+  greenReport?.kpis?.tickets?.current === greenWant.tickets && greenReport.kpis.seats.current === greenWant.seats && greenReport.kpis.sales.current === greenWant.sales,
+  JSON.stringify({ got: greenReport?.kpis && { t: greenReport.kpis.tickets.current, s: greenReport.kpis.seats.current, m: greenReport.kpis.sales.current }, want: greenWant }))
+check('a refunded ticket shows as a refund, not a sale', !!refundMe && greenReport.kpis.refunds.current === greenWant.refunds && greenWant.refunds >= 1 && greenReport.kpis.refundRate.current > 0,
+  JSON.stringify({ refunds: greenReport?.kpis?.refunds, rate: greenReport?.kpis?.refundRate }))
+check('the period before does not count today (a new company has nothing yesterday)', greenReport.kpis.tickets.previous === 0 && greenReport.kpis.seats.previous === 0)
+const cashRow = greenReport.payment.find((p) => p.method === 'cash')
+check('counter tickets show under how they were paid', cashRow?.count === greenWant.counterCash && greenWant.counterCash >= 1, JSON.stringify({ cashRow, want: greenWant.counterCash }))
+const hanifWant = await expectFor(hanif.id)
+const hanifReport = (await call(`/api/company/reports?from=${dhakaToday}&to=${dhakaToday}`, { cookie: hanif.cookie })).data
+check("a company's report has only its own sales", hanifReport?.kpis?.tickets?.current === hanifWant.tickets && hanifReport.kpis.seats.current === hanifWant.seats && hanifReport.kpis.sales.current === hanifWant.sales,
+  JSON.stringify({ got: hanifReport?.kpis?.seats, want: hanifWant }))
+const adminReport = (await call(`/api/admin/reports?from=${dhakaToday}&to=${dhakaToday}`, { cookie: admin })).data
+const greenRow = adminReport?.companies?.find((c) => c.id === green.id)
+check('the admin report lists each company with its online tickets', greenRow?.tickets === greenWant.tickets && greenRow?.name === green.name, JSON.stringify(greenRow))
+
 const bus = await db.collection('buses').findOne({ _id: new ObjectId(trip._id) })
 const live = await db.collection('bookings').find({ busId: trip._id, status: { $in: ['pending', 'confirmed'] } }).toArray()
 const liveSeats = live.flatMap((b) => b.seats)
