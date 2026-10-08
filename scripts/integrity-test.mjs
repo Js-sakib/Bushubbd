@@ -772,30 +772,65 @@ for (const seat of ['9D', '9C', '8D', '8C', '7D']) {
   if (r.status === 201) { reviewBooking = r.data.booking; break }
 }
 check('a booking for the review tests is made', !!reviewBooking)
-const unpaidReview = await call('/api/reviews', { method: 'POST', body: { bookingCode: reviewBooking.bookingCode, rating: 5, name: 'Nusrat' } })
+const unpaidReview = await call('/api/reviews', { method: 'POST', body: { bookingCode: reviewBooking.bookingCode, rating: 5, companyRating: 4, name: 'Nusrat' } })
 check('an unpaid ticket cannot be reviewed', unpaidReview.status === 403, `status ${unpaidReview.status}`)
 await call(`/api/bookings/${reviewBooking._id}`, { method: 'PATCH', body: { paymentStatus: 'paid', paymentMethod: 'bkash' } })
-const fakeReview = await call('/api/reviews', { method: 'POST', body: { bookingCode: 'BH-20990101-NOPE1', rating: 5, name: 'Fake' } })
+const fakeReview = await call('/api/reviews', { method: 'POST', body: { bookingCode: 'BH-20990101-NOPE1', rating: 5, companyRating: 4, name: 'Fake' } })
 check('a made-up ticket code cannot post a review', fakeReview.status === 403 || fakeReview.status === 404, `status ${fakeReview.status}`)
-const badStars = await call('/api/reviews', { method: 'POST', body: { bookingCode: reviewBooking.bookingCode, rating: 9, name: 'Nusrat' } })
+const badStars = await call('/api/reviews', { method: 'POST', body: { bookingCode: reviewBooking.bookingCode, rating: 9, companyRating: 4, name: 'Nusrat' } })
 check('a rating outside 1 to 5 is refused', badStars.status === 400)
-const linkReview = await call('/api/reviews', { method: 'POST', body: { bookingCode: reviewBooking.bookingCode, rating: 5, name: 'Nusrat', text: 'cheap tickets at www.spam.example' } })
+const linkReview = await call('/api/reviews', { method: 'POST', body: { bookingCode: reviewBooking.bookingCode, rating: 5, companyRating: 4, name: 'Nusrat', text: 'cheap tickets at www.spam.example' } })
 check('a review with a link is refused', linkReview.status === 400)
-const postReview = await call('/api/reviews', { method: 'POST', body: { bookingCode: reviewBooking.bookingCode, rating: 4, text: 'Easy booking, good seat.', name: 'Nusrat' } })
-const editReview = await call('/api/reviews', { method: 'POST', body: { bookingCode: reviewBooking.bookingCode, rating: 5, text: 'Easy booking, great seat.', name: 'Nusrat J.' } })
+const postReview = await call('/api/reviews', { method: 'POST', body: { bookingCode: reviewBooking.bookingCode, rating: 4, companyRating: 4, text: 'Easy booking, good seat.', name: 'Nusrat' } })
+const editReview = await call('/api/reviews', { method: 'POST', body: { bookingCode: reviewBooking.bookingCode, rating: 5, companyRating: 4, text: 'Easy booking, great seat.', name: 'Nusrat J.' } })
 check('a paid ticket can post a review and change it', postReview.status === 200 && editReview.status === 200)
 check('one ticket has one review', (await db.collection('reviews').countDocuments({ bookingCode: reviewBooking.bookingCode })) === 1)
 const publicReviews = await call('/api/reviews')
 const mine = publicReviews.data?.reviews?.find((r) => r.text === 'Easy booking, great seat.')
-check('the review shows on the home page list, without the ticket code', !!mine && mine.rating === 5 && !('bookingCode' in mine) && publicReviews.data.summary.count >= 1, JSON.stringify(mine))
+check('the review shows on the home page list, without the ticket code', !!mine && mine.rating === 5 && !('bookingCode' in mine) && publicReviews.data.summary.bushub.count >= 1, JSON.stringify(mine))
 const reviewId = (await db.collection('reviews').findOne({ bookingCode: reviewBooking.bookingCode }))._id.toString()
 const outsiderHide = await call(`/api/admin/reviews/${reviewId}`, { method: 'PATCH', body: { hidden: true } })
 check('only the admin can hide a review', outsiderHide.status === 401)
 await call(`/api/admin/reviews/${reviewId}`, { method: 'PATCH', cookie: admin, body: { hidden: true } })
 const afterHide = await call('/api/reviews')
 check('a hidden review leaves the home page', !afterHide.data.reviews.some((r) => r.id === reviewId))
-await call('/api/reviews', { method: 'POST', body: { bookingCode: reviewBooking.bookingCode, rating: 5, text: 'Changed again', name: 'Nusrat' } })
+await call('/api/reviews', { method: 'POST', body: { bookingCode: reviewBooking.bookingCode, rating: 5, companyRating: 4, text: 'Changed again', name: 'Nusrat' } })
 check('editing a hidden review does not bring it back', (await db.collection('reviews').findOne({ _id: new ObjectId(reviewId) })).hidden === true)
+// ---- Two ratings: BusHub and the bus company; the Reviews page ----
+const noCompanyStars = await call('/api/reviews', { method: 'POST', body: { bookingCode: reviewBooking.bookingCode, rating: 5, name: 'Nusrat' } })
+check('a review needs stars for the bus company too', noCompanyStars.status === 400, `status ${noCompanyStars.status}`)
+const badCompanyStars = await call('/api/reviews', { method: 'POST', body: { bookingCode: reviewBooking.bookingCode, rating: 5, companyRating: 6, name: 'Nusrat' } })
+check('bus company stars outside 1 to 5 are refused', badCompanyStars.status === 400)
+await call(`/api/admin/reviews/${reviewId}`, { method: 'PATCH', cookie: admin, body: { hidden: false } })
+await call('/api/reviews', { method: 'POST', body: { bookingCode: reviewBooking.bookingCode, rating: 5, companyRating: 3, text: 'Great booking, bus was late.', name: 'Nusrat' } })
+const ownReview = (await call(`/api/reviews?bookingCode=${reviewBooking.bookingCode}`)).data?.review
+check('a review keeps BusHub and bus company stars apart', ownReview?.rating === 5 && ownReview?.companyRating === 3, JSON.stringify(ownReview))
+const greenList = (await call(`/api/reviews?list=1&company=${encodeURIComponent(green.name)}`)).data
+const greenRow2 = greenList?.summary?.companies?.find((c) => c.name === green.name)
+check('the Reviews page lists a company\'s reviews with its own rating, no ticket codes',
+  greenList?.reviews?.length >= 1 && greenList.reviews.every((r) => r.companyName === green.name && !('bookingCode' in r)) && greenRow2?.count >= 1 && typeof greenList.summary.bushub.average === 'number' && !('average' in greenList.summary),
+  JSON.stringify({ n: greenList?.reviews?.length, greenRow2 }))
+const routeKey = `${reviewBooking.from}→${reviewBooking.to}`
+const routeList = (await call(`/api/reviews?list=1&route=${encodeURIComponent(routeKey)}`)).data
+check('the Reviews page filters by route', routeList?.reviews?.length >= 1 && routeList.reviews.every((r) => `${r.from}→${r.to}` === routeKey) && routeList.routes.includes(routeKey))
+await call(`/api/admin/reviews/${reviewId}`, { method: 'PATCH', cookie: admin, body: { hidden: true } })
+check('a hidden review is not on the Reviews page', !(await call(`/api/reviews?list=1&company=${encodeURIComponent(green.name)}`)).data.reviews.some((r) => r.id === reviewId))
+// An older review has one rating: it counts for BusHub and the bus company alike.
+const oldCo = `Old Co ${run}`
+await db.collection('reviews').insertOne({ bookingCode: `OLD-${run}`, name: 'Rahim', rating: 2, text: 'old', from: 'Dhaka', to: 'Sylhet', companyName: oldCo, travelDate: dhakaToday, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), hidden: false })
+const oldList = (await call(`/api/reviews?list=1&company=${encodeURIComponent(oldCo)}`)).data
+check('an older one-rating review counts for both BusHub and the bus company',
+  oldList?.summary?.companies?.find((c) => c.name === oldCo)?.average === 2 && oldList.reviews[0]?.companyRating === 2 && oldList.reviews[0]?.rating === 2, JSON.stringify(oldList?.reviews?.[0]))
+// Load more: 25 reviews of one company come back as 20, then 5, with none repeated.
+const pageCo = `Paging Co ${run}`
+const base = Date.now()
+await db.collection('reviews').insertMany(Array.from({ length: 25 }, (_, i) => ({ bookingCode: `PAGE-${run}-${i}`, name: `P${i}`, rating: 4, companyRating: 4, text: '', from: 'Dhaka', to: 'Khulna', companyName: pageCo, travelDate: dhakaToday, createdAt: new Date(base - Math.floor(i / 2) * 1000).toISOString(), updatedAt: new Date().toISOString(), hidden: false })))
+const page1 = (await call(`/api/reviews?list=1&company=${encodeURIComponent(pageCo)}`)).data
+const page2 = page1?.next ? (await call(`/api/reviews?list=1&company=${encodeURIComponent(pageCo)}&before=${encodeURIComponent(page1.next)}`)).data : null
+const pagedIds = [...(page1?.reviews || []), ...(page2?.reviews || [])].map((r) => r.id)
+check('"Load more" gives the next reviews with none repeated or missed', page1?.reviews?.length === 20 && page2?.reviews?.length === 5 && new Set(pagedIds).size === 25 && page2.next === null,
+  JSON.stringify({ p1: page1?.reviews?.length, p2: page2?.reviews?.length, unique: new Set(pagedIds).size }))
+await db.collection('reviews').deleteMany({ companyName: { $in: [oldCo, pageCo] } })
 
 // Counters from an earlier run in the last ten minutes would block these requests.
 await db.collection('rate_limits').deleteMany({ _id: /^ticketreq-/ })
@@ -871,6 +906,60 @@ await db.collection('bookings').updateOne({ _id: new ObjectId(adBooking._id) }, 
 check('a refunded ticket is not counted', !(await adRow()))
 // Put the seat back the way a refund does, so the seat checks below stay true.
 await db.collection('buses').updateOne({ _id: new ObjectId(trip._id) }, { $pull: { bookedSeats: { $in: adBooking.seats } } })
+
+// ---- Reports: any dates, compared with the period before ----
+check('only the admin can see the BusHub reports', (await call('/api/admin/reports')).status === 401)
+check('a counter cannot see the company reports', (await call('/api/company/reports', { cookie: counter1 })).status === 403)
+check('a bad date range is refused', (await call('/api/admin/reports?from=2026-10-10&to=2026-10-01', { cookie: admin })).status === 400)
+const longReport = (await call(`/api/admin/reports?from=2020-01-01&to=${dhakaToday}`, { cookie: admin })).data
+check('a report longer than 400 days is cut to 400', longReport?.range?.days === 400, JSON.stringify(longReport?.range))
+const dhakaDay = (iso) => new Date(new Date(iso).getTime() + 6 * 3600e3).toISOString().slice(0, 10)
+// One more paid ticket, then refunded by the admin, so the report has a refund to count.
+const refundMe = await tagged({})
+if (refundMe) {
+  await call(`/api/bookings/${refundMe._id}`, { method: 'PATCH', body: { paymentStatus: 'paid', paymentMethod: 'nagad' } })
+  await call(`/api/bookings/${refundMe._id}/refund`, { method: 'PATCH', cookie: admin })
+}
+const expectFor = async (companyId) => {
+  const tripRows = await db.collection('buses').find({ companyId }).toArray()
+  const ids = tripRows.map((t) => t._id.toString())
+  const price = new Map(tripRows.map((t) => [t._id.toString(), t.price || 0]))
+  const paid = (await db.collection('bookings').find({ busId: { $in: ids }, paymentStatus: 'paid', status: 'confirmed' }).toArray()).filter((b) => dhakaDay(b.paidAt || b.createdAt) === dhakaToday)
+  const counter = (await db.collection('counterSales').find({ companyId }).toArray()).filter((c) => dhakaDay(c.soldAt) === dhakaToday)
+  const refunded = (await db.collection('bookings').find({ busId: { $in: ids }, status: 'refunded' }).toArray()).filter((b) => b.refundedAt && dhakaDay(b.refundedAt) === dhakaToday)
+  const counterCash = await db.collection('counterTickets').countDocuments({ companyId, status: 'sold', paymentMethod: 'cash', soldAt: { $gte: new Date(Date.parse(`${dhakaToday}T00:00:00Z`) - 6 * 3600e3).toISOString() } })
+  return {
+    tickets: paid.length,
+    seats: paid.reduce((s, b) => s + b.seats.length, 0) + counter.length,
+    sales: paid.reduce((s, b) => s + b.totalPrice, 0) + counter.reduce((s, c) => s + (typeof c.fare === 'number' ? c.fare : price.get(String(c.busId)) || 0), 0),
+    refunds: refunded.length,
+    counterCash,
+  }
+}
+const greenWant = await expectFor(green.id)
+const greenReport = (await call(`/api/company/reports?from=${dhakaToday}&to=${dhakaToday}`, { cookie: green.cookie })).data
+check("the company report counts today's paid tickets, seats and money, online and counter",
+  greenReport?.kpis?.tickets?.current === greenWant.tickets && greenReport.kpis.seats.current === greenWant.seats && greenReport.kpis.sales.current === greenWant.sales,
+  JSON.stringify({ got: greenReport?.kpis && { t: greenReport.kpis.tickets.current, s: greenReport.kpis.seats.current, m: greenReport.kpis.sales.current }, want: greenWant }))
+check('a refunded ticket shows as a refund, not a sale', !!refundMe && greenReport.kpis.refunds.current === greenWant.refunds && greenWant.refunds >= 1 && greenReport.kpis.refundRate.current > 0,
+  JSON.stringify({ refunds: greenReport?.kpis?.refunds, rate: greenReport?.kpis?.refundRate }))
+check('the period before does not count today (a new company has nothing yesterday)', greenReport.kpis.tickets.previous === 0 && greenReport.kpis.seats.previous === 0)
+const cashRow = greenReport.payment.find((p) => p.method === 'cash')
+check('counter tickets show under how they were paid', cashRow?.count === greenWant.counterCash && greenWant.counterCash >= 1, JSON.stringify({ cashRow, want: greenWant.counterCash }))
+check('seat fill and refund rate changes are shown in percentage points, and never above 100%',
+  greenReport.kpis.refundRate.points === true && greenReport.kpis.fill.points === true && greenReport.kpis.refundRate.current <= 100 && greenReport.kpis.fill.current <= 100)
+const greenCounterTicketsToday = await db.collection('counterTickets').countDocuments({ companyId: green.id, status: 'sold', soldAt: { $gte: new Date(Date.parse(`${dhakaToday}T00:00:00Z`) - 6 * 3600e3).toISOString() } })
+const greenLegacyToday = (await db.collection('counterSales').find({ companyId: green.id, ticketCode: { $exists: false } }).toArray()).filter((c) => dhakaDay(c.soldAt) === dhakaToday).length
+check("busiest hours count each sale once (a family's seats at the counter are one sale)",
+  greenReport.hours.reduce((a, b) => a + b, 0) === greenWant.tickets + greenCounterTicketsToday + greenLegacyToday,
+  JSON.stringify({ hours: greenReport.hours.reduce((a, b) => a + b, 0), want: greenWant.tickets + greenCounterTicketsToday + greenLegacyToday }))
+const hanifWant = await expectFor(hanif.id)
+const hanifReport = (await call(`/api/company/reports?from=${dhakaToday}&to=${dhakaToday}`, { cookie: hanif.cookie })).data
+check("a company's report has only its own sales", hanifReport?.kpis?.tickets?.current === hanifWant.tickets && hanifReport.kpis.seats.current === hanifWant.seats && hanifReport.kpis.sales.current === hanifWant.sales,
+  JSON.stringify({ got: hanifReport?.kpis?.seats, want: hanifWant }))
+const adminReport = (await call(`/api/admin/reports?from=${dhakaToday}&to=${dhakaToday}`, { cookie: admin })).data
+const greenRow = adminReport?.companies?.find((c) => c.id === green.id)
+check('the admin report lists each company with its online tickets', greenRow?.tickets === greenWant.tickets && greenRow?.name === green.name, JSON.stringify(greenRow))
 
 const bus = await db.collection('buses').findOne({ _id: new ObjectId(trip._id) })
 const live = await db.collection('bookings').find({ busId: trip._id, status: { $in: ['pending', 'confirmed'] } }).toArray()

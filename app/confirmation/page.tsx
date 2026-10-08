@@ -491,7 +491,7 @@ function ConfirmationContent() {
         )}
       </div>
 
-      {paid && booking.status !== 'refunded' && <ReviewForm bookingCode={booking.bookingCode} passengerName={booking.passengerName} />}
+      {paid && booking.status !== 'refunded' && <ReviewForm bookingCode={booking.bookingCode} passengerName={booking.passengerName} companyName={booking.companyName} />}
 
       {returnBusId && (
         <div className="no-print mt-5 flex flex-col gap-3 rounded-[20px] border border-[#c3d1e0] bg-gradient-to-br from-[#002447]/90 to-[#08324d]/90 p-4 sm:max-w-lg">

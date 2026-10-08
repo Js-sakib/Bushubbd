@@ -34,9 +34,12 @@ async function ensureIndexes(db: Db) {
     // One review per ticket; the home page reads the newest visible ones.
     ['reviews', { bookingCode: 1 }, { unique: true, name: 'review_ticket_unique' }],
     ['reviews', { hidden: 1, createdAt: -1 }, { name: 'review_list' }],
+    ['reviews', { companyName: 1, createdAt: -1 }, { name: 'review_company' }],
     // A counter ticket code is printed on one ticket only; the day report reads a company's day.
     ['counterTickets', { ticketCode: 1 }, { unique: true, name: 'counter_ticket_unique' }],
     ['counterTickets', { companyId: 1, soldAt: -1 }, { name: 'counter_ticket_day' }],
+    // Reports read bookings by when they were made.
+    ['bookings', { createdAt: 1 }, { name: 'booking_created' }],
     ['counterTickets', { companyId: 1, phoneCore: 1, soldAt: -1 }, { name: 'counter_ticket_phone' }],
     // An email signs up for offers once.
     ['subscribers', { email: 1 }, { unique: true, name: 'subscriber_email_unique' }],

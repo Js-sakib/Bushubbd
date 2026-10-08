@@ -6,6 +6,7 @@ import toast from 'react-hot-toast'
 import { DEFAULT_PLACES, Places } from '@/lib/places'
 import { MAX_SEATS_PER_BOOKING } from '@/lib/seats'
 import Reviews from './Reviews'
+import HowToReview from './HowToReview'
 
 export default function HomeClient() {
   const router = useRouter()
@@ -296,6 +297,7 @@ export default function HomeClient() {
       </section>
 
       <Reviews />
+      <HowToReview showAllLink />
 
       <section className="glass-lite mt-6 flex items-center gap-3.5 p-4">
         <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[14px] bg-[#25D366] text-white shadow-[0_8px_18px_rgba(37,211,102,0.3)]">

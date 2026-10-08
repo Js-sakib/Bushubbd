@@ -20,6 +20,7 @@ import SearchBox from '../SearchBox'
 import LeadsSection, { isDue } from './LeadsSection'
 import type { Booking, Bus, CompanyPrefill, CompanyRow, FleetBus, LeadRow, Section } from './types'
 import { LogoMark } from '../BrandLogo'
+import ReportsView from '../reports/ReportsView'
 
 const NAV: { key: Section; label: string; icon: React.ReactNode }[] = [
   {
@@ -31,6 +32,17 @@ const NAV: { key: Section; label: string; icon: React.ReactNode }[] = [
         <rect x="13.5" y="3.5" width="7" height="7" rx="2" />
         <rect x="3.5" y="13.5" width="7" height="7" rx="2" />
         <rect x="13.5" y="13.5" width="7" height="7" rx="2" />
+      </svg>
+    ),
+  },
+  {
+    key: 'reports',
+    label: 'Reports',
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-[19px] w-[19px]">
+        <path d="M4 20V4" />
+        <path d="M4 20h16" />
+        <path d="M7.5 15l4-4.5 3 3L20 7" />
       </svg>
     ),
   },
@@ -356,6 +368,12 @@ export default function AdminDashboard() {
               onOpen={(next, filter) => (next === 'bookings' ? openBookings(filter ?? 'all') : go(next))}
             />
           )}
+          {section === 'dashboard' && (
+            <button type="button" onClick={() => go('reports')} className="glass-btn glass-btn-plain mt-4 h-11 px-5 text-[13px]">
+              See full reports: any dates, routes, seat fill, payments →
+            </button>
+          )}
+          {section === 'reports' && <ReportsView scope="admin" />}
           {section === 'dashboard' && <MarketingPanel />}
           {section === 'dashboard' && <ReviewsPanel />}
           {section === 'bookings' && <BookingsSection key={bookingsKey} startFilter={bookingsStart} bookings={bookings} query={query} onQuery={setQuery} onRefund={handleRefund} onDelete={handleDelete} onDeleteMany={handleDeleteMany} />}
@@ -380,7 +398,7 @@ export default function AdminDashboard() {
 
       {/* Bottom tabs, phones */}
       <nav className="fixed inset-x-0 bottom-0 z-30 px-3 pb-[max(12px,env(safe-area-inset-bottom))] lg:hidden">
-        <div className="glass grid grid-cols-6 gap-1 p-1.5">
+        <div className="glass grid grid-cols-7 gap-0.5 p-1.5">
           {NAV.map((item) => {
             const active = section === item.key
             return (
@@ -389,12 +407,12 @@ export default function AdminDashboard() {
                 type="button"
                 onClick={() => go(item.key)}
                 aria-current={active ? 'page' : undefined}
-                className={`relative flex flex-col items-center gap-1 rounded-2xl py-2 text-[10.5px] font-bold transition ${
+                className={`relative flex min-w-0 flex-col items-center gap-1 rounded-2xl py-2 text-[9.5px] font-bold transition min-[400px]:text-[10.5px] ${
                   active ? 'bg-[#002447] text-[#fbeceb] shadow-[0_8px_24px_rgba(0,36,71,0.3)]' : 'text-[#3f3f3f]'
                 }`}
               >
                 {item.icon}
-                {item.label}
+                <span className="max-w-full truncate">{item.label}</span>
                 {badgeFor(item.key) > 0 && (
                   <span className="absolute right-1.5 top-1">
                     <Badge count={badgeFor(item.key)} />

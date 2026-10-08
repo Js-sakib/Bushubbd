@@ -7,15 +7,43 @@ import { Stars } from '../Reviews'
 
 const LABELS = ['', 'Bad', 'Not good', 'Okay', 'Good', 'Excellent']
 
+/** One row of five tappable stars, with a word for the choice. */
+function StarPicker({ value, onChange, label }: { value: number; onChange: (n: number) => void; label: string }) {
+  return (
+    <div className="flex items-center gap-3">
+      <div className="flex gap-1" role="radiogroup" aria-label={label}>
+        {[1, 2, 3, 4, 5].map((n) => (
+          <button
+            key={n}
+            type="button"
+            role="radio"
+            aria-checked={value === n}
+            aria-label={`${label}: ${n} star${n === 1 ? '' : 's'}`}
+            onClick={() => onChange(n)}
+            className="rounded-lg p-0.5 transition active:scale-90"
+          >
+            <svg viewBox="0 0 24 24" className={`h-9 w-9 ${n <= value ? 'text-[#f5a623]' : 'text-[#d6d6d6]'}`} fill="currentColor" aria-hidden>
+              <path d="M12 2.8l2.8 5.9 6.4.8-4.7 4.4 1.2 6.4L12 17.2l-5.7 3.1 1.2-6.4-4.7-4.4 6.4-.8z" />
+            </svg>
+          </button>
+        ))}
+      </div>
+      {value > 0 && <span className="text-[13px] font-bold text-[#b45309]">{LABELS[value]}</span>}
+    </div>
+  )
+}
+
 /**
- * "Rate your trip" under a paid ticket. The passenger picks stars, may write a few words and
- * chooses the name to show. Their review can be changed later from the same ticket.
+ * "Rate your trip" under a paid ticket. The passenger rates BusHub (booking, payment, ticket)
+ * and the bus company (bus, seat, time, staff) separately, may write a few words and chooses
+ * the name to show. Their review can be changed later from the same ticket.
  */
-export default function ReviewForm({ bookingCode, passengerName }: { bookingCode: string; passengerName: string }) {
+export default function ReviewForm({ bookingCode, passengerName, companyName }: { bookingCode: string; passengerName: string; companyName: string }) {
   const [loaded, setLoaded] = useState(false)
-  const [saved, setSaved] = useState<{ rating: number; text: string; name: string; hidden?: boolean } | null>(null)
+  const [saved, setSaved] = useState<{ rating: number; companyRating: number | null; text: string; name: string; hidden?: boolean } | null>(null)
   const [editing, setEditing] = useState(false)
   const [rating, setRating] = useState(0)
+  const [companyRating, setCompanyRating] = useState(0)
   const [text, setText] = useState('')
   const [name, setName] = useState(firstName(passengerName))
   const [sending, setSending] = useState(false)
@@ -27,6 +55,8 @@ export default function ReviewForm({ bookingCode, passengerName }: { bookingCode
         if (d?.review) {
           setSaved(d.review)
           setRating(d.review.rating)
+          // An older review rated the trip once; the passenger is asked for the company again.
+          setCompanyRating(d.review.companyRating || 0)
           setText(d.review.text)
           setName(d.review.name)
         }
@@ -38,7 +68,11 @@ export default function ReviewForm({ bookingCode, passengerName }: { bookingCode
   const submit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!rating) {
-      toast.error('Please tap the stars first')
+      toast.error('Please tap the stars for BusHub')
+      return
+    }
+    if (!companyRating) {
+      toast.error(`Please tap the stars for ${company}`)
       return
     }
     setSending(true)
@@ -46,16 +80,16 @@ export default function ReviewForm({ bookingCode, passengerName }: { bookingCode
       const res = await fetch('/api/reviews', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ bookingCode, rating, text, name }),
+        body: JSON.stringify({ bookingCode, rating, companyRating, text, name }),
       })
       const data = await res.json().catch(() => null)
       if (!res.ok) {
         toast.error(data?.error || 'Could not post your review')
         return
       }
-      setSaved({ rating, text: text.trim(), name: name.trim(), hidden: saved?.hidden })
+      setSaved({ rating, companyRating, text: text.trim(), name: name.trim(), hidden: saved?.hidden })
       setEditing(false)
-      toast.success(saved ? 'Review updated. Thank you!' : 'Thank you! Your review is on our home page.')
+      toast.success(saved ? 'Review updated. Thank you!' : 'Thank you! Your review is on our Reviews page.')
     } catch {
       toast.error('No internet connection. Try again in a moment.')
     } finally {
@@ -64,6 +98,7 @@ export default function ReviewForm({ bookingCode, passengerName }: { bookingCode
   }
 
   if (!loaded) return null
+  const company = companyName || 'the bus company'
 
   if (saved && !editing) {
     return (
@@ -74,9 +109,16 @@ export default function ReviewForm({ bookingCode, passengerName }: { bookingCode
             Edit
           </button>
         </div>
-        <div className="flex items-center gap-2">
-          <Stars value={saved.rating} size="h-5 w-5" />
-          <span className="text-[12.5px] font-semibold text-[#4a4a4a]">by {saved.name}</span>
+        <div className="flex flex-col gap-1.5">
+          <div className="flex items-center gap-2">
+            <span className="w-24 shrink-0 text-[12px] font-bold text-[#3f3f3f]">BusHub</span>
+            <Stars value={saved.rating} size="h-5 w-5" />
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="w-24 shrink-0 truncate text-[12px] font-bold text-[#3f3f3f]">{company}</span>
+            {saved.companyRating ? <Stars value={saved.companyRating} size="h-5 w-5" /> : <span className="text-[12px] text-[#b45309]">Not rated yet · tap Edit</span>}
+          </div>
+          <span className="text-[12px] font-semibold text-[#4a4a4a]">by {saved.name}</span>
         </div>
         {saved.text && <p className="text-[13px] leading-relaxed text-[#2b2b2b]">{saved.text}</p>}
         <span className="text-[11.5px] text-[#555555]">Thank you for helping other passengers choose.</span>
@@ -87,29 +129,20 @@ export default function ReviewForm({ bookingCode, passengerName }: { bookingCode
   return (
     <form onSubmit={submit} className="no-print card-2 mt-5 flex flex-col gap-3.5 p-4 sm:max-w-lg">
       <div className="flex flex-col gap-0.5">
-        <span className="text-[15px] font-bold">How was your BusHub experience?</span>
-        <span className="text-[12.5px] text-[#4a4a4a]">আপনার মতামত দিন · Rate us and help other passengers</span>
+        <span className="text-[15px] font-bold">How was your trip?</span>
+        <span className="text-[12.5px] text-[#4a4a4a]">আপনার মতামত দিন · Rate BusHub and the bus company, and help other passengers</span>
       </div>
 
-      <div className="flex items-center gap-3">
-        <div className="flex gap-1" role="radiogroup" aria-label="Your rating">
-          {[1, 2, 3, 4, 5].map((n) => (
-            <button
-              key={n}
-              type="button"
-              role="radio"
-              aria-checked={rating === n}
-              aria-label={`${n} star${n === 1 ? '' : 's'}`}
-              onClick={() => setRating(n)}
-              className="rounded-lg p-0.5 transition active:scale-90"
-            >
-              <svg viewBox="0 0 24 24" className={`h-9 w-9 ${n <= rating ? 'text-[#f5a623]' : 'text-[#d6d6d6]'}`} fill="currentColor" aria-hidden>
-                <path d="M12 2.8l2.8 5.9 6.4.8-4.7 4.4 1.2 6.4L12 17.2l-5.7 3.1 1.2-6.4-4.7-4.4 6.4-.8z" />
-              </svg>
-            </button>
-          ))}
-        </div>
-        {rating > 0 && <span className="text-[13px] font-bold text-[#b45309]">{LABELS[rating]}</span>}
+      <div className="flex flex-col gap-1">
+        <span className="text-[13px] font-bold">BusHub</span>
+        <span className="text-[11.5px] text-[#4a4a4a]">বুকিং, পেমেন্ট, টিকেট · booking, payment, ticket</span>
+        <StarPicker value={rating} onChange={setRating} label="BusHub" />
+      </div>
+
+      <div className="flex flex-col gap-1">
+        <span className="text-[13px] font-bold">{company}</span>
+        <span className="text-[11.5px] text-[#4a4a4a]">বাস, সিট, সময়, স্টাফ · bus, seat, time, staff</span>
+        <StarPicker value={companyRating} onChange={setCompanyRating} label={company} />
       </div>
 
       <label className="flex flex-col gap-1">
@@ -142,7 +175,7 @@ export default function ReviewForm({ bookingCode, passengerName }: { bookingCode
         </button>
       </div>
       <span className="text-[11px] leading-snug text-[#555555]">
-        Your review shows on our home page with your first name and route. Your phone number and ticket stay private.
+        Your review shows on our home page and Reviews page with your first name and route. Your phone number and ticket stay private.
       </span>
     </form>
   )
