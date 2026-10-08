@@ -962,6 +962,13 @@ check('a refunded ticket shows as a refund, not a sale', !!refundMe && greenRepo
 check('the period before does not count today (a new company has nothing yesterday)', greenReport.kpis.tickets.previous === 0 && greenReport.kpis.seats.previous === 0)
 const cashRow = greenReport.payment.find((p) => p.method === 'cash')
 check('counter tickets show under how they were paid', cashRow?.count === greenWant.counterCash && greenWant.counterCash >= 1, JSON.stringify({ cashRow, want: greenWant.counterCash }))
+check('seat fill and refund rate changes are shown in percentage points, and never above 100%',
+  greenReport.kpis.refundRate.points === true && greenReport.kpis.fill.points === true && greenReport.kpis.refundRate.current <= 100 && greenReport.kpis.fill.current <= 100)
+const greenCounterTicketsToday = await db.collection('counterTickets').countDocuments({ companyId: green.id, status: 'sold', soldAt: { $gte: new Date(Date.parse(`${dhakaToday}T00:00:00Z`) - 6 * 3600e3).toISOString() } })
+const greenLegacyToday = (await db.collection('counterSales').find({ companyId: green.id, ticketCode: { $exists: false } }).toArray()).filter((c) => dhakaDay(c.soldAt) === dhakaToday).length
+check("busiest hours count each sale once (a family's seats at the counter are one sale)",
+  greenReport.hours.reduce((a, b) => a + b, 0) === greenWant.tickets + greenCounterTicketsToday + greenLegacyToday,
+  JSON.stringify({ hours: greenReport.hours.reduce((a, b) => a + b, 0), want: greenWant.tickets + greenCounterTicketsToday + greenLegacyToday }))
 const hanifWant = await expectFor(hanif.id)
 const hanifReport = (await call(`/api/company/reports?from=${dhakaToday}&to=${dhakaToday}`, { cookie: hanif.cookie })).data
 check("a company's report has only its own sales", hanifReport?.kpis?.tickets?.current === hanifWant.tickets && hanifReport.kpis.seats.current === hanifWant.seats && hanifReport.kpis.sales.current === hanifWant.sales,

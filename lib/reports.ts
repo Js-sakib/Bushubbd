@@ -22,8 +22,11 @@ export const PAYMENT_KEYS: PaymentKey[] = ['bkash', 'nagad', 'card', 'cash', 'un
 export interface Kpi {
   current: number
   previous: number
-  /** Change in percent; null when there was nothing to compare with. */
+  /** Change in percent; null when there was nothing to compare with. For a rate (seat fill,
+   * refund rate) it is the change in percentage points instead, so 3.9% → 4.3% reads +0.4. */
   pct: number | null
+  /** Set when pct is in percentage points rather than percent. */
+  points?: boolean
 }
 
 export interface ReportRange {
@@ -86,7 +89,12 @@ function kpi(current: number, previous: number): Kpi {
   return { current, previous, pct: previous > 0 ? Math.round(((current - previous) / previous) * 100) : null }
 }
 
-const pct = (part: number, whole: number) => (whole > 0 ? Math.round((part / whole) * 1000) / 10 : null)
+/** A rate against the one before, as the difference in percentage points. */
+function rateKpi(current: number, previous: number): Kpi {
+  return { current, previous, pct: Math.round((current - previous) * 10) / 10, points: true }
+}
+
+const pct = (part: number, whole: number) => (whole > 0 ? Math.min(100, Math.round((part / whole) * 1000) / 10) : null)
 const saleTime = (b: { paidAt?: string; createdAt?: string }) => b.paidAt || b.createdAt || ''
 const dayOf = (iso: string) => (iso ? dhakaDate(new Date(iso)) : '')
 const dhakaParts = (iso: string) => {
@@ -305,9 +313,11 @@ export async function buildReport(db: Db, range: ReportRange, companyId?: string
       leadTime[LEAD.findIndex((l) => ahead <= l.max)].tickets += 1
     }
   }
+  // Counter sales count once per ticket, like online ones (a family's 3 seats are one sale);
+  // seats sold before counter tickets existed count one each.
   if (withCounter)
-    for (const c of counterCur) {
-      const { hour, weekday } = dhakaParts(String(c.soldAt))
+    for (const iso of [...counterTickets.filter((t) => inCur(String(t.soldAt))).map((t) => String(t.soldAt)), ...counterCur.filter((c) => !c.ticketCode).map((c) => String(c.soldAt))]) {
+      const { hour, weekday } = dhakaParts(iso)
       hours[hour] += 1
       weekdays[weekday] += 1
     }
@@ -410,8 +420,8 @@ export async function buildReport(db: Db, range: ReportRange, companyId?: string
       earnings: kpi(earn(cur, counterCur), earn(prev, counterPrev)),
       avgTicket: kpi(cur.length ? Math.round(sum(cur, (b) => b.totalPrice || 0) / cur.length) : 0, prev.length ? Math.round(sum(prev, (b) => b.totalPrice || 0) / prev.length) : 0),
       refunds: kpi(refundsCur.length, refundsPrev.length),
-      refundRate: kpi(pct(refundsCur.length, paidCur) ?? 0, pct(refundsPrev.length, paidPrev) ?? 0),
-      fill: kpi(fillOf(tripsCur) ?? 0, fillOf(tripsPrev) ?? 0),
+      refundRate: rateKpi(pct(refundsCur.length, paidCur) ?? 0, pct(refundsPrev.length, paidPrev) ?? 0),
+      fill: rateKpi(fillOf(tripsCur) ?? 0, fillOf(tripsPrev) ?? 0),
     },
     trend,
     routes: Array.from(routes.values())

@@ -33,7 +33,14 @@ function rangeFor(preset: Preset, today: string): [string, string] {
   return [shift(today, -(days - 1)), today]
 }
 
-function Change({ k, upIsGood = true, unit = '%' }: { k: Kpi; upIsGood?: boolean; unit?: string }) {
+/** "+31%", "−0.4 pts", or "–" when there is nothing to compare with. */
+function changeText(k: Kpi): string {
+  if (k.pct === null) return '–'
+  const sign = k.pct > 0 ? '+' : k.pct < 0 ? '−' : ''
+  return `${sign}${Math.abs(k.pct)}${k.points ? ' pts' : '%'}`
+}
+
+function Change({ k, upIsGood = true }: { k: Kpi; upIsGood?: boolean }) {
   if (k.pct === null) {
     return <span className="rounded-full bg-[#111111]/[0.06] px-2 py-0.5 text-[11px] font-semibold text-[#3f3f3f]">{k.current > 0 ? 'New' : 'No change'}</span>
   }
@@ -51,7 +58,7 @@ function Change({ k, upIsGood = true, unit = '%' }: { k: Kpi; upIsGood?: boolean
           <path d="M6 2 10.5 8h-9z" />
         </svg>
       )}
-      {flat ? 'Same' : `${Math.abs(k.pct)}${unit}`}
+      {flat ? 'Same' : k.points ? `${Math.abs(k.pct)} pts` : `${Math.abs(k.pct)}%`}
     </span>
   )
 }
@@ -144,16 +151,16 @@ export default function ReportsView({ scope }: { scope: 'admin' | 'company' }) {
         name: 'Summary',
         title: isAdmin ? 'BusHub report' : 'Sales report',
         notes: [`${rangeLabel(r.range.from, r.range.to)} · compared with ${prevText}`],
-        columns: [{ header: 'Measure' }, { header: 'This period', kind: 'int' }, { header: 'Period before', kind: 'int' }, { header: 'Change %', kind: 'int' }],
+        columns: [{ header: 'Measure' }, { header: 'This period' }, { header: 'Period before' }, { header: 'Change' }],
         rows: [
-          [isAdmin ? 'Tickets sold online' : 'Online tickets', k.tickets.current, k.tickets.previous, k.tickets.pct],
-          ['Seats sold', k.seats.current, k.seats.previous, k.seats.pct],
-          ['Ticket sales (৳)', k.sales.current, k.sales.previous, k.sales.pct],
-          [isAdmin ? 'BusHub earnings (৳)' : 'You keep (৳)', k.earnings.current, k.earnings.previous, k.earnings.pct],
-          ['Average online ticket (৳)', k.avgTicket.current, k.avgTicket.previous, k.avgTicket.pct],
-          ['Refunds', k.refunds.current, k.refunds.previous, k.refunds.pct],
-          ['Refund rate %', k.refundRate.current, k.refundRate.previous, null],
-          ['Seat fill %', k.fill.current, k.fill.previous, null],
+          [isAdmin ? 'Tickets sold online' : 'Online tickets', k.tickets.current, k.tickets.previous, changeText(k.tickets)],
+          ['Seats sold', k.seats.current, k.seats.previous, changeText(k.seats)],
+          ['Ticket sales (৳)', k.sales.current, k.sales.previous, changeText(k.sales)],
+          [isAdmin ? 'BusHub earnings (৳)' : 'You keep (৳)', k.earnings.current, k.earnings.previous, changeText(k.earnings)],
+          ['Average online ticket (৳)', k.avgTicket.current, k.avgTicket.previous, changeText(k.avgTicket)],
+          ['Refunds', k.refunds.current, k.refunds.previous, changeText(k.refunds)],
+          ['Refund rate %', k.refundRate.current, k.refundRate.previous, changeText(k.refundRate)],
+          ['Seat fill %', k.fill.current, k.fill.previous, changeText(k.fill)],
         ],
       },
       {
@@ -174,7 +181,7 @@ export default function ReportsView({ scope }: { scope: 'admin' | 'company' }) {
         name: 'Routes',
         title: 'Top routes',
         notes: [`${rangeLabel(r.range.from, r.range.to)}`],
-        columns: [{ header: 'From' }, { header: 'To' }, { header: 'Seats', kind: 'int', total: true }, { header: 'Money', kind: 'money', total: true }, { header: 'Seat fill %', kind: 'int' }],
+        columns: [{ header: 'From' }, { header: 'To' }, { header: 'Seats', kind: 'int', total: true }, { header: 'Money', kind: 'money', total: true }, { header: 'Seat fill %' }],
         rows: r.routes.map((x) => [x.from, x.to, x.seats, x.money, x.fill]),
       },
       ...(isAdmin
@@ -189,8 +196,8 @@ export default function ReportsView({ scope }: { scope: 'admin' | 'company' }) {
                 { header: 'Seats', kind: 'int' as const, total: true },
                 { header: 'Sales', kind: 'money' as const, total: true },
                 { header: 'BusHub earnings', kind: 'money' as const, total: true },
-                { header: 'Seat fill %', kind: 'int' as const },
-                { header: 'Refund %', kind: 'int' as const },
+                { header: 'Seat fill %' },
+                { header: 'Refund %' },
                 { header: 'Rating' },
               ],
               rows: r.companies.map((c) => [c.name, c.tickets, c.seats, c.money, c.commission, c.fill, c.refundRate, c.rating ? `${c.rating} (${c.ratings})` : '']),
@@ -206,7 +213,7 @@ export default function ReportsView({ scope }: { scope: 'admin' | 'company' }) {
                 { header: 'Trips', kind: 'int' as const, total: true },
                 { header: 'Seats sold', kind: 'int' as const, total: true },
                 { header: 'Seats', kind: 'int' as const, total: true },
-                { header: 'Seat fill %', kind: 'int' as const },
+                { header: 'Seat fill %' },
                 { header: 'Money', kind: 'money' as const, total: true },
               ],
               rows: r.buses.map((b) => [b.name, b.trips, b.seats, b.capacity, b.fill, b.money]),
