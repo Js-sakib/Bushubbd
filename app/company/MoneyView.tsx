@@ -13,7 +13,7 @@ import SearchBox from '../SearchBox'
 import { matches } from '@/lib/search'
 import Plate from '../Plate'
 import { downloadSheet } from '@/lib/sheet'
-import { companySalesSheets } from './salesSheet'
+import { companySalesSheets, companySalesSummary } from './salesSheet'
 import DateTable from './DateTable'
 import DateRangePicker, { rangeLabel } from '../DateRangePicker'
 
@@ -140,7 +140,7 @@ export default function MoneyView({
       period !== 'all' ? `Trips: ${PERIODS.find(([id]) => id === period)?.[1]}` : '',
       search.trim() ? `Search: ${search.trim()}` : '',
     ].filter(Boolean)
-    downloadSheet(`${companyName} sales ${first} to ${last}`, companySalesSheets(shown, companyName, filters))
+    downloadSheet(`${companyName} sales ${first} to ${last}`, companySalesSheets(shown, companyName, filters), { summary: companySalesSummary(shown, companyName, filters) })
   }
 
   return (

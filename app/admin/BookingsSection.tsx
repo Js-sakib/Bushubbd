@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import toast from 'react-hot-toast'
 import { downloadSheet, sheetDate } from '@/lib/sheet'
-import { adminBookingSheets, isSale } from './bookingsSheet'
+import { adminBookingSheets, adminBookingSummary, isSale } from './bookingsSheet'
 import DateRangePicker from '../DateRangePicker'
 import BookingList, { bookingStatus } from './BookingList'
 import { taka } from './charts'
@@ -103,7 +103,7 @@ export default function BookingsSection({
       filter !== 'all' ? `Status: ${FILTERS.find((f) => f.key === filter)?.label}` : '',
       query.trim() ? `Search: ${query.trim()}` : '',
     ].filter(Boolean)
-    downloadSheet(`BusHub bookings ${from || 'start'} to ${to || 'now'}`, adminBookingSheets(list, notes))
+    downloadSheet(`BusHub bookings ${from || 'start'} to ${to || 'now'}`, adminBookingSheets(list, notes), { summary: adminBookingSummary(list, notes) })
   }
 
   return (

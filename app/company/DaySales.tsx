@@ -56,7 +56,7 @@ export default function DaySales({
       {
         name: 'Counter sales',
         title: `Counter sales · ${formatTripDate(day)}`,
-        notes: [`${companyName} · ${who}`, `Cash ${tk(s.byMethod.cash)} · bKash ${tk(s.byMethod.bkash)} · Nagad ${tk(s.byMethod.nagad)} · Total ${tk(s.money)}`],
+        notes: [`${companyName} · ${who}`, `Cash ${tk(s.byMethod.cash)} · bKash ${tk(s.byMethod.bkash)} · Nagad ${tk(s.byMethod.nagad)} · Total ${tk(s.money)}`, 'Red = cancelled sale (not counted in the totals).'],
         columns: [
           { header: 'Sold at', kind: 'datetime' },
           { header: 'Sale no.' },
@@ -74,7 +74,7 @@ export default function DaySales({
           { header: 'TrxID' },
           { header: 'Discount note' },
           { header: 'Sold by' },
-          { header: 'Status' },
+          { header: 'Status', highlight: { equals: ['Cancelled'] } },
           { header: 'Cancel reason', kind: 'wrap' },
         ],
         rows: data.tickets.map((t) => [
@@ -98,7 +98,22 @@ export default function DaySales({
           t.cancelReason || '',
         ]),
       },
-    ])
+    ], {
+      // The day closing first: what to hand over, by how it was paid.
+      summary: {
+        title: `Day closing · ${formatTripDate(day)}`,
+        notes: [`${companyName} · ${who}`],
+        items: [
+          { label: 'Sales', value: s.tickets },
+          { label: 'Seats sold', value: s.seats },
+          { label: 'Cash (to hand over)', value: s.byMethod.cash, kind: 'taka' },
+          { label: 'bKash', value: s.byMethod.bkash, kind: 'taka' },
+          { label: 'Nagad', value: s.byMethod.nagad, kind: 'taka' },
+          { label: 'Total', value: s.money, kind: 'taka' },
+          { label: 'Cancelled sales', value: s.cancelled },
+        ],
+      },
+    })
 
   const tiles: [string, string, string][] = [
     ['Sales', String(s.tickets), `${s.seats} seats`],

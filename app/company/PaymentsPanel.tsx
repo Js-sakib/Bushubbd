@@ -6,6 +6,8 @@ import { matches } from '@/lib/search'
 import SearchBox from '../SearchBox'
 import { statusOf, type InvoiceSummaryView, type PayoutTotalsView } from '@/lib/payoutText'
 import { taka } from '@/lib/tripMoney'
+import { downloadSheet, sheetDate } from '@/lib/sheet'
+import { invoicesSheet, paidTotal } from '@/lib/payoutSheet'
 
 export interface PaymentsData {
   owed: PayoutTotalsView
@@ -21,7 +23,48 @@ const range = (from: string, to: string) => (from === to ? formatTripDate(from) 
  * The manager's payments from BusHub: what is owed after commission, and every invoice with its
  * tickets. A paid invoice waits for the manager to check the money arrived and sign it.
  */
-export default function PaymentsPanel({ data }: { data: PaymentsData | null }) {
+/** The manager's payments as an Excel file: what is owed, every invoice and the refunds taken back. */
+function downloadPayments(data: PaymentsData, companyName: string) {
+  const notes = [`Company: ${companyName}`]
+  const today = new Date(Date.now() + 6 * 3600 * 1000).toISOString().slice(0, 10)
+  downloadSheet(
+    `${companyName} payments ${sheetDate(today)}`,
+    [
+      invoicesSheet(data.invoices, notes, false),
+      {
+        name: 'Refunds',
+        title: 'Refunds taken back',
+        notes: [...notes, 'Tickets BusHub refunded to passengers; the amount comes off your next payment.'],
+        columns: [
+          { header: 'Ticket' },
+          { header: 'Travel date', kind: 'date' },
+          { header: 'From' },
+          { header: 'To' },
+          { header: 'Seats' },
+          { header: 'Amount', kind: 'taka', total: true },
+          { header: 'Taken back in' },
+        ],
+        rows: data.refunds.map((r) => [r.code, r.date, r.from, r.to, r.seats.join(', '), r.amount, r.paidIn]),
+      },
+    ],
+    {
+      summary: {
+        title: `${companyName} · payments from BusHub`,
+        notes,
+        items: [
+          { label: 'Owed for trips that have left (not invoiced)', value: data.owed.payout, kind: 'taka' },
+          { label: 'On invoices waiting for payment', value: data.invoiced, kind: 'taka' },
+          { label: 'Owed for trips still to leave', value: data.later.payout, kind: 'taka' },
+          { label: 'Paid to you (all invoices)', value: paidTotal(data.invoices), kind: 'taka' },
+          { label: 'Refunds taken back', value: data.refunds.reduce((n, r) => n + r.amount, 0), kind: 'taka' },
+          { label: 'Invoices', value: data.invoices.length },
+        ],
+      },
+    }
+  )
+}
+
+export default function PaymentsPanel({ data, companyName = 'Your company' }: { data: PaymentsData | null; companyName?: string }) {
   const [search, setSearch] = useState('')
   if (!data) return <div className="py-16 text-center text-sm text-[#4a4a4a]">Loading...</div>
   const toSign = data.invoices.filter((i) => i.status === 'paid')
@@ -87,8 +130,11 @@ export default function PaymentsPanel({ data }: { data: PaymentsData | null }) {
       </div>
 
       <div className="card-2 overflow-hidden">
-        <div className="border-b border-[#c9d6e4] px-4 py-3">
+        <div className="flex items-center justify-between gap-3 border-b border-[#c9d6e4] px-4 py-2.5">
           <span className="label-xs">Invoices from BusHub</span>
+          <button type="button" onClick={() => downloadPayments(data, companyName)} className="glass-btn glass-btn-plain h-9 px-3.5 text-[12.5px]">
+            ⬇ Excel
+          </button>
         </div>
         {data.invoices.length > 3 && (
           <div className="border-b border-[#c9d6e4] px-3 py-2.5">

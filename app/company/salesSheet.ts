@@ -1,6 +1,6 @@
 import { formatTripDate } from '@/lib/dates'
 import { addMoney, COST_LABELS, type TripMoney } from '@/lib/tripMoney'
-import { sheetDate, type Cell, type Column, type Sheet } from '@/lib/sheet'
+import { sheetDate, type Cell, type Column, type Sheet, type Summary } from '@/lib/sheet'
 import { companyTripMoney, type CompanyTrip } from './types'
 
 export function dhakaDateTime(iso: string | null | undefined): string {
@@ -44,6 +44,10 @@ export function dateRangeNote(dates: string[]): string {
 
 const int = (header: string): Column => ({ header, kind: 'int', total: true })
 const money = (header: string): Column => ({ header, kind: 'money', total: true })
+/** Seats sold of all seats, as a percent (45 for 45%); blank for a bus with no seats. */
+const fillOf = (m: TripMoney): Cell => (m.seats.total ? Math.round(((m.seats.online + m.seats.counter) / m.seats.total) * 1000) / 10 : '')
+const FILL: Column = { header: 'Seat fill', kind: 'percent', highlight: { below: 40 } }
+const FILL_NOTE = 'Red = seat fill under 40%. Money below zero shows in red.'
 const TRIP_COLUMNS: Column[] = [{ header: 'Date', kind: 'date' }, { header: 'Day' }, { header: 'Time' }, { header: 'From' }, { header: 'To' }, { header: 'Bus' }, { header: 'Number plate' }]
 const tripCells = (t: CompanyTrip): Cell[] => [t.date, formatTripDate(t.date).split(' ')[0], t.departureTime, t.from, t.to, t.busName, t.plateNumber]
 
@@ -58,7 +62,7 @@ export function companySalesSheets(trips: CompanyTrip[], companyName: string, fi
   const daySheet: Sheet = {
     name: 'Date by date',
     title: 'BusHub sales · date by date, bus by bus',
-    notes: [...notes, 'Filter Date for one day\'s total, or Number plate for one bus.'],
+    notes: [...notes, 'Filter Date for one day\'s total, or Number plate for one bus.', FILL_NOTE],
     columns: [
       { header: 'Date', kind: 'date' },
       { header: 'Day' },
@@ -67,6 +71,7 @@ export function companySalesSheets(trips: CompanyTrip[], companyName: string, fi
       int('Trips'),
       int('Seats'),
       int('Seats sold'),
+      FILL,
       int('Not sold'),
       int('Counter seats'),
       money('Counter money'),
@@ -91,6 +96,7 @@ export function companySalesSheets(trips: CompanyTrip[], companyName: string, fi
       n,
       m.seats.total,
       m.seats.online + m.seats.counter,
+      fillOf(m),
       m.seats.notSold,
       m.counter.seats,
       m.counter.total,
@@ -112,7 +118,7 @@ export function companySalesSheets(trips: CompanyTrip[], companyName: string, fi
   const tripSheet: Sheet = {
     name: 'Trips',
     title: 'BusHub sales · trip by trip',
-    notes,
+    notes: [...notes, FILL_NOTE],
     columns: [
       ...TRIP_COLUMNS,
       int('Seats'),
@@ -123,6 +129,7 @@ export function companySalesSheets(trips: CompanyTrip[], companyName: string, fi
       money('BusHub fee'),
       money('You get from BusHub'),
       int('Not sold'),
+      FILL,
       money('Fuel'),
       money('Road'),
       money('Toll'),
@@ -144,6 +151,7 @@ export function companySalesSheets(trips: CompanyTrip[], companyName: string, fi
         m.online.fee,
         m.online.payout,
         m.seats.notSold,
+        fillOf(m),
         m.costs.fuel,
         m.costs.road,
         m.costs.toll,
@@ -193,4 +201,27 @@ export function companySalesSheets(trips: CompanyTrip[], companyName: string, fi
   }
 
   return [daySheet, tripSheet, counterSheet, onlineSheet, costSheet]
+}
+
+/** The first page of the manager's sales file: the key figures for the trips in it. */
+export function companySalesSummary(trips: CompanyTrip[], companyName: string, filters: string[] = []): Summary {
+  const m = addMoney(trips.map(companyTripMoney))
+  const sold = m.seats.online + m.seats.counter
+  return {
+    title: `${companyName} · sales summary`,
+    notes: [`Company: ${companyName}`, dateRangeNote(trips.map((t) => t.date)), ...filters],
+    items: [
+      { label: 'Trips', value: trips.length },
+      { label: 'Seats sold', value: sold },
+      { label: 'Sold at the counter', value: m.seats.counter },
+      { label: 'Sold on BusHub', value: m.seats.online },
+      { label: 'Seat fill', value: m.seats.total ? Math.round((sold / m.seats.total) * 1000) / 10 : '', kind: 'percent' },
+      { label: 'All ticket money', value: m.ticketMoney, kind: 'taka' },
+      { label: 'Counter money', value: m.counter.total, kind: 'taka' },
+      { label: 'BusHub fee', value: m.online.fee, kind: 'taka' },
+      { label: 'You receive', value: m.companyGets, kind: 'taka' },
+      { label: 'Trip costs', value: m.costs.total, kind: 'taka' },
+      { label: 'Left after costs', value: m.left, kind: 'taka' },
+    ],
+  }
 }

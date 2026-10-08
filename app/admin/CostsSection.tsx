@@ -8,7 +8,7 @@ import PayoutsPanel from './PayoutsPanel'
 import Plate from '../Plate'
 import SearchBox from '../SearchBox'
 import DateRangePicker from '../DateRangePicker'
-import { downloadSheet, sheetDate, type Column, type Sheet } from '@/lib/sheet'
+import { downloadSheet, sheetDate, type Column, type Sheet, type Summary } from '@/lib/sheet'
 import { matches } from '@/lib/search'
 
 interface MoneyTrip {
@@ -78,6 +78,27 @@ function moneySheet(trips: MoneyTrip[], notes: string[]): Sheet {
         t.pay.invoiceNumber || '',
         t.departed ? 'Finished' : 'Upcoming',
       ]),
+  }
+}
+
+/** The first page of the money file: the totals for the trips in it. */
+function moneySummary(trips: MoneyTrip[], notes: string[]): Summary {
+  const sum = (f: (t: MoneyTrip) => number) => trips.reduce((n, t) => n + f(t), 0)
+  return {
+    title: 'BusHub money · summary',
+    notes,
+    items: [
+      { label: 'Trips', value: trips.length },
+      { label: 'Finished trips', value: trips.filter((t) => t.departed).length },
+      { label: 'BusHub tickets', value: sum((t) => t.online.tickets) },
+      { label: 'BusHub seats', value: sum((t) => t.online.seats) },
+      { label: 'BusHub ticket money', value: sum((t) => t.online.total), kind: 'taka' },
+      { label: 'BusHub commission', value: sum((t) => t.online.commission), kind: 'taka' },
+      { label: 'Bus companies get', value: sum((t) => t.online.payout), kind: 'taka' },
+      { label: 'Paid to companies', value: sum((t) => t.pay.paid), kind: 'taka' },
+      { label: 'In unpaid invoices', value: sum((t) => t.pay.invoiced), kind: 'taka' },
+      { label: 'Not invoiced yet', value: sum((t) => t.pay.owed), kind: 'taka' },
+    ],
   }
 }
 
@@ -254,7 +275,7 @@ function TripsMoney({ startPeriod = 'all' }: { startPeriod?: Period }) {
               bus ? `Bus: ${bus}` : '',
               search.trim() ? `Search: ${search.trim()}` : '',
             ].filter(Boolean)
-            downloadSheet(`BusHub money ${from || 'start'} to ${to || 'now'}`, [moneySheet(shown, notes)])
+            downloadSheet(`BusHub money ${from || 'start'} to ${to || 'now'}`, [moneySheet(shown, notes)], { summary: moneySummary(shown, notes) })
           }}
           className="glass-btn glass-btn-plain col-span-2 h-12 self-end px-4 text-[12.5px] sm:col-span-1"
         >

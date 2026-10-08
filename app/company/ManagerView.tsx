@@ -356,7 +356,7 @@ export default function ManagerView({ companyName }: { companyName: string }) {
       {tab === 'sales' && <MoneyView trips={trips} fleet={data.fleet} me={data.me} bookings={bookings} onChanged={reload} onFrom={setSince} companyName={companyName} key={salesKey} startView={salesStart} startPeriod={salesStart === 'sellers' ? 'upcoming' : 'all'} />}
       {tab === 'counter' && <DaySalesPanel company={companyName} />}
       {tab === 'reports' && <ReportsView scope="company" />}
-      {tab === 'payments' && <PaymentsPanel data={payments} />}
+      {tab === 'payments' && <PaymentsPanel data={payments} companyName={companyName} />}
       {tab === 'scans' && <ScanHistory stats={stats} showScanner />}
       {tab === 'staff' && <StaffPanel />}
     </div>
