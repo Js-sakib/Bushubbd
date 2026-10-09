@@ -26,7 +26,7 @@ export function whatsappChat(text: string): string {
  * becomes a link once its page address is filled in here.
  */
 export const SOCIAL_LINKS: { facebook: string; instagram: string; tiktok: string; telegram: string } = {
-  facebook: '',
+  facebook: 'https://www.facebook.com/share/1AoDLM9CnS/',
   instagram: '',
   tiktok: '',
   telegram: '',
