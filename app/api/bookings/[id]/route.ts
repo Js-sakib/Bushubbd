@@ -33,11 +33,27 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
     // have set to 24 hours after purchase.
     if (booking.date) booking.validUntil = ticketExpiry(booking.date)
 
+    // The ticket code is shared and forwarded, so it opens the ticket but not the passenger's
+    // contact details: only the admin sees the full phone and the email.
+    if (!getAdminFromCookies()) {
+      booking.passengerPhone = maskPhone(booking.passengerPhone)
+      delete booking.passengerEmail
+      delete booking.phoneKey
+    }
+
     return NextResponse.json({ booking })
   } catch (err) {
     console.error(err)
     return NextResponse.json({ error: 'Failed to fetch booking' }, { status: 500 })
   }
+}
+
+/** 01912418662 → 019•••••662: enough for the passenger to recognise, too little to call. */
+function maskPhone(phone: unknown): string {
+  const d = String(phone || '').replace(/\D/g, '')
+  if (d.length < 7) return ''
+  const local = d.startsWith('880') ? `0${d.slice(3)}` : d
+  return `${local.slice(0, 3)}•••••${local.slice(-3)}`
 }
 
 const PAYMENT_METHODS = ['bkash', 'nagad', 'card']

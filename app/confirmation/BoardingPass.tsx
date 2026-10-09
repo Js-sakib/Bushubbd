@@ -53,6 +53,8 @@ export function toMinutes(hhmm?: string): number | null {
 }
 
 function maskPhone(phone?: string): string {
+  // The server already masks the number for anyone but the admin (019•••••662).
+  if ((phone || '').includes('•')) return bnDigits(phone || '')
   const d = (phone || '').replace(/\D/g, '')
   if (d.length < 7) return phone || '—'
   const local = d.startsWith('880') ? `0${d.slice(3)}` : d
