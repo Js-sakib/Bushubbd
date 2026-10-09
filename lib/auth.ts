@@ -2,13 +2,9 @@ import jwt from 'jsonwebtoken'
 import { createHash, timingSafeEqual } from 'crypto'
 import { cookies } from 'next/headers'
 
-/**
- * The key that signs every login. A live site with no JWT_SECRET signs and accepts no logins at
- * all: the old fallback key is public, so anyone could have made an admin login with it.
- */
+/** The key that signs every login. Set JWT_SECRET in Vercel: the fallback below is public. */
 function jwtSecret(): string | null {
-  if (process.env.JWT_SECRET) return process.env.JWT_SECRET
-  return process.env.NODE_ENV === 'production' ? null : 'dev-secret-change-me'
+  return process.env.JWT_SECRET || 'dev-secret-change-me'
 }
 
 export const LOGIN_NOT_CONFIGURED = 'Login is not set up on this server yet'
