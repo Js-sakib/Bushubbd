@@ -8,6 +8,7 @@
 // Its trips leave late tonight (Dhaka time) and a trip that has left can't be sold, so run it
 // before 23:00 in Dhaka.
 import { MongoClient, ObjectId } from 'mongodb'
+import { createHmac } from 'crypto'
 
 const BASE = process.env.BASE_URL || 'http://localhost:3000'
 const client = new MongoClient(process.env.MONGODB_URI)
@@ -35,6 +36,8 @@ const dhakaToday = new Date(Date.now() + 6 * 3600e3).toISOString().slice(0, 10)
 const run = Date.now().toString(36).toUpperCase()
 
 // ---- Setup: admin, two approved companies, and each company's login ----
+// Wrong-login counters from an earlier run in the last ten minutes would block these logins.
+await db.collection('rate_limits').deleteMany({ _id: /^login-/ })
 const admin = (await call('/api/admin/login', { method: 'POST', body: { email: process.env.ADMIN_EMAIL, password: process.env.ADMIN_PASSWORD } })).cookie
 check('admin can log in', !!admin)
 
@@ -1005,6 +1008,57 @@ check("a company's report has only its own sales", hanifReport?.kpis?.tickets?.c
 const adminReport = (await call(`/api/admin/reports?from=${dhakaToday}&to=${dhakaToday}`, { cookie: admin })).data
 const greenRow = adminReport?.companies?.find((c) => c.id === green.id)
 check('the admin report lists each company with its online tickets', greenRow?.tickets === greenWant.tickets && greenRow?.name === green.name, JSON.stringify(greenRow))
+
+// ---- Security: login limits, private ticket details, suspended companies, WhatsApp, headers ----
+const adminTry = (password) => call('/api/admin/login', { method: 'POST', body: { email: process.env.ADMIN_EMAIL, password } })
+await db.collection('rate_limits').deleteMany({ _id: /^login-/ })
+const adminWrong = []
+for (let i = 0; i < 10; i++) adminWrong.push((await adminTry('wrong-' + i)).status)
+const adminBlocked = await adminTry('wrong-again')
+const adminRightWhileBlocked = await adminTry(process.env.ADMIN_PASSWORD)
+check('after 10 wrong admin passwords, logins wait 10 minutes (even the right one)',
+  adminWrong.every((st) => st === 401) && adminBlocked.status === 429 && adminRightWhileBlocked.status === 429, JSON.stringify([adminWrong, adminBlocked.status, adminRightWhileBlocked.status]))
+await db.collection('rate_limits').deleteMany({ _id: /^login-/ })
+check('the right admin password works again after the wait', !!(await adminTry(process.env.ADMIN_PASSWORD)).cookie)
+const companyTry = (password) => call('/api/company/login', { method: 'POST', body: { email: green.email, password } })
+for (let i = 0; i < 10; i++) await companyTry('wrong-' + i)
+check('after 10 wrong company passwords, logins wait too', (await companyTry(green.password)).status === 429)
+await db.collection('rate_limits').deleteMany({ _id: /^login-/ })
+check('a right company password is never counted as a wrong try', !!(await companyTry(green.password)).cookie)
+
+const publicTicket = (await call(`/api/bookings/${reviewBooking.bookingCode}`)).data?.booking
+const adminTicket = (await call(`/api/bookings/${reviewBooking.bookingCode}`, { cookie: admin })).data?.booking
+check('a ticket opened by its code shows a masked phone and no email',
+  !!publicTicket && !('passengerEmail' in publicTicket) && /•/.test(publicTicket.passengerPhone || '') && !publicTicket.passengerPhone.includes(reviewPhone.slice(-8, -3)),
+  JSON.stringify({ phone: publicTicket?.passengerPhone, email: publicTicket?.passengerEmail }))
+check('the admin still sees the full phone and email', adminTicket?.passengerEmail === `nusrat.${run}@example.com` && adminTicket?.passengerPhone === reviewPhone)
+
+const doomed = await makeCompany(`Suspend Test ${run}`)
+const beforeSuspend = await call('/api/company/trips', { cookie: doomed.cookie })
+await call(`/api/companies/${doomed.id}`, { method: 'PATCH', cookie: admin, body: { status: 'suspended' } })
+const afterSuspend = await call('/api/company/trips', { cookie: doomed.cookie })
+const scannerAfter = await call('/api/scan', { cookie: doomed.scan })
+await call(`/api/companies/${doomed.id}`, { method: 'PATCH', cookie: admin, body: { status: 'approved' } })
+const afterApprove = await call('/api/company/trips', { cookie: doomed.cookie })
+check('a suspended company is logged out at once (manager and staff), and back when approved',
+  beforeSuspend.status === 200 && afterSuspend.status === 401 && scannerAfter.status === 401 && afterApprove.status === 200,
+  JSON.stringify([beforeSuspend.status, afterSuspend.status, scannerAfter.status, afterApprove.status]))
+
+const hookBody = JSON.stringify({ entry: [] })
+const hook = (signature) => fetch(`${BASE}/api/whatsapp/webhook`, { method: 'POST', headers: { 'Content-Type': 'application/json', ...(signature ? { 'x-hub-signature-256': signature } : {}) }, body: hookBody })
+if (process.env.WHATSAPP_APP_SECRET) {
+  const unsigned = await hook(null)
+  const forged = await hook('sha256=' + '0'.repeat(64))
+  const signed = await hook('sha256=' + createHmac('sha256', process.env.WHATSAPP_APP_SECRET).update(hookBody).digest('hex'))
+  check('the WhatsApp bot only takes messages signed by Meta', unsigned.status === 401 && forged.status === 401 && signed.status === 200, JSON.stringify([unsigned.status, forged.status, signed.status]))
+} else {
+  console.log('SKIP  WhatsApp signature check (run the server and this test with WHATSAPP_APP_SECRET set)')
+}
+
+const home = await fetch(`${BASE}/`)
+check('every page carries the security headers',
+  /max-age=/.test(home.headers.get('strict-transport-security') || '') && home.headers.get('x-frame-options') === 'SAMEORIGIN' &&
+  home.headers.get('x-content-type-options') === 'nosniff' && !!home.headers.get('referrer-policy') && /camera=\(self\)/.test(home.headers.get('permissions-policy') || ''))
 
 const bus = await db.collection('buses').findOne({ _id: new ObjectId(trip._id) })
 const live = await db.collection('bookings').find({ busId: trip._id, status: { $in: ['pending', 'confirmed'] } }).toArray()

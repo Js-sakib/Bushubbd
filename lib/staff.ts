@@ -17,6 +17,10 @@ export interface CompanyUser {
 export async function getCompanyUser(db: Db): Promise<CompanyUser | null> {
   const token = getCompanyFromCookies()
   if (!token) return null
+  // A company the admin suspended is logged out at once, not when its 7-day login runs out.
+  if (!ObjectId.isValid(token.companyId)) return null
+  const company = await db.collection('companies').findOne({ _id: new ObjectId(token.companyId) }, { projection: { status: 1 } })
+  if (!company || company.status !== 'approved') return null
   if (!token.staffId) {
     return { companyId: token.companyId, email: token.email, role: companyRole(token), name: token.name || token.email }
   }

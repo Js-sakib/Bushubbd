@@ -5,6 +5,7 @@ import { formatTripDate } from '@/lib/dates'
 import { matches } from '@/lib/search'
 import SearchBox from '../SearchBox'
 import type { DayCount, ScanResult, ScannerCount } from '@/lib/scan'
+import { downloadSheet, sheetDate } from '@/lib/sheet'
 
 export interface RecentScan {
   id: string
@@ -43,6 +44,92 @@ const RESULT_CHIPS: Record<ScanResult, { label: string; className: string }> = {
 
 function dhakaClock(iso: string): string {
   return new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Dhaka', hour: '2-digit', minute: '2-digit' }).format(new Date(iso))
+}
+
+/** The manager's scans as an Excel file: boardings by day, by scanner, and every recent scan. */
+function downloadScans(stats: ScanStats) {
+  const problems = Object.entries(RESULT_CHIPS)
+    .filter(([result]) => result !== 'valid')
+    .map(([, chip]) => chip.label)
+  const days = stats.days.map((d) => d.date).sort()
+  const notes = days.length ? [`Last 7 days: ${sheetDate(days[0])} to ${sheetDate(days[days.length - 1])}`] : []
+  downloadSheet(
+    `BusHub-scans-${sheetDate(stats.today.date)}`,
+    [
+      {
+        name: 'By day',
+        title: 'Passengers boarded, by day',
+        notes,
+        columns: [
+          { header: 'Date', kind: 'date' },
+          { header: 'Tickets boarded', kind: 'int', total: true },
+          { header: 'Passengers', kind: 'int', total: true },
+          { header: 'Turned away', kind: 'int', total: true, highlight: { above: 0 } },
+        ],
+        rows: [...stats.days].sort((a, b) => a.date.localeCompare(b.date)).map((d) => [d.date, d.tickets, d.passengers, d.rejected]),
+      },
+      ...(stats.byScanner?.length
+        ? [
+            {
+              name: 'By scanner',
+              title: 'Each scanner · last 7 days',
+              notes,
+              columns: [
+                { header: 'Scanner' },
+                { header: 'Tickets today', kind: 'int' as const, total: true },
+                { header: 'Passengers today', kind: 'int' as const, total: true },
+                { header: 'Tickets, 7 days', kind: 'int' as const, total: true },
+                { header: 'Passengers, 7 days', kind: 'int' as const, total: true },
+                { header: 'Turned away, 7 days', kind: 'int' as const, total: true },
+              ],
+              rows: stats.byScanner.map((r) => [r.name, r.today.tickets, r.today.passengers, r.week.tickets, r.week.passengers, r.week.rejected]),
+            },
+          ]
+        : []),
+      {
+        name: 'Latest scans',
+        title: 'The latest 50 scans',
+        notes: [...notes, 'Red = the ticket was turned away.'],
+        columns: [
+          { header: 'Scanned at', kind: 'datetime' },
+          { header: 'Ticket' },
+          { header: 'Result', highlight: { equals: problems } },
+          { header: 'Bus' },
+          { header: 'From' },
+          { header: 'To' },
+          { header: 'Travel date', kind: 'date' },
+          { header: 'Time' },
+          { header: 'Passengers', kind: 'int', total: true },
+          { header: 'Scanner' },
+        ],
+        rows: stats.recent.map((r) => [
+          r.scannedAt,
+          r.bookingCode || '',
+          RESULT_CHIPS[r.result]?.label || r.result,
+          r.busName || '',
+          r.from || '',
+          r.to || '',
+          r.travelDate || '',
+          r.departureTime || '',
+          r.result === 'valid' ? r.seatCount : 0,
+          r.scannerName || '',
+        ]),
+      },
+    ],
+    {
+      summary: {
+        title: 'Boarding scans',
+        notes,
+        items: [
+          { label: 'Passengers boarded today', value: stats.today.passengers },
+          { label: 'Tickets boarded today', value: stats.today.tickets },
+          { label: 'Passengers boarded, 7 days', value: stats.week.passengers },
+          { label: 'Tickets boarded, 7 days', value: stats.week.tickets },
+          { label: 'Turned away, 7 days', value: stats.week.rejected },
+        ],
+      },
+    }
+  )
 }
 
 /** Boardings by day and the latest scans; the manager also sees which scanner did each. */
@@ -99,8 +186,13 @@ export default function ScanHistory({ stats, showScanner = false }: { stats: Sca
 
       </div>
           <div className="card-2 overflow-hidden">
-            <div className="border-b border-[#c9d6e4] px-4 py-3">
+            <div className="flex items-center justify-between gap-3 border-b border-[#c9d6e4] px-4 py-2.5">
               <span className="label-xs">Recent scans</span>
+              {showScanner && stats && (
+                <button type="button" onClick={() => downloadScans(stats)} className="glass-btn glass-btn-plain h-9 px-3.5 text-[12.5px]">
+                  ⬇ Excel
+                </button>
+              )}
             </div>
             {(stats?.recent.length || 0) > 4 && (
               <div className="border-b border-[#c9d6e4] px-3 py-2.5">

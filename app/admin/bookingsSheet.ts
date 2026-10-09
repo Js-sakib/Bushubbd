@@ -1,5 +1,5 @@
 import { formatTripDate } from '@/lib/dates'
-import type { Column, Sheet } from '@/lib/sheet'
+import type { Column, Sheet, Summary } from '@/lib/sheet'
 import { bookingStatus } from './BookingList'
 import type { Booking } from './types'
 
@@ -45,10 +45,10 @@ export function adminBookingSheets(list: Booking[], notes: string[]): Sheet[] {
       { header: 'Seats' },
       int('Seat count'),
       money('Ticket price'),
-      { header: 'Commission %', kind: 'int' },
+      { header: 'Commission', kind: 'percent' },
       money('BusHub commission'),
       money('Company gets'),
-      { header: 'Status' },
+      { header: 'Status', highlight: { equals: ['Refunded'] } },
       { header: 'Boarded at', kind: 'datetime' },
       { header: 'Refunded at', kind: 'datetime' },
       { header: 'Invoice' },
@@ -151,4 +151,40 @@ export function adminBookingSheets(list: Booking[], notes: string[]): Sheet[] {
   }
 
   return [bookings, customers, byDay]
+}
+
+/** The most common value and its total, e.g. the company with the most sales. */
+function top(totals: Map<string, number>): string {
+  const best = Array.from(totals).sort((a, b) => b[1] - a[1])[0]
+  return best ? best[0] : ''
+}
+
+/** The first page of the bookings file: the key figures for the bookings in it. */
+export function adminBookingSummary(list: Booking[], notes: string[]): Summary {
+  const sales = list.filter(isSale)
+  const byCompany = new Map<string, number>()
+  const byRoute = new Map<string, number>()
+  for (const b of sales) {
+    byCompany.set(b.companyName, (byCompany.get(b.companyName) || 0) + b.totalPrice)
+    const route = `${b.from} → ${b.to}`
+    byRoute.set(route, (byRoute.get(route) || 0) + b.seats.length)
+  }
+  const sum = (f: (b: Booking) => number) => sales.reduce((n, b) => n + f(b), 0)
+  const customers = new Set(sales.map((b) => (b.passengerPhone || '').replace(/\D/g, '').slice(-10) || b.passengerName)).size
+  return {
+    title: 'BusHub bookings · summary',
+    notes,
+    items: [
+      { label: 'Bookings in this file', value: list.length },
+      { label: 'Tickets sold (paid)', value: sales.length },
+      { label: 'Seats sold', value: sum((b) => b.seats.length) },
+      { label: 'Customers', value: customers },
+      { label: 'Ticket sales', value: sum((b) => b.totalPrice), kind: 'taka' },
+      { label: 'BusHub commission', value: sum((b) => b.commissionAmount || 0), kind: 'taka' },
+      { label: 'Bus companies get', value: sum((b) => b.companyPayout ?? b.totalPrice), kind: 'taka' },
+      { label: 'Refunded tickets', value: list.filter((b) => bookingStatus(b) === 'refunded').length },
+      { label: 'Top bus company (sales)', value: top(byCompany) },
+      { label: 'Busiest route (seats)', value: top(byRoute) },
+    ],
+  }
 }

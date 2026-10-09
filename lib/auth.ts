@@ -1,7 +1,24 @@
 import jwt from 'jsonwebtoken'
+import { createHash, timingSafeEqual } from 'crypto'
 import { cookies } from 'next/headers'
 
-const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-change-me'
+/**
+ * The key that signs every login. A live site with no JWT_SECRET signs and accepts no logins at
+ * all: the old fallback key is public, so anyone could have made an admin login with it.
+ */
+function jwtSecret(): string | null {
+  if (process.env.JWT_SECRET) return process.env.JWT_SECRET
+  return process.env.NODE_ENV === 'production' ? null : 'dev-secret-change-me'
+}
+
+export const LOGIN_NOT_CONFIGURED = 'Login is not set up on this server yet'
+
+/** Compares two secrets in the same time whatever they hold, so timing gives nothing away. */
+export function sameSecret(a: string, b: string): boolean {
+  const ha = createHash('sha256').update(a).digest()
+  const hb = createHash('sha256').update(b).digest()
+  return timingSafeEqual(ha, hb)
+}
 
 /**
  * Emails match whatever their capitalisation: phone keyboards often capitalise the first
@@ -33,19 +50,23 @@ export interface AdminTokenPayload {
   role: 'admin'
 }
 
-export function signCompanyToken(payload: Omit<CompanyTokenPayload, 'role'>): string {
-  return jwt.sign({ ...payload, role: 'company' }, JWT_SECRET, { expiresIn: '7d' })
+/** Null when the server has no JWT_SECRET (see jwtSecret): the login then has to say so. */
+export function signCompanyToken(payload: Omit<CompanyTokenPayload, 'role'>): string | null {
+  const secret = jwtSecret()
+  return secret ? jwt.sign({ ...payload, role: 'company' }, secret, { expiresIn: '7d' }) : null
 }
 
-export function signAdminToken(): string {
-  return jwt.sign({ role: 'admin' }, JWT_SECRET, { expiresIn: '7d' })
+export function signAdminToken(): string | null {
+  const secret = jwtSecret()
+  return secret ? jwt.sign({ role: 'admin' }, secret, { expiresIn: '7d' }) : null
 }
 
 export function getCompanyFromCookies(): CompanyTokenPayload | null {
   try {
     const token = cookies().get('company_token')?.value
-    if (!token) return null
-    const decoded = jwt.verify(token, JWT_SECRET) as CompanyTokenPayload
+    const secret = jwtSecret()
+    if (!token || !secret) return null
+    const decoded = jwt.verify(token, secret) as CompanyTokenPayload
     if (decoded.role !== 'company') return null
     return decoded
   } catch {
@@ -56,8 +77,9 @@ export function getCompanyFromCookies(): CompanyTokenPayload | null {
 export function getAdminFromCookies(): AdminTokenPayload | null {
   try {
     const token = cookies().get('admin_token')?.value
-    if (!token) return null
-    const decoded = jwt.verify(token, JWT_SECRET) as AdminTokenPayload
+    const secret = jwtSecret()
+    if (!token || !secret) return null
+    const decoded = jwt.verify(token, secret) as AdminTokenPayload
     if (decoded.role !== 'admin') return null
     return decoded
   } catch {

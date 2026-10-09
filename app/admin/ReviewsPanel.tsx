@@ -87,6 +87,61 @@ export default function ReviewsPanel() {
       },
     ])
 
+  const exportReviews = (list: AdminReview[]) => {
+    const shownOnSite = list.filter((r) => !r.hidden)
+    const companyStars = (r: AdminReview) => (r.companyRating === null ? null : r.companyRating ?? r.rating)
+    const rated = shownOnSite.map(companyStars).filter((n): n is number => typeof n === 'number')
+    const avg = (ns: number[]) => (ns.length ? Math.round((ns.reduce((a, b) => a + b, 0) / ns.length) * 10) / 10 : '')
+    downloadSheet(
+      `BusHub-reviews-${sheetDate(new Date(Date.now() + 6 * 3600 * 1000).toISOString().slice(0, 10))}`,
+      [
+        {
+          name: 'Reviews',
+          title: 'BusHub customer reviews',
+          notes: ['Red = 1 or 2 stars. "After the trip" = posted before travelling; the bus company is rated after the trip.'],
+          columns: [
+            { header: 'Posted', kind: 'datetime' },
+            { header: 'Name' },
+            { header: 'From' },
+            { header: 'To' },
+            { header: 'Bus company' },
+            { header: 'Travel date', kind: 'date' },
+            { header: 'BusHub stars', kind: 'int', highlight: { below: 3 } },
+            { header: 'Company stars', kind: 'int', highlight: { below: 3 } },
+            { header: 'Words', kind: 'wrap' },
+            { header: 'Ticket' },
+            { header: 'On the website' },
+          ],
+          rows: list.map((r) => [
+            r.createdAt,
+            r.name,
+            r.from,
+            r.to,
+            r.companyName,
+            r.travelDate,
+            r.rating,
+            companyStars(r) ?? 'After the trip',
+            r.text,
+            r.bookingCode,
+            r.hidden ? 'Hidden' : 'Showing',
+          ]),
+        },
+      ],
+      {
+        summary: {
+          title: 'BusHub customer reviews',
+          items: [
+            { label: 'Reviews', value: list.length },
+            { label: 'Showing on the website', value: shownOnSite.length },
+            { label: 'BusHub rating ★ (showing)', value: avg(shownOnSite.map((r) => r.rating)), kind: 'rating' },
+            { label: 'Bus company rating ★ (showing)', value: avg(rated), kind: 'rating' },
+            { label: '1 or 2 stars for BusHub', value: list.filter((r) => r.rating <= 2).length },
+          ],
+        },
+      }
+    )
+  }
+
   if (!reviews) return null
   const visible = reviews.filter((r) => !r.hidden)
   const average = visible.length ? visible.reduce((n, r) => n + r.rating, 0) / visible.length : 0
@@ -100,6 +155,11 @@ export default function ReviewsPanel() {
             <span className="display text-[16px] font-bold">Customer reviews</span>
             <span className="text-[12px] text-[#4a4a4a]">Hide anything that should not be on the home page.</span>
           </div>
+          {reviews.length > 0 && (
+            <button type="button" onClick={() => exportReviews(reviews)} className="glass-btn glass-btn-plain h-9 px-3.5 text-[12.5px]">
+              ⬇ Excel
+            </button>
+          )}
           {visible.length > 0 && (
             <span className="flex items-center gap-2 rounded-full bg-white/70 px-3 py-1.5">
               <span className="text-[12.5px] font-bold">BusHub</span>

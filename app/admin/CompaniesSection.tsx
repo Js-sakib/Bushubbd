@@ -7,6 +7,48 @@ import PasswordInput from '../PasswordInput'
 import type { CompanyPrefill, CompanyRow } from './types'
 import SearchBox from '../SearchBox'
 import { matches } from '@/lib/search'
+import { downloadSheet, sheetDate } from '@/lib/sheet'
+
+const STATUS_WORD = (s: string) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : '')
+
+/** Every bus company as an Excel file: contact details, status and commission. */
+function downloadCompanies(companies: CompanyRow[]) {
+  const today = new Date(Date.now() + 6 * 3600 * 1000).toISOString().slice(0, 10)
+  downloadSheet(
+    `BusHub-bus-companies-${sheetDate(today)}`,
+    [
+      {
+        name: 'Bus companies',
+        title: 'BusHub · bus companies',
+        notes: [`${companies.length} companies`, 'Red = not approved yet, or suspended.'],
+        columns: [
+          { header: 'Company' },
+          { header: 'Owner / contact' },
+          { header: 'Phone' },
+          { header: 'Email' },
+          { header: 'Status', highlight: { equals: ['Pending', 'Suspended'] } },
+          { header: 'BusHub commission', kind: 'percent' },
+          { header: 'Joined', kind: 'datetime' },
+          { header: 'Asked for new password', kind: 'datetime' },
+        ],
+        rows: [...companies]
+          .sort((a, b) => a.name.localeCompare(b.name))
+          .map((c) => [c.name, c.ownerName, c.phone, c.email, STATUS_WORD(c.status), c.commissionRate ?? 10, c.createdAt, c.passwordResetRequestedAt || '']),
+      },
+    ],
+    {
+      summary: {
+        title: 'BusHub · bus companies',
+        items: [
+          { label: 'Bus companies', value: companies.length },
+          { label: 'Approved', value: companies.filter((c) => c.status === 'approved').length },
+          { label: 'Waiting for approval', value: companies.filter((c) => c.status === 'pending').length },
+          { label: 'Suspended', value: companies.filter((c) => c.status === 'suspended').length },
+        ],
+      },
+    }
+  )
+}
 
 /** A password to pass on once: after a reset, or for a company the admin just added (isNew). */
 type NewLogin = { name: string; email: string; phone: string; password: string; isNew?: boolean }
@@ -340,7 +382,14 @@ export default function CompaniesSection({
       <section className="glass flex flex-col overflow-hidden">
         <div className="flex items-baseline justify-between px-5 pb-2 pt-4">
           <h2 className="display text-[15.5px] font-bold">Bus companies</h2>
-          <span className="text-[11.5px] text-[#555555]">{companies.length} registered</span>
+          <div className="flex items-center gap-2.5">
+            <span className="text-[11.5px] text-[#555555]">{companies.length} registered</span>
+            {companies.length > 0 && (
+              <button type="button" onClick={() => downloadCompanies(companies)} className="glass-btn glass-btn-plain h-9 px-3.5 text-[12.5px]">
+                ⬇ Excel
+              </button>
+            )}
+          </div>
         </div>
         {companies.length > 3 && (
           <div className="px-5 pb-3">

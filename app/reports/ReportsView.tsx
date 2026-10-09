@@ -34,6 +34,10 @@ function rangeFor(preset: Preset, today: string): [string, string] {
 }
 
 /** "+31%", "−0.4 pts", or "–" when there is nothing to compare with. */
+/** Seat fill as a real percentage, red under 40%. */
+const FILL_COLUMN = { header: 'Seat fill', kind: 'percent' as const, highlight: { below: 40 } }
+const LOW_FILL_NOTE = 'Red seat fill = under 40%.'
+
 function changeText(k: Kpi): string {
   if (k.pct === null) return '–'
   const sign = k.pct > 0 ? '+' : k.pct < 0 ? '−' : ''
@@ -148,8 +152,8 @@ export default function ReportsView({ scope }: { scope: 'admin' | 'company' }) {
   const excel = () =>
     downloadSheet(`BusHub-report-${sheetDate(r.range.from)}-to-${sheetDate(r.range.to)}`, [
       {
-        name: 'Summary',
-        title: isAdmin ? 'BusHub report' : 'Sales report',
+        name: 'Compared',
+        title: 'This period and the period before',
         notes: [`${rangeLabel(r.range.from, r.range.to)} · compared with ${prevText}`],
         columns: [{ header: 'Measure' }, { header: 'This period' }, { header: 'Period before' }, { header: 'Change' }],
         rows: [
@@ -180,8 +184,8 @@ export default function ReportsView({ scope }: { scope: 'admin' | 'company' }) {
       {
         name: 'Routes',
         title: 'Top routes',
-        notes: [`${rangeLabel(r.range.from, r.range.to)}`],
-        columns: [{ header: 'From' }, { header: 'To' }, { header: 'Seats', kind: 'int', total: true }, { header: 'Money', kind: 'money', total: true }, { header: 'Seat fill %' }],
+        notes: [`${rangeLabel(r.range.from, r.range.to)}`, LOW_FILL_NOTE],
+        columns: [{ header: 'From' }, { header: 'To' }, { header: 'Seats', kind: 'int', total: true }, { header: 'Money', kind: 'money', total: true }, FILL_COLUMN],
         rows: r.routes.map((x) => [x.from, x.to, x.seats, x.money, x.fill]),
       },
       ...(isAdmin
@@ -189,37 +193,54 @@ export default function ReportsView({ scope }: { scope: 'admin' | 'company' }) {
             {
               name: 'Companies',
               title: 'Bus companies',
-              notes: [`${rangeLabel(r.range.from, r.range.to)}`],
+              notes: [`${rangeLabel(r.range.from, r.range.to)}`, `${LOW_FILL_NOTE} Red refund = over 10%.`],
               columns: [
                 { header: 'Company' },
                 { header: 'Tickets', kind: 'int' as const, total: true },
                 { header: 'Seats', kind: 'int' as const, total: true },
                 { header: 'Sales', kind: 'money' as const, total: true },
                 { header: 'BusHub earnings', kind: 'money' as const, total: true },
-                { header: 'Seat fill %' },
-                { header: 'Refund %' },
-                { header: 'Rating' },
+                FILL_COLUMN,
+                { header: 'Refunds', kind: 'percent' as const, highlight: { above: 10 } },
+                { header: 'Rating ★', kind: 'rating' as const },
+                { header: 'Reviews', kind: 'int' as const },
               ],
-              rows: r.companies.map((c) => [c.name, c.tickets, c.seats, c.money, c.commission, c.fill, c.refundRate, c.rating ? `${c.rating} (${c.ratings})` : '']),
+              rows: r.companies.map((c) => [c.name, c.tickets, c.seats, c.money, c.commission, c.fill, c.refundRate, c.rating, c.ratings || '']),
             },
           ]
         : [
             {
               name: 'Buses',
               title: 'Buses',
-              notes: [`Trips travelling ${rangeLabel(r.range.from, r.range.to)}`],
+              notes: [`Trips travelling ${rangeLabel(r.range.from, r.range.to)}`, LOW_FILL_NOTE],
               columns: [
                 { header: 'Bus' },
                 { header: 'Trips', kind: 'int' as const, total: true },
                 { header: 'Seats sold', kind: 'int' as const, total: true },
                 { header: 'Seats', kind: 'int' as const, total: true },
-                { header: 'Seat fill %' },
+                FILL_COLUMN,
                 { header: 'Money', kind: 'money' as const, total: true },
               ],
               rows: r.buses.map((b) => [b.name, b.trips, b.seats, b.capacity, b.fill, b.money]),
             },
           ]),
-    ])
+    ], {
+      summary: {
+        title: isAdmin ? 'BusHub report' : 'Sales report',
+        notes: [`${rangeLabel(r.range.from, r.range.to)} · compared with ${prevText} on the "Compared" sheet`],
+        items: [
+          { label: isAdmin ? 'Tickets sold online' : 'Online tickets', value: k.tickets.current },
+          { label: 'Seats sold', value: k.seats.current },
+          { label: 'Ticket sales', value: k.sales.current, kind: 'taka' },
+          { label: isAdmin ? 'BusHub earnings' : 'You keep', value: k.earnings.current, kind: 'taka' },
+          { label: 'Average online ticket', value: k.avgTicket.current, kind: 'taka' },
+          { label: 'Seat fill', value: k.fill.current, kind: 'percent' },
+          { label: 'Refunds', value: k.refunds.current },
+          { label: 'Refund rate', value: k.refundRate.current, kind: 'percent' },
+          { label: isAdmin ? 'BusHub rating ★' : 'Your rating ★', value: r.rating.avg ?? '', kind: 'rating' },
+        ],
+      },
+    })
 
   return (
     <div className="mt-2 flex flex-col gap-4">

@@ -6,6 +6,7 @@ import { seatsLeft as calcSeatsLeft } from '@/lib/seats'
 import { getPlaces } from '@/lib/places'
 import { tripDeparted } from '@/lib/trips'
 import { SITE_URL } from '@/lib/site'
+import { createHmac, timingSafeEqual } from 'crypto'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -65,9 +66,29 @@ export async function GET(req: NextRequest) {
   return new NextResponse('Forbidden', { status: 403 })
 }
 
+/**
+ * True when the message really comes from Meta: it signs each delivery with the app secret
+ * (X-Hub-Signature-256). Until WHATSAPP_APP_SECRET is set the bot keeps working unchecked, with
+ * a warning in the logs, so adding the check never takes the live bot down.
+ */
+function fromMeta(raw: string, header: string | null): boolean {
+  const secret = process.env.WHATSAPP_APP_SECRET
+  if (!secret) {
+    console.warn('WhatsApp webhook: WHATSAPP_APP_SECRET is not set, so messages are not checked')
+    return true
+  }
+  const expected = Buffer.from(`sha256=${createHmac('sha256', secret).update(raw).digest('hex')}`)
+  const given = Buffer.from(header || '')
+  return given.length === expected.length && timingSafeEqual(given, expected)
+}
+
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json()
+    const raw = await req.text()
+    if (!fromMeta(raw, req.headers.get('x-hub-signature-256'))) {
+      return NextResponse.json({ error: 'Bad signature' }, { status: 401 })
+    }
+    const body = JSON.parse(raw)
     const message = body?.entry?.[0]?.changes?.[0]?.value?.messages?.[0]
 
     if (!message || message.type !== 'text') {

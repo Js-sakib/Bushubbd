@@ -7,6 +7,8 @@ import { statusOf, type InvoiceSummaryView, type PayoutTotalsView } from '@/lib/
 import { taka } from '@/lib/tripMoney'
 import SearchBox from '../SearchBox'
 import { matches } from '@/lib/search'
+import { downloadSheet, sheetDate } from '@/lib/sheet'
+import { invoicesSheet, paidTotal } from '@/lib/payoutSheet'
 
 interface CompanyOwed {
   _id: string
@@ -57,9 +59,57 @@ export default function PayoutsPanel({ onShowTrips }: { onShowTrips: (period: 'f
   const companies = data.companies.filter((c) => (c.owed.tickets > 0 || c.invoiced > 0 || c.later.tickets > 0 || c.refunds > 0) && matches(search, c.name))
   const invoices = data.invoices.filter((i) => matches(search, i.number, i.companyName, i.from, i.to, formatTripDate(i.from), formatTripDate(i.to), statusOf(i).label))
 
+  const excel = () => {
+    const notes = search.trim() ? [`Search: ${search.trim()}`] : []
+    const today = new Date(Date.now() + 6 * 3600 * 1000).toISOString().slice(0, 10)
+    downloadSheet(
+      `BusHub-payouts-${sheetDate(today)}`,
+      [
+        {
+          name: 'Owed by company',
+          title: 'What BusHub owes each company',
+          notes: [...notes, 'After BusHub commission. "To pay now" is for trips that have left.'],
+          columns: [
+            { header: 'Company' },
+            { header: 'Tickets', kind: 'int', total: true },
+            { header: 'Seats', kind: 'int', total: true },
+            { header: 'Ticket money', kind: 'taka', total: true },
+            { header: 'BusHub commission', kind: 'taka', total: true },
+            { header: 'To pay now', kind: 'taka', total: true },
+            { header: 'In unpaid invoices', kind: 'taka', total: true },
+            { header: 'Refunds to take back', kind: 'taka', total: true },
+            { header: 'Owed later', kind: 'taka', total: true },
+          ],
+          rows: companies.map((c) => [c.name, c.owed.tickets, c.owed.seats, c.owed.ticketTotal, c.owed.commission, c.owed.payout, c.invoiced, c.refunds, c.later.payout]),
+        },
+        invoicesSheet(invoices, notes, true),
+      ],
+      {
+        summary: {
+          title: 'BusHub payouts',
+          notes,
+          items: [
+            { label: 'To pay now', value: companies.reduce((n, c) => n + c.owed.payout, 0), kind: 'taka' },
+            { label: 'In unpaid invoices', value: companies.reduce((n, c) => n + c.invoiced, 0), kind: 'taka' },
+            { label: 'Owed later', value: companies.reduce((n, c) => n + c.later.payout, 0), kind: 'taka' },
+            { label: 'Refunds to take back', value: companies.reduce((n, c) => n + c.refunds, 0), kind: 'taka' },
+            { label: 'Paid out (all invoices)', value: paidTotal(invoices), kind: 'taka' },
+            { label: 'Invoices', value: invoices.length },
+            { label: 'Waiting for a company to sign', value: invoices.filter((i) => i.status === 'paid').length },
+          ],
+        },
+      }
+    )
+  }
+
   return (
     <div className="flex flex-col gap-3 lg:grid lg:grid-cols-2 lg:items-start">
-      <SearchBox value={search} onChange={setSearch} placeholder="Search company, invoice number, date, status" className="lg:col-span-2" />
+      <div className="flex items-center gap-2 lg:col-span-2">
+        <SearchBox value={search} onChange={setSearch} placeholder="Search company, invoice number, date, status" className="grow" />
+        <button type="button" onClick={excel} className="glass-btn glass-btn-plain h-11 shrink-0 px-4 text-[12.5px]">
+          ⬇ Excel
+        </button>
+      </div>
       <div className="flex flex-col gap-3">
       <div className="grid grid-cols-2 gap-2.5">
         <button
