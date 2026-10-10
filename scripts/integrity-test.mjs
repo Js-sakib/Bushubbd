@@ -9,6 +9,7 @@
 // before 23:00 in Dhaka.
 import { MongoClient, ObjectId } from 'mongodb'
 import { createHmac } from 'crypto'
+import { createServer } from 'http'
 
 const BASE = process.env.BASE_URL || 'http://localhost:3000'
 const client = new MongoClient(process.env.MONGODB_URI)
@@ -37,7 +38,7 @@ const run = Date.now().toString(36).toUpperCase()
 
 // ---- Setup: admin, two approved companies, and each company's login ----
 // Wrong-login counters from an earlier run in the last ten minutes would block these logins.
-await db.collection('rate_limits').deleteMany({ _id: /^login-/ })
+await db.collection('rate_limits').deleteMany({ _id: /^(login|reset)-/ })
 const admin = (await call('/api/admin/login', { method: 'POST', body: { email: process.env.ADMIN_EMAIL, password: process.env.ADMIN_PASSWORD } })).cookie
 check('admin can log in', !!admin)
 
@@ -1094,6 +1095,77 @@ const afterApprove = await call('/api/company/trips', { cookie: doomed.cookie })
 check('a suspended company is logged out at once (manager and staff), and back when approved',
   beforeSuspend.status === 200 && afterSuspend.status === 401 && scannerAfter.status === 401 && afterApprove.status === 200,
   JSON.stringify([beforeSuspend.status, afterSuspend.status, scannerAfter.status, afterApprove.status]))
+
+// ---- Forgot password: a 6-digit code by email, then a new password ----
+// Run the server with RESEND_API_KEY=test, EMAIL_FROM=..., EMAIL_API_URL=http://127.0.0.1:<port>/emails
+// and this test with EMAIL_STUB_PORT=<port>: the stand-in mail server catches the codes.
+if (process.env.EMAIL_STUB_PORT) {
+  const mails = []
+  const stub = createServer((req, res) => {
+    let raw = ''
+    req.on('data', (c) => (raw += c))
+    req.on('end', () => {
+      try { mails.push(JSON.parse(raw)) } catch {}
+      res.writeHead(200, { 'Content-Type': 'application/json' })
+      res.end('{"id":"stub"}')
+    })
+  })
+  await new Promise((r) => stub.listen(Number(process.env.EMAIL_STUB_PORT), '127.0.0.1', r))
+  const post = (path, body, ip) => fetch(BASE + path, { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-forwarded-for': ip }, body: JSON.stringify(body) })
+  const codeFor = (to) => {
+    const mail = [...mails].reverse().find((m) => m.to?.[0] === to)
+    return mail ? (String(mail.text).match(/\b(\d{6})\b/) || [])[1] : undefined
+  }
+  const owner = await makeCompany(`Reset Test ${run}`)
+  const ask = await post('/api/company/forgot-password', { email: owner.email.toUpperCase() }, '10.9.0.1')
+  const askData = await ask.json()
+  await new Promise((r) => setTimeout(r, 300))
+  const code = codeFor(owner.email)
+  check('forgot password sends a 6-digit code to the account email (any capitals)', ask.status === 200 && askData.mode === 'code' && /^\d{6}$/.test(code || ''), JSON.stringify([ask.status, askData, mails.length]))
+
+  const before = mails.length
+  const ghost = await post('/api/company/forgot-password', { email: `nobody${run}@test.local` }, '10.9.0.2')
+  const ghostData = await ghost.json()
+  await new Promise((r) => setTimeout(r, 300))
+  check('an unknown email gets the same answer and no email is sent', ghost.status === 200 && ghostData.mode === 'code' && mails.length === before, JSON.stringify([ghost.status, ghostData, mails.length - before]))
+
+  const wrongCode = code === '000000' ? '111111' : '000000'
+  const wrong = await post('/api/company/reset-password', { email: owner.email, code: wrongCode, password: 'NewPass-123' }, '10.9.0.3')
+  const short = await post('/api/company/reset-password', { email: owner.email, code, password: 'short' }, '10.9.0.3')
+  check('a wrong code is refused, and a too-short password is refused before the code is used', wrong.status === 400 && short.status === 400, JSON.stringify([wrong.status, short.status]))
+  const good = await post('/api/company/reset-password', { email: owner.email, code, password: 'NewPass-123' }, '10.9.0.3')
+  const newLogin = await call('/api/company/login', { method: 'POST', body: { email: owner.email, password: 'NewPass-123' } })
+  const oldLogin = await call('/api/company/login', { method: 'POST', body: { email: owner.email, password: owner.password } })
+  check('the right code sets the new password: it signs in, the old one does not', good.status === 200 && !!newLogin.cookie && oldLogin.status === 401, JSON.stringify([good.status, newLogin.status, oldLogin.status]))
+  const again = await post('/api/company/reset-password', { email: owner.email, code, password: 'Another-123' }, '10.9.0.3')
+  check('a code works only once', again.status === 400, `status ${again.status}`)
+
+  // Five wrong tries use the code up, even for the right code afterwards.
+  await post('/api/company/forgot-password', { email: owner.email }, '10.9.0.4')
+  await new Promise((r) => setTimeout(r, 300))
+  const code2 = codeFor(owner.email)
+  const other = code2 === '000000' ? '111111' : '000000'
+  for (let i = 0; i < 5; i++) await post('/api/company/reset-password', { email: owner.email, code: other, password: 'NewPass-456' }, `10.9.1.${i}`)
+  const late = await post('/api/company/reset-password', { email: owner.email, code: code2, password: 'NewPass-456' }, '10.9.0.5')
+  check('after 5 wrong tries the code stops working', !!code2 && late.status === 400, JSON.stringify([code2, late.status]))
+
+  // An old code (over 10 minutes) is refused.
+  await post('/api/company/forgot-password', { email: owner.email }, '10.9.0.6')
+  await new Promise((r) => setTimeout(r, 300))
+  const code3 = codeFor(owner.email)
+  await db.collection('password_resets').updateMany({ companyId: new ObjectId(owner.id) }, { $set: { expiresAt: new Date(Date.now() - 1000) } })
+  const expired = await post('/api/company/reset-password', { email: owner.email, code: code3, password: 'NewPass-789' }, '10.9.0.7')
+  check('an expired code is refused', !!code3 && code3 !== code2 && expired.status === 400, JSON.stringify([code3, expired.status]))
+
+  // The same email can ask only 3 times in ten minutes; one connection only 10 wrong codes.
+  const fourth = await post('/api/company/forgot-password', { email: owner.email }, '10.9.0.8')
+  const flood = []
+  for (let i = 0; i < 11; i++) flood.push((await post('/api/company/reset-password', { email: owner.email, code: '123456', password: 'NewPass-000' }, '10.9.2.1')).status)
+  check('code requests and wrong codes are limited', fourth.status === 429 && flood[10] === 429 && flood.slice(0, 10).every((x) => x === 400), JSON.stringify([fourth.status, flood]))
+  stub.close()
+} else {
+  console.log('SKIP  forgot-password code checks (run with EMAIL_STUB_PORT and the server with EMAIL_API_URL pointing at it)')
+}
 
 const hookBody = JSON.stringify({ entry: [] })
 const hook = (signature) => fetch(`${BASE}/api/whatsapp/webhook`, { method: 'POST', headers: { 'Content-Type': 'application/json', ...(signature ? { 'x-hub-signature-256': signature } : {}) }, body: hookBody })

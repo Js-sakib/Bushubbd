@@ -44,6 +44,9 @@ async function ensureIndexes(db: Db) {
     ['counterTickets', { companyId: 1, phoneCore: 1, soldAt: -1 }, { name: 'counter_ticket_phone' }],
     // An email signs up for offers once.
     ['subscribers', { email: 1 }, { unique: true, name: 'subscriber_email_unique' }],
+    // Password reset codes are looked up per company and deleted once they run out.
+    ['password_resets', { companyId: 1 }, { name: 'reset_company' }],
+    ['password_resets', { expiresAt: 1 }, { expireAfterSeconds: 0, name: 'reset_expiry' }],
   ]
   for (const [collection, key, options] of indexes) {
     try {

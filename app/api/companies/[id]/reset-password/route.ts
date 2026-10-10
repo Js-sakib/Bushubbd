@@ -12,9 +12,9 @@ const MIN_LENGTH = 8
 const MAX_LENGTH = 72
 
 /**
- * Operators have no self-service reset: they contact the BusHub team, and the admin sets a
- * new password here, either typed or generated. It is returned once and never stored in
- * readable form.
+ * The admin sets a new password for an operator, either typed or generated: for an operator
+ * whose "Forgot password" code could not reach them, or who asked the BusHub team. It is
+ * returned once and never stored in readable form.
  */
 export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
   try {
