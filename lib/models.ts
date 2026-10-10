@@ -79,6 +79,8 @@ export interface Booking {
   companyPayout: number
   passengerName: string
   passengerPhone: string
+  /** The phone number in one form (lib/phone), for the per-number limits. Older bookings have none. */
+  phoneKey?: string
   passengerEmail?: string
   paymentStatus: 'pending' | 'paid'
   paymentMethod?: 'bkash' | 'nagad' | 'card'

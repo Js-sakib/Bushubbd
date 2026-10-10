@@ -2,6 +2,7 @@
 
 import { usePathname } from 'next/navigation'
 import Logo from './BrandLogo'
+import LivePurchases from './LivePurchases'
 import SiteFooter from './SiteFooter'
 
 const BARE_ROUTES = ['/admin', '/company', '/verify', '/invoice']
@@ -64,6 +65,7 @@ export default function SiteChrome({ children }: { children: React.ReactNode }) 
       </nav>
 
       <main className="mx-auto w-full max-w-5xl">{children}</main>
+      <LivePurchases />
 
       <SiteFooter />
     </>

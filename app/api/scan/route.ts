@@ -4,6 +4,7 @@ import { connectToDatabase } from '@/lib/db'
 import { getAdminFromCookies } from '@/lib/auth'
 import { getCompanyUser } from '@/lib/staff'
 import { repairWronglyExpiredTickets } from '@/lib/seatHold'
+import { recordMiss, tooManyMisses } from '@/lib/rateLimit'
 import { ScanResult, extractBookingCode, isCounterCode, judgeTicket, lastDhakaDays, scansByScanner, startOfDhakaDay, summarizeScans } from '@/lib/scan'
 
 export const dynamic = 'force-dynamic'
@@ -11,6 +12,8 @@ export const revalidate = 0
 export const fetchCache = 'force-no-store'
 
 const NO_STORE = { 'Cache-Control': 'no-store, max-age=0, must-revalidate' }
+/** Wrong codes one operator login may enter in ten minutes. */
+const SCAN_MISS_LIMIT = 20
 
 interface Scanner {
   /** Whose scans these are: the scanner login, or 'admin'. */
@@ -98,12 +101,26 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    if (!bookingCode) return respond('not_found')
+    // After too many codes that match no ticket, this login waits: nobody can try codes one
+    // after another until a real one turns up.
+    const missKey = `scan:${scanner.id}`
+    if (await tooManyMisses(db, missKey, SCAN_MISS_LIMIT)) {
+      return NextResponse.json(
+        { error: 'Too many wrong codes. Wait 10 minutes, then scan again.' },
+        { status: 429, headers: NO_STORE }
+      )
+    }
+    const miss = async () => {
+      await recordMiss(db, missKey)
+      return respond('not_found')
+    }
+
+    if (!bookingCode) return miss()
 
     // A ticket printed at the company's own counter: same rules, its own record.
     if (isCounterCode(bookingCode)) {
       const ct = await db.collection('counterTickets').findOne({ ticketCode: bookingCode })
-      if (!ct) return respond('not_found')
+      if (!ct) return miss()
       const asTicket = {
         _id: ct._id,
         bookingCode: ct.ticketCode,
@@ -139,7 +156,7 @@ export async function POST(req: NextRequest) {
 
     await repairWronglyExpiredTickets(db, { bookingCode })
     const booking = await db.collection('bookings').findOne({ bookingCode })
-    if (!booking) return respond('not_found')
+    if (!booking) return miss()
 
     const bus = ObjectId.isValid(booking.busId)
       ? await db.collection('buses').findOne({ _id: new ObjectId(booking.busId) }, { projection: { companyId: 1 } })

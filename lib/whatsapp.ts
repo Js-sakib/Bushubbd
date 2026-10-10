@@ -76,3 +76,46 @@ export async function sendWhatsAppTemplate(to: string, template: string, params:
     return false
   }
 }
+
+/** True when reset codes can go out on WhatsApp: the API is set up and WHATSAPP_OTP_TEMPLATE names an approved code template. */
+export function whatsappCodeConfigured(): boolean {
+  return Boolean(getConfig() && process.env.WHATSAPP_OTP_TEMPLATE)
+}
+
+/**
+ * Sends a one-time code with Meta's "authentication" template (WHATSAPP_OTP_TEMPLATE), the only
+ * kind WhatsApp allows for codes. Its body takes the code as {{1}} and its copy-code button
+ * takes the code again.
+ */
+export async function sendWhatsAppCode(to: string, code: string): Promise<boolean> {
+  const config = getConfig()
+  const template = process.env.WHATSAPP_OTP_TEMPLATE
+  if (!config || !template) return false
+  try {
+    const res = await fetch(`https://graph.facebook.com/${WHATSAPP_API_VERSION}/${config.phoneNumberId}/messages`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${config.token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        messaging_product: 'whatsapp',
+        to,
+        type: 'template',
+        template: {
+          name: template,
+          language: { code: process.env.WHATSAPP_OTP_LANGUAGE || 'en' },
+          components: [
+            { type: 'body', parameters: [{ type: 'text', text: code }] },
+            { type: 'button', sub_type: 'url', index: '0', parameters: [{ type: 'text', text: code }] },
+          ],
+        },
+      }),
+    })
+    if (!res.ok) {
+      console.error('WhatsApp code send failed:', res.status, await res.text())
+      return false
+    }
+    return true
+  } catch (err) {
+    console.error('WhatsApp code send error:', err)
+    return false
+  }
+}

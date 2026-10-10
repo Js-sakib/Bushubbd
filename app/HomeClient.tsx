@@ -7,6 +7,7 @@ import { DEFAULT_PLACES, Places } from '@/lib/places'
 import { MAX_SEATS_PER_BOOKING } from '@/lib/seats'
 import Reviews from './Reviews'
 import HowToReview from './HowToReview'
+import { ONLINE_SALES_OPEN } from '@/lib/site'
 
 export default function HomeClient() {
   const router = useRouter()
@@ -91,8 +92,9 @@ export default function HomeClient() {
           one tap away.
         </h1>
         <p className="max-w-md text-sm leading-relaxed text-[#3f3f3f]">
-          Buy bus tickets online in Bangladesh: live seat availability, payment with bKash or Nagad, and a QR
-          ticket on WhatsApp the moment you pay.
+          {ONLINE_SALES_OPEN
+            ? 'Buy bus tickets online in Bangladesh: live seat availability, payment with bKash or Nagad, and a QR ticket on WhatsApp the moment you pay.'
+            : 'See live seat availability for buses across Bangladesh, then book your seat with us on WhatsApp or by phone. Online payment opens soon.'}
         </p>
       </section>
 
@@ -219,6 +221,11 @@ export default function HomeClient() {
           Search buses
         </button>
       </form>
+      {!ONLINE_SALES_OPEN && (
+        <p className="mt-3 rounded-2xl border border-[#f2661d]/30 bg-[#feb249]/[0.14] px-4 py-3 text-[12.5px] leading-relaxed text-[#3f3f3f] sm:max-w-xl">
+          <b className="text-[#111111]">Online booking opens soon.</b> Search to see buses and free seats, then book with us on WhatsApp or by phone. অনলাইন বুকিং শীঘ্রই চালু হচ্ছে।
+        </p>
+      )}
 
       {places.popularRoutes.length > 0 && (
         <section className="mt-8 flex flex-col gap-3">

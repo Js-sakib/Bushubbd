@@ -163,17 +163,18 @@ export default function ScannerView() {
               <label htmlFor="manual-code" className="label-xs">
                 Or type the booking code
               </label>
-              <div className="flex gap-2">
+              {/* On a phone the code box gets the full width: new codes are 22 characters long. */}
+              <div className="flex flex-col gap-2 sm:flex-row">
                 <input
                   id="manual-code"
                   value={manualCode}
                   onChange={(e) => setManualCode(e.target.value.toUpperCase())}
-                  placeholder="BH-20260925-K7M2P"
+                  placeholder="BH-20260929-K7M2PQ4XHN"
                   autoCapitalize="characters"
                   autoComplete="off"
                   className="input-dark min-w-0 grow font-mono"
                 />
-                <button type="submit" disabled={!manualCode.trim()} className="glass-btn h-12 shrink-0 px-5 text-sm">
+                <button type="submit" disabled={!manualCode.trim()} className="glass-btn h-12 shrink-0 px-5 text-sm sm:w-auto">
                   Check
                 </button>
               </div>

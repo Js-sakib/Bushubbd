@@ -18,11 +18,12 @@ export function lastDhakaDays(days: number, at: Date = new Date()): string[] {
   return Array.from({ length: days }, (_, i) => dhakaDate(new Date(today + (i - days + 1) * DAY_MS)))
 }
 
-// Booking codes bought on BusHub start BH-; counter tickets (sold at a bus company's counter)
-// start CT-.
-const BOOKING_CODE = /(?:BH|CT)-\d{8}-[A-Z0-9]{5}/i
+// New codes have 10 characters after the date, older ones 5; the longer form is tried first so
+// a new code is never cut short.
+// Counter tickets (printed at a bus company's counter) carry CT- codes of the new length.
+const BOOKING_CODE = /(?:BH-\d{8}-(?:[A-Z0-9]{10}|[A-Z0-9]{5})|CT-\d{8}-[A-Z0-9]{10})(?![A-Z0-9])/i
 
-/** True for a code from a counter sale rather than bought on BusHub. */
+/** True for a code printed on a counter ticket rather than bought on BusHub. */
 export const isCounterCode = (code: string) => /^CT-/i.test(code)
 
 /**

@@ -6,6 +6,8 @@ import toast from 'react-hot-toast'
 import { MAX_SEATS_PER_BOOKING, generateSeatLabels, takenSeats } from '@/lib/seats'
 import { MAX_BAGS } from '@/lib/luggage'
 import { currentSource, track } from '@/lib/track'
+import { CONTACT_PHONE, ONLINE_SALES_OPEN, whatsappChat } from '@/lib/site'
+import { formatTripDate } from '@/lib/dates'
 
 interface Bus {
   _id: string
@@ -75,6 +77,7 @@ function BookingContent() {
   }
 
   const handleConfirmSeats = () => {
+    if (!ONLINE_SALES_OPEN) return
     if (selectedSeats.length === 0) {
       toast.error('Please select at least one seat')
       return
@@ -112,7 +115,8 @@ function BookingContent() {
       })
       const data = await res.json()
       if (!res.ok) {
-        toast.error(data.error || 'Booking failed')
+        // The per-number limits explain themselves at some length; leave time to read them.
+        toast.error(data.error || 'Booking failed', { duration: res.status === 429 ? 8000 : 4000 })
         setSubmitting(false)
         return
       }
@@ -302,18 +306,48 @@ function BookingContent() {
               </span>
               <span className="display shrink-0 text-[22px] font-bold text-[#0b7f8c]">৳{totalPrice}</span>
             </div>
-            <button type="button" onClick={handleConfirmSeats} className="glass-btn w-full">
-              <span className="icon-disc">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
-                  <path d="M5 12h13" />
-                  <path d="m12.5 5.5 6.5 6.5-6.5 6.5" />
-                </svg>
-              </span>
-              Continue
-            </button>
-            <span className="text-center text-[11.5px] text-[#555555]">
-              Seats are held for 10 minutes while you pay.
-            </span>
+            {ONLINE_SALES_OPEN ? (
+              <>
+                <button type="button" onClick={handleConfirmSeats} className="glass-btn w-full">
+                  <span className="icon-disc">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+                      <path d="M5 12h13" />
+                      <path d="m12.5 5.5 6.5 6.5-6.5 6.5" />
+                    </svg>
+                  </span>
+                  Continue
+                </button>
+                <span className="text-center text-[11.5px] text-[#555555]">
+                  Seats are held for 10 minutes while you pay.
+                </span>
+              </>
+            ) : (
+              // Until payments are confirmed by a gateway, the seat is booked by WhatsApp or phone.
+              <div className="flex flex-col gap-2.5 rounded-2xl border border-[#f2661d]/30 bg-[#feb249]/[0.12] p-3.5">
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-[14px] font-bold">Online booking opens soon</span>
+                  <span className="text-[12.5px] font-semibold text-[#3f3f3f]">অনলাইন বুকিং শীঘ্রই চালু হচ্ছে</span>
+                  <span className="text-[12.5px] leading-relaxed text-[#3f3f3f]">
+                    Send us your trip on WhatsApp or call us, and we book your seat. WhatsApp বা ফোনে আমাদের জানান, আমরা সিট বুক করে দেব।
+                  </span>
+                </div>
+                <a
+                  href={whatsappChat(
+                    `Hi BusHub, I want to book: ${bus.companyName ? `${bus.companyName}, ` : ''}${bus.from} → ${bus.to}, ${formatTripDate(bus.date)} at ${bus.departureTime}` +
+                      (selectedSeats.length ? `, seats ${selectedSeats.join(', ')}` : `, ${passengers} seat${passengers === 1 ? '' : 's'}`) +
+                      '.'
+                  )}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="glass-btn btn-orange h-12 text-[14px]"
+                >
+                  Book on WhatsApp · হোয়াটসঅ্যাপ
+                </a>
+                <a href={`tel:${CONTACT_PHONE.replace(/[^\d+]/g, '')}`} className="glass-btn glass-btn-plain h-12 text-[14px]">
+                  Call {CONTACT_PHONE} · কল করুন
+                </a>
+              </div>
+            )}
           </div>
         </div>
       )}

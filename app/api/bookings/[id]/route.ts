@@ -5,6 +5,7 @@ import { getAdminFromCookies } from '@/lib/auth'
 import { isExpired, ticketExpiry } from '@/lib/tickets'
 import { releaseExpiredHolds, repairWronglyExpiredTickets } from '@/lib/seatHold'
 import { deliverNewTicket, type DeliverableTicket } from '@/lib/ticketDelivery'
+import { ONLINE_SALES_OPEN, SALES_PAUSED_MESSAGE } from '@/lib/site'
 
 export const dynamic = 'force-dynamic'
 
@@ -63,6 +64,8 @@ const PAYMENT_METHODS = ['bkash', 'nagad', 'card']
  * the change are a single database update, so a hold can't expire and be paid at the same time.
  */
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+  // Nothing proves a payment here, so no ticket is marked paid while online sales are paused.
+  if (!ONLINE_SALES_OPEN) return NextResponse.json({ error: SALES_PAUSED_MESSAGE }, { status: 503 })
   try {
     const body = await req.json().catch(() => ({}))
     const { paymentStatus, paymentMethod } = body || {}

@@ -10,7 +10,8 @@ let cachedDb: Db | null = null
  */
 async function ensureIndexes(db: Db) {
   const indexes: [string, Record<string, 1 | -1>, { name: string } & Record<string, unknown>][] = [
-    // Request counters (lib/rateLimit) are deleted once their window is over.
+    ['bookings', { phoneKey: 1, busId: 1 }, { name: 'phone_bookings' }],
+    // Wrong-code counters (lib/rateLimit) are deleted once their window is over.
     ['rate_limits', { expiresAt: 1 }, { expireAfterSeconds: 0, name: 'rate_limit_expiry' }],
     ['bookings', { bookingCode: 1 }, { unique: true, name: 'bookingCode_unique' }],
     ['fleet', { nameKey: 1 }, { unique: true, name: 'fleet_name_unique' }],
@@ -43,6 +44,9 @@ async function ensureIndexes(db: Db) {
     ['counterTickets', { companyId: 1, phoneCore: 1, soldAt: -1 }, { name: 'counter_ticket_phone' }],
     // An email signs up for offers once.
     ['subscribers', { email: 1 }, { unique: true, name: 'subscriber_email_unique' }],
+    // Password reset codes are looked up per company and deleted once they run out.
+    ['password_resets', { companyId: 1 }, { name: 'reset_company' }],
+    ['password_resets', { expiresAt: 1 }, { expireAfterSeconds: 0, name: 'reset_expiry' }],
   ]
   for (const [collection, key, options] of indexes) {
     try {

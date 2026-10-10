@@ -2,6 +2,11 @@ import { NextRequest, NextResponse } from 'next/server'
 import { connectToDatabase } from '@/lib/db'
 import { isExpired, ticketExpiry } from '@/lib/tickets'
 import { repairWronglyExpiredTickets } from '@/lib/seatHold'
+import { clientIp, recordMiss, tooManyMisses } from '@/lib/rateLimit'
+
+/** Codes matching no ticket that one connection may check in ten minutes. Kept generous:
+ * mobile networks put many phones behind one address. */
+const VERIFY_MISS_LIMIT = 60
 
 export const dynamic = 'force-dynamic'
 
@@ -14,10 +19,15 @@ export const dynamic = 'force-dynamic'
 export async function GET(req: NextRequest, { params }: { params: { code: string } }) {
   try {
     const { db } = await connectToDatabase()
+    const missKey = `verify:${clientIp(req.headers)}`
+    if (await tooManyMisses(db, missKey, VERIFY_MISS_LIMIT)) {
+      return NextResponse.json({ valid: false, reason: 'too_many' }, { status: 429 })
+    }
     await repairWronglyExpiredTickets(db, { bookingCode: params.code })
     const booking = await db.collection('bookings').findOne({ bookingCode: params.code })
 
     if (!booking) {
+      await recordMiss(db, missKey)
       return NextResponse.json({ valid: false, reason: 'not_found' }, { status: 404 })
     }
 

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { Db, ObjectId } from 'mongodb'
 import { connectToDatabase, isDuplicateKeyError } from '@/lib/db'
+import { ONLINE_SALES_OPEN, SALES_PAUSED_MESSAGE } from '@/lib/site'
 import {
   generateBookingCode,
   ticketExpiry,
@@ -18,6 +19,8 @@ import { Booking } from '@/lib/models'
 import { marketingTags } from '@/lib/attribution'
 import { getCompanyUser } from '@/lib/staff'
 import { cleanBags } from '@/lib/luggage'
+import { phoneKey } from '@/lib/phone'
+import { purchaseLimitError } from '@/lib/purchaseLimits'
 import { platesByTrip } from '@/lib/plates'
 
 export const dynamic = 'force-dynamic'
@@ -25,6 +28,8 @@ export const revalidate = 0
 export const fetchCache = 'force-no-store'
 
 export async function POST(req: NextRequest) {
+  // No seats are held while online sales are paused (lib/site.ts).
+  if (!ONLINE_SALES_OPEN) return NextResponse.json({ error: SALES_PAUSED_MESSAGE }, { status: 503 })
   try {
     const body = await req.json()
     const { busId, seats, passengerName, passengerPhone, passengerEmail, source } = body
@@ -50,6 +55,13 @@ export async function POST(req: NextRequest) {
     const seatProblem = seatSelectionError(seats, bus.totalSeats)
     if (seatProblem) {
       return NextResponse.json({ error: seatProblem }, { status: 400 })
+    }
+
+    // One number can't buy up the bus or keep seats locked without paying.
+    const buyer = phoneKey(passengerPhone)
+    const limitProblem = await purchaseLimitError(db, buyer, busId, seats.length)
+    if (limitProblem) {
+      return NextResponse.json({ error: limitProblem }, { status: 429 })
     }
 
     const unavailable = takenSeats(bus as { bookedSeats?: string[]; blockedSeats?: string[] })
@@ -96,6 +108,7 @@ export async function POST(req: NextRequest) {
       companyPayout,
       passengerName: String(passengerName).trim(),
       passengerPhone: String(passengerPhone).trim(),
+      phoneKey: buyer,
       passengerEmail: passengerEmail ? String(passengerEmail).trim() : undefined,
       paymentStatus: 'pending',
       status: 'pending',
@@ -115,6 +128,14 @@ export async function POST(req: NextRequest) {
       booking.qrCode = await generateTicketQRCode(getVerifyUrl(booking.bookingCode))
       try {
         const result = await db.collection('bookings').insertOne({ ...booking } as any)
+        // Bookings from one number at the same moment could all pass the check above; counted
+        // again now that this one is saved (with the ones saved before it), any past the limit is undone.
+        const lateProblem = await purchaseLimitError(db, buyer, busId, seats.length, result.insertedId)
+        if (lateProblem) {
+          await db.collection('bookings').deleteOne({ _id: result.insertedId })
+          await releaseSeats(db, busId, seats)
+          return NextResponse.json({ error: lateProblem }, { status: 429 })
+        }
         return NextResponse.json({ booking: { ...booking, _id: result.insertedId } }, { status: 201 })
       } catch (err) {
         if (!isDuplicateKeyError(err)) {
