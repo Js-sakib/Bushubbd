@@ -501,3 +501,152 @@ input[type='date']::-webkit-calendar-picker-indicator {
     display: block !important;
   }
 }
+
+/* ---- The new dark look (lib/site.ts DARK_SITE): near-black, cream text, amber and orange, like
+   the "Bus tickets, now online" post. The pages were written for the pink-to-aqua look, so its
+   fixed text and surface colours are mapped here. Tickets, boarding passes and invoices stay
+   the white paper they are, and the bright aqua and amber tiles keep their dark text. ---- */
+.dark-site,
+.dark-site .light-panel {
+  --bg: #0e0f10;
+  --ink: #fff4e6;
+  --muted: rgba(255, 244, 230, 0.68);
+  --muted-2: rgba(255, 244, 230, 0.55);
+  --c-ink: #fff4e6;
+  --c-muted: rgba(255, 244, 230, 0.68);
+  --c-faint: rgba(255, 244, 230, 0.5);
+  --c-range: #f5a524;
+  --c-hover: rgba(255, 244, 230, 0.08);
+  --c-line: rgba(255, 244, 230, 0.12);
+  --c-field: rgba(255, 255, 255, 0.05);
+  --c-pop: #1a1b1d;
+  color: var(--ink);
+}
+.dark-site {
+  min-height: 100vh;
+}
+.light-panel .dark-site .card,
+.light-panel .dark-site .card-2,
+.light-panel .dark-site .glass-lite,
+.light-panel .dark-site .glass {
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.03));
+  border: 1px solid rgba(255, 244, 230, 0.12);
+  box-shadow: 0 24px 50px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 244, 230, 0.06);
+}
+.light-panel .dark-site .input-dark {
+  border-color: rgba(255, 244, 230, 0.14);
+  background-color: rgba(255, 255, 255, 0.05);
+  color: var(--ink);
+}
+.light-panel .dark-site .input-dark::placeholder {
+  color: rgba(255, 244, 230, 0.4);
+}
+.light-panel .dark-site select.input-dark {
+  background-image: linear-gradient(45deg, transparent 50%, #f5a524 50%), linear-gradient(135deg, #f5a524 50%, transparent 50%);
+}
+.light-panel .dark-site select.input-dark option {
+  background: #1a1b1d;
+  color: var(--ink);
+}
+.light-panel .dark-site input[type='date']::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+}
+.light-panel .dark-site .label-xs {
+  color: rgba(255, 244, 230, 0.6);
+}
+.light-panel .dark-site .chip,
+.light-panel .dark-site .icon-btn,
+.light-panel .dark-site .glass-btn-plain,
+.dark-site .panel-buttons .glass-btn-plain,
+.dark-site .panel-buttons .chip,
+.dark-site .panel-buttons .icon-btn {
+  border-color: rgba(255, 244, 230, 0.14);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--ink);
+  box-shadow: none;
+}
+.light-panel .dark-site .chip-active,
+.dark-site .panel-buttons .chip-active {
+  border-color: #f5a524;
+  background: rgba(245, 165, 36, 0.16);
+  color: #f5a524;
+}
+.light-panel .dark-site .glass-btn {
+  color: var(--ink);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+  border-color: rgba(255, 244, 230, 0.16);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.35);
+}
+.light-panel .dark-site .glass-btn.btn-orange,
+.dark-site .panel-buttons .glass-btn,
+.dark-site .panel-buttons .glass-btn.btn-orange {
+  background: linear-gradient(135deg, #f2661d, #f5a524);
+  border-color: transparent;
+  color: #1a0d03;
+  box-shadow: 0 10px 24px rgba(242, 102, 29, 0.3);
+}
+.dark-site .panel-buttons button[class^='bg-[#111111]/[0.05]'],
+.dark-site .panel-buttons button[class*=' bg-[#111111]/[0.05]'],
+.dark-site .panel-buttons a[class*='rounded-full'][class*=' bg-[#111111]/[0.05]'] {
+  border-color: rgba(255, 244, 230, 0.14) !important;
+  background-color: rgba(255, 255, 255, 0.05) !important;
+  color: #fff4e6 !important;
+}
+/* The selected option of a dark pill group (navy in the old look) is amber. */
+.dark-site button[class~='bg-[#111111]'],
+.dark-site .panel-buttons button[class~='bg-[#111111]'],
+.dark-site button[class~='bg-[#002447]'] {
+  background-color: #f5a524 !important;
+  color: #1a0d03 !important;
+}
+.dark-site :is(.text-\[\#111111\], .text-\[\#222222\], .text-\[\#2b2b2b\], .text-\[\#303030\], .text-\[\#100c0d\], .text-\[\#1b1b1b\]):not(.ticket-backdrop *, .ticket-print *, .ticket-print, .invoice-paper *, .invoice-paper, [class~='bg-[#53d3d1]'], [class~='bg-[#53d3d1]'] *, [class~='bg-[#3fd0c9]'], [class~='bg-[#3fd0c9]'] *, [class~='bg-[#feb249]'] *, [class~='bg-[#f2661d]'] *, [class~='bg-[#fff8ec]']) {
+  color: #fff4e6;
+}
+.dark-site :is(.text-\[\#3f3f3f\], .text-\[\#4a4a4a\], .text-\[\#555555\], .text-\[\#5e5e5e\], .text-\[\#6b6b6b\]):not(.ticket-backdrop *, .ticket-print *, .ticket-print, .invoice-paper *, .invoice-paper, [class~='bg-[#53d3d1]'], [class~='bg-[#53d3d1]'] *, [class~='bg-[#3fd0c9]'], [class~='bg-[#3fd0c9]'] *, [class~='bg-[#feb249]'] *, [class~='bg-[#f2661d]'] *, [class~='bg-[#fff8ec]']) {
+  color: rgba(255, 244, 230, 0.68);
+}
+.dark-site :is(.text-\[\#0b7f8c\], .text-\[\#0f8f80\], .text-\[\#0a8a84\], .text-\[\#2d7886\], .text-\[\#0a6e69\], .text-\[\#8a6d00\], .text-\[\#002447\]):not(.ticket-backdrop *, .ticket-print *, .ticket-print, .invoice-paper *, .invoice-paper, [class~='bg-[#53d3d1]'], [class~='bg-[#53d3d1]'] *, [class~='bg-[#3fd0c9]'], [class~='bg-[#3fd0c9]'] *, [class~='bg-[#feb249]'] *, [class~='bg-[#f2661d]'] *, [class~='bg-[#fff8ec]']) {
+  color: #f5a524;
+}
+.dark-site :is(.text-\[\#c13b3b\], .text-\[\#d23c3c\], .text-\[\#b42318\], .text-\[\#c02626\], .text-\[\#b91c1c\], .text-\[\#9b1c1c\], .text-\[\#d14343\]):not(.ticket-backdrop *, .ticket-print *, .ticket-print, .invoice-paper *, .invoice-paper, [class~='bg-[#53d3d1]'], [class~='bg-[#53d3d1]'] *, [class~='bg-[#3fd0c9]'], [class~='bg-[#3fd0c9]'] *, [class~='bg-[#feb249]'] *, [class~='bg-[#f2661d]'] *, [class~='bg-[#fff8ec]']) {
+  color: #f87171;
+}
+.dark-site :is(.text-\[\#2563eb\]):not(.ticket-backdrop *, .ticket-print *, .ticket-print, .invoice-paper *, .invoice-paper, [class~='bg-[#53d3d1]'], [class~='bg-[#53d3d1]'] *, [class~='bg-[#3fd0c9]'], [class~='bg-[#3fd0c9]'] *, [class~='bg-[#feb249]'] *, [class~='bg-[#f2661d]'] *, [class~='bg-[#fff8ec]']) {
+  color: #8db4ff;
+}
+.dark-site :is(.border-\[\#111111\]\/10, .border-\[\#c9d6e4\], .border-\[\#c3d1e0\], .border-\[\#ebe5dc\], .border-\[\#e6e0d6\], .border-\[\#002447\]\/10):not(.ticket-backdrop *, .ticket-print *, .ticket-print, .invoice-paper *, .invoice-paper, [class~='bg-[#53d3d1]'], [class~='bg-[#53d3d1]'] *, [class~='bg-[#3fd0c9]'], [class~='bg-[#3fd0c9]'] *, [class~='bg-[#feb249]'] *, [class~='bg-[#f2661d]'] *, [class~='bg-[#fff8ec]']) {
+  border-color: rgba(255, 244, 230, 0.12);
+}
+.dark-site :is(.bg-\[\#111111\]\/\[0\.05\], .bg-\[\#111111\]\/\[0\.04\], .bg-\[\#111111\]\/\[0\.06\], .bg-\[\#111111\]\/\[0\.07\], .bg-\[\#fbeceb\]):not(.ticket-backdrop *, .ticket-print *, .ticket-print, .invoice-paper *, .invoice-paper, [class~='bg-[#53d3d1]'], [class~='bg-[#53d3d1]'] *, [class~='bg-[#3fd0c9]'], [class~='bg-[#3fd0c9]'] *, [class~='bg-[#feb249]'] *, [class~='bg-[#f2661d]'] *, [class~='bg-[#fff8ec]']) {
+  background-color: rgba(255, 255, 255, 0.06);
+}
+.dark-site :is(.bg-\[\#002447\]):not(.ticket-backdrop *, .ticket-print *, .ticket-print, .invoice-paper *, .invoice-paper, [class~='bg-[#53d3d1]'], [class~='bg-[#53d3d1]'] *, [class~='bg-[#3fd0c9]'], [class~='bg-[#3fd0c9]'] *, [class~='bg-[#feb249]'] *, [class~='bg-[#f2661d]'] *, [class~='bg-[#fff8ec]']) {
+  background-color: rgba(255, 255, 255, 0.07); border: 1px solid rgba(255, 244, 230, 0.12);
+}
+.dark-site :is(.bg-\[\#fff1d6\], .bg-\[\#dff6f5\], .bg-\[\#e1e9f2\]):not(.ticket-backdrop *, .ticket-print *, .ticket-print, .invoice-paper *, .invoice-paper, [class~='bg-[#53d3d1]'], [class~='bg-[#53d3d1]'] *, [class~='bg-[#3fd0c9]'], [class~='bg-[#3fd0c9]'] *, [class~='bg-[#feb249]'] *, [class~='bg-[#f2661d]'] *, [class~='bg-[#fff8ec]']) {
+  background-color: rgba(245, 165, 36, 0.1);
+}
+.dark-site :is(.bg-\[\#fde8e8\], .bg-\[\#fde4e4\]):not(.ticket-backdrop *, .ticket-print *, .ticket-print, .invoice-paper *, .invoice-paper, [class~='bg-[#53d3d1]'], [class~='bg-[#53d3d1]'] *, [class~='bg-[#3fd0c9]'], [class~='bg-[#3fd0c9]'] *, [class~='bg-[#feb249]'] *, [class~='bg-[#f2661d]'] *, [class~='bg-[#fff8ec]']) {
+  background-color: rgba(248, 113, 113, 0.14);
+}
+.dark-site [class*='bg-white']:not(.ticket-backdrop *, .ticket-print *, .ticket-print, .invoice-paper *, .invoice-paper, [class~='bg-[#53d3d1]'], [class~='bg-[#53d3d1]'] *, [class~='bg-[#3fd0c9]'], [class~='bg-[#3fd0c9]'] *, [class~='bg-[#feb249]'] *, [class~='bg-[#f2661d]'] *, [class~='bg-[#fff8ec]']) {
+  background-color: rgba(255, 255, 255, 0.06);
+}
+.dark-site :is(.text-\[\#1f1f1f\], .text-\[\#161616\]):not(.ticket-backdrop *, .ticket-print *, .ticket-print, .invoice-paper *, .invoice-paper, [class~='bg-[#53d3d1]'], [class~='bg-[#53d3d1]'] *, [class~='bg-[#3fd0c9]'], [class~='bg-[#3fd0c9]'] *, [class~='bg-[#feb249]'] *, [class~='bg-[#f2661d]'] *, [class~='bg-[#fff8ec]']) {
+  color: #fff4e6;
+}
+.dark-site :is(.text-\[\#666666\]):not(.ticket-backdrop *, .ticket-print *, .ticket-print, .invoice-paper *, .invoice-paper, [class~='bg-[#53d3d1]'], [class~='bg-[#53d3d1]'] *, [class~='bg-[#3fd0c9]'], [class~='bg-[#3fd0c9]'] *, [class~='bg-[#feb249]'] *, [class~='bg-[#f2661d]'] *, [class~='bg-[#fff8ec]']) {
+  color: rgba(255, 244, 230, 0.68);
+}
+.dark-site :is(.text-\[\#0a6f72\], .text-\[\#0a7a74\], .text-\[\#0a6f6c\], .text-\[\#0a6f6a\], .text-\[\#04313a\]):not(.ticket-backdrop *, .ticket-print *, .ticket-print, .invoice-paper *, .invoice-paper, [class~='bg-[#53d3d1]'], [class~='bg-[#53d3d1]'] *, [class~='bg-[#3fd0c9]'], [class~='bg-[#3fd0c9]'] *, [class~='bg-[#feb249]'] *, [class~='bg-[#f2661d]'] *, [class~='bg-[#fff8ec]']) {
+  color: #7fe3e1;
+}
+.dark-site :is(.text-\[\#c2410c\], .text-\[\#b45309\], .text-\[\#7a3b0c\], .text-\[\#4a1d00\]):not(.ticket-backdrop *, .ticket-print *, .ticket-print, .invoice-paper *, .invoice-paper, [class~='bg-[#53d3d1]'], [class~='bg-[#53d3d1]'] *, [class~='bg-[#3fd0c9]'], [class~='bg-[#3fd0c9]'] *, [class~='bg-[#feb249]'] *, [class~='bg-[#f2661d]'] *, [class~='bg-[#fff8ec]']) {
+  color: #f5a524;
+}
+.dark-site :is(.text-\[\#b84a46\]):not(.ticket-backdrop *, .ticket-print *, .ticket-print, .invoice-paper *, .invoice-paper, [class~='bg-[#53d3d1]'], [class~='bg-[#53d3d1]'] *, [class~='bg-[#3fd0c9]'], [class~='bg-[#3fd0c9]'] *, [class~='bg-[#feb249]'] *, [class~='bg-[#f2661d]'] *, [class~='bg-[#fff8ec]']) {
+  color: #f87171;
+}
+.dark-site :is(.text-\[\#1d4ed8\], .text-\[\#1d3f8f\]):not(.ticket-backdrop *, .ticket-print *, .ticket-print, .invoice-paper *, .invoice-paper, [class~='bg-[#53d3d1]'], [class~='bg-[#53d3d1]'] *, [class~='bg-[#3fd0c9]'], [class~='bg-[#3fd0c9]'] *, [class~='bg-[#feb249]'] *, [class~='bg-[#f2661d]'] *, [class~='bg-[#fff8ec]']) {
+  color: #8db4ff;
+}
