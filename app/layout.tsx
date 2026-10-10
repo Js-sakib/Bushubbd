@@ -4,7 +4,7 @@ import { Toaster } from 'react-hot-toast'
 import SiteChrome from './SiteChrome'
 import JsonLd from './routes/JsonLd'
 import Tracking from './Tracking'
-import { CONTACT_PHONE, DARK_SITE, SITE_NAME, SITE_URL } from '@/lib/site'
+import { CONTACT_PHONE, SITE_NAME, SITE_URL } from '@/lib/site'
 import './globals.css'
 
 // Self-hosted at build time. Besides being faster than the Google CDN, it keeps the fonts
@@ -111,9 +111,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           position="top-center"
           containerClassName="no-print"
           toastOptions={{
-            style: DARK_SITE
-              ? { background: '#1a1b1d', color: '#fff4e6', border: '1px solid rgba(255,244,230,0.14)' }
-              : { background: '#08324d', color: '#fbeceb', border: '1px solid #2a5874' },
+            style: { background: '#08324d', color: '#fbeceb', border: '1px solid #2a5874' },
           }}
         />
       </body>

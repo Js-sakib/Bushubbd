@@ -16,13 +16,6 @@ export const CONTACT_EMAIL = 'info@bushubbd.com'
 export const ONLINE_SALES_OPEN = process.env.NEXT_PUBLIC_ONLINE_SALES === 'on'
 export const SALES_PAUSED_MESSAGE = 'Online booking opens soon. Call or WhatsApp us to book your seat.'
 
-/**
- * The site's look: the new dark one (near-black, cream and orange, like the "Bus tickets, now
- * online" post) unless NEXT_PUBLIC_SITE_THEME=light brings back the pink-to-aqua one. Tickets,
- * boarding passes and invoices stay white paper either way.
- */
-export const DARK_SITE = process.env.NEXT_PUBLIC_SITE_THEME !== 'light'
-
 /** A WhatsApp chat with BusHub, with a message already typed. */
 export function whatsappChat(text: string): string {
   return `https://wa.me/${CONTACT_WHATSAPP.replace(/\D/g, '')}?text=${encodeURIComponent(text)}`
